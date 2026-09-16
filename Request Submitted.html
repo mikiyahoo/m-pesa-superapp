@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=360, initial-scale=1.0">
+    <title>Request Submitted</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .mobile-container {
+            width: 360px;
+            height: 808px; /* 760px screen + 48px system nav */
+            background-color: #ffffff;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Status bar ---------- */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px 4px 16px;
+            flex-shrink: 0;
+        }
+
+        .status-bar .time {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666666;
+        }
+
+        .status-icons svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            display: block;
+        }
+
+        /* ---------- App bar ---------- */
+        .app-bar {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px 6px 16px;
+            flex-shrink: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            border-radius: 50%;
+        }
+
+        .close-btn:active { background-color: #f2f2f2; }
+
+        .close-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #444444;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        /* ---------- Identity header ---------- */
+        .identity {
+            text-align: center;
+            padding: 14px 16px 26px 16px;
+            flex-shrink: 0;
+        }
+
+        .identity .avatar {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #2FC56D;
+            background: #EDEDED;
+            display: block;
+            margin: 0 auto 12px auto;
+        }
+
+        .identity .name {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1c1c1c;
+            margin-bottom: 4px;
+        }
+
+        .identity .phone {
+            font-size: 14px;
+            color: #333333;
+        }
+
+        .identity .phone strong {
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        /* ---------- Result card ---------- */
+        .card-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+        }
+
+        .result-card {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.10);
+            border: 1px solid #f2f2f2;
+            padding: 26px 22px 30px 22px;
+            text-align: center;
+        }
+
+        .result-card h2 {
+            font-size: 21px;
+            font-weight: 300;
+            color: #3c3c3c;
+            letter-spacing: 0.8px;
+            margin-bottom: 26px;
+        }
+
+        .check-ring {
+            width: 66px;
+            height: 66px;
+            margin: 0 auto 26px auto;
+            display: block;
+        }
+
+        .check-ring svg {
+            width: 66px;
+            height: 66px;
+            stroke: #2FC56D;
+            stroke-width: 2.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .result-card p {
+            font-size: 15.5px;
+            font-weight: 500;
+            color: #2FC56D;
+            line-height: 1.55;
+        }
+
+        /* ---------- Action ---------- */
+        .action {
+            padding: 14px 14px 18px 14px;
+            flex-shrink: 0;
+        }
+
+        .primary-btn {
+            width: 100%;
+            height: 54px;
+            border: none;
+            border-radius: 27px;
+            background-color: #2FC56D;
+            color: #ffffff;
+            font-family: 'Barlow', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 6px 16px rgba(47, 197, 109, 0.28);
+            transition: transform 0.15s ease;
+        }
+
+        .primary-btn:active { transform: scale(0.99); }
+
+        .primary-btn svg {
+            position: absolute;
+            right: 26px;
+            width: 22px;
+            height: 22px;
+            stroke: #ffffff;
+            stroke-width: 1.8;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ---------- Android system navigation ---------- */
+        .system-nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            align-items: center;
+            justify-items: center;
+            height: 48px;
+            background-color: #ffffff;
+            border-top: 1px solid #f0f0f0;
+            flex-shrink: 0;
+            color: #666666;
+        }
+
+        .system-nav svg { width: 19px; height: 19px; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span class="time">9:00</span>
+            <div class="status-icons">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29ZM13 5.83l1.88 1.88L13 9.59V5.83Zm1.88 10.46L13 18.17v-3.76l1.88 1.88Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.1 8.9a14.2 14.2 0 0 1 19.8 0L12.9 20.3a1.1 1.1 0 0 1-1.8 0L2.1 8.9Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20.9 3.6v16.1c0 .5-.4.9-.9.9H4.6c-.8 0-1.2-1-.6-1.5L19.4 3c.6-.6 1.5-.2 1.5.6Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9.6 1.8h4.8c.5 0 .9.4.9.9v1.1H8.7V2.7c0-.5.4-.9.9-.9Z"/>
+                    <rect x="6.6" y="4.3" width="10.8" height="17.9" rx="2.2"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- App bar -->
+        <div class="app-bar">
+            <button class="close-btn" onclick="goBackToApp()" aria-label="Close">
+                <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+            </button>
+        </div>
+
+        <!-- Identity -->
+        <div class="identity">
+            <img class="avatar" src="assets/avatars/avatar-2.png" alt="">
+            <p class="name">Zemedkun Kidane</p>
+            <p class="phone"><strong>Phone Number</strong>079 123 1222</p>
+        </div>
+
+        <!-- Result -->
+        <div class="card-wrap">
+            <div class="result-card">
+                <h2>REQUEST SUBMITTED!</h2>
+
+                <span class="check-ring">
+                    <svg viewBox="0 0 48 48" aria-hidden="true">
+                        <path d="M40.6 17.5a19 19 0 1 1-6.9-8.1"/>
+                        <path d="M15.5 24.4 21.8 30.6 34.4 18"/>
+                    </svg>
+                </span>
+
+                <p>Your Request to link your account with Fayda is successfully submitted. You will receive confirmation SMS shortly.</p>
+            </div>
+        </div>
+
+        <!-- Close -->
+        <div class="action">
+            <button class="primary-btn" onclick="goBackToApp()">
+                <span>CLOSE</span>
+                <svg viewBox="0 0 24 24"><path d="M4 12h15M13.5 6.5 20 12l-6.5 5.5"/></svg>
+            </button>
+        </div>
+
+        <!-- Android System Navigation -->
+        <div class="system-nav">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M14.8 4.8 6 12l8.8 7.2V4.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="6.9" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="5.4" y="5.4" width="13.2" height="13.2" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        function goBackToApp() {
+            var target = 'Send to Bank.html';
+            try { target = sessionStorage.getItem('faydaReturn') || target; } catch (e) {}
+            window.location.href = target;
+        }
+    </script>
+
+</body>
+</html>
