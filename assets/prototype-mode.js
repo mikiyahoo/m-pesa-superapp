@@ -315,15 +315,25 @@
             '    height: 62px;',
             '    margin: 0;',
             '}',
-            '#faydaModal.fayda-screen p {',
+            '#faydaModal.fayda-screen .fayda-cta {',
             '    order: 3;',
+            '    margin: 24px 0 0 0;',
+            '    max-width: 250px;',
+            '    font-size: 15.5px;',
+            '    font-weight: 500;',
+            '    color: #3a3a3a;',
+            '    letter-spacing: 0.3px;',
+            '    line-height: 1.45;',
+            '}',
+            '#faydaModal.fayda-screen p {',
+            '    order: 4;',
             '    margin: auto 0 18px 0;',
             '    font-size: 13px;',
             '    color: #7a7a7a;',
             '    line-height: 1.5;',
             '}',
             '#faydaModal.fayda-screen .modal-btn.primary {',
-            '    order: 4;',
+            '    order: 5;',
             '    width: 100%;',
             '    position: relative;',
             '    margin: 0;',
@@ -415,12 +425,21 @@
         /* Bridge the two marks: M-PESA card, connector, Fayda seal. */
         var bridge = document.createElement('div');
         bridge.className = 'fayda-bridge';
-        bridge.innerHTML = '<span class="brand"><img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"></span>'
-            + '<span class="link"><svg viewBox="0 0 24 24">'
+        bridge.innerHTML = '<span class="link"><svg viewBox="0 0 24 24">'
             + '<path d="M9.5 7 5 12l4.5 5"/><path d="M14.5 7 19 12l-4.5 5"/>'
-            + '</svg></span>';
+            + '</svg></span>'
+            + '<span class="brand"><img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"></span>';
         card.insertBefore(bridge, fayda);
-        bridge.appendChild(fayda);
+        bridge.insertBefore(fayda, bridge.firstChild);
+
+        /* What the linking is for, sitting with the marks. */
+        var reason = document.body.dataset.linkReason;
+        if (reason) {
+            var cta = document.createElement('p');
+            cta.className = 'fayda-cta';
+            cta.textContent = reason + ', link your Fayda ID';
+            bridge.insertAdjacentElement('afterend', cta);
+        }
 
         var go = card.querySelector('.modal-btn.primary');
         if (go && !go.querySelector('.arrow')) {
