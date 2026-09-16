@@ -281,39 +281,77 @@
             '#faydaModal.fayda-screen h2 {',
             '    order: 1;',
             '    margin: 0 0 auto 0;',
-            '    font-size: 21px;',
-            '    font-weight: 400;',
-            '    color: #2f2f2f;',
-            '    letter-spacing: 0.6px;',
+            '    max-width: 290px;',
+            '    font-size: 26px;',
+            '    font-weight: 700;',
+            '    color: #1f1f1f;',
+            '    letter-spacing: 0.2px;',
+            '    line-height: 1.25;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge {',
             '    order: 2;',
             '    display: flex;',
             '    align-items: center;',
-            '    gap: 14px;',
-            '}',
-            '#faydaModal.fayda-screen .fayda-bridge .brand {',
-            '    border: 1.5px solid #2BB24B;',
-            '    border-radius: 8px;',
+            '    width: 100%;',
+            '    max-width: 296px;',
+            '    padding: 16px 18px;',
             '    background: #ffffff;',
-            '    padding: 13px 16px;',
-            '    display: flex;',
+            '    border: 1px solid #EDEFF0;',
+            '    border-radius: 18px;',
+            '    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);',
             '}',
-            '#faydaModal.fayda-screen .fayda-bridge .brand img { width: 94px; display: block; }',
-            '#faydaModal.fayda-screen .fayda-bridge .link svg {',
-            '    width: 19px;',
-            '    height: 19px;',
+            /* each mark sits in its own green ring */
+            '#faydaModal.fayda-screen .fayda-bridge .node {',
+            '    width: 64px;',
+            '    height: 64px;',
+            '    flex-shrink: 0;',
+            '    border-radius: 50%;',
+            '    border: 3px solid #2BB24B;',
+            '    background: #ffffff;',
+            '    display: flex;',
+            '    align-items: center;',
+            '    justify-content: center;',
+            '    overflow: hidden;',
+            '}',
+            '#faydaModal.fayda-screen .fayda-bridge .node.brand img { width: 40px; display: block; }',
+            '#faydaModal.fayda-screen .modal-card img.fayda {',
+            '    width: 58px;',
+            '    height: 58px;',
+            '    margin: 0;',
+            '}',
+            /* dashed run with the exchange badge riding on it */
+            '#faydaModal.fayda-screen .fayda-bridge .link {',
+            '    flex-grow: 1;',
+            '    display: flex;',
+            '    align-items: center;',
+            '    gap: 5px;',
+            '    padding: 0 8px;',
+            '}',
+            '#faydaModal.fayda-screen .fayda-bridge .dots {',
+            '    flex-grow: 1;',
+            '    border-top: 2px dashed #D9DDDF;',
+            '}',
+            '#faydaModal.fayda-screen .fayda-bridge .swap {',
+            '    width: 30px;',
+            '    height: 30px;',
+            '    flex-shrink: 0;',
+            '    border-radius: 50%;',
+            '    background: #ffffff;',
+            '    border: 1px solid #ECEFF0;',
+            '    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);',
+            '    display: flex;',
+            '    align-items: center;',
+            '    justify-content: center;',
+            '}',
+            '#faydaModal.fayda-screen .fayda-bridge .swap svg {',
+            '    width: 16px;',
+            '    height: 16px;',
             '    stroke: #2BB24B;',
             '    stroke-width: 2;',
             '    fill: none;',
             '    stroke-linecap: round;',
             '    stroke-linejoin: round;',
             '    display: block;',
-            '}',
-            '#faydaModal.fayda-screen .modal-card img.fayda {',
-            '    width: 62px;',
-            '    height: 62px;',
-            '    margin: 0;',
             '}',
             '#faydaModal.fayda-screen .fayda-cta {',
             '    order: 3;',
@@ -423,15 +461,22 @@
         var fayda = card && card.querySelector('img.fayda');
         if (!card || !fayda) return;
 
-        /* Bridge the two marks: M-PESA card, connector, Fayda seal. */
+        /* One card: Fayda seal, a dashed run with an exchange badge, the
+           M-PESA mark -- each ringed in green. */
         var bridge = document.createElement('div');
         bridge.className = 'fayda-bridge';
-        bridge.innerHTML = '<span class="link"><svg viewBox="0 0 24 24">'
-            + '<path d="M9.5 7 5 12l4.5 5"/><path d="M14.5 7 19 12l-4.5 5"/>'
+        bridge.innerHTML = '<span class="node" id="faydaNode"></span>'
+            + '<span class="link">'
+            + '<span class="dots"></span>'
+            + '<span class="swap"><svg viewBox="0 0 24 24">'
+            + '<path d="M4.2 9.2h13"/><path d="m13.6 5.6 3.8 3.6-3.8 3.6"/>'
+            + '<path d="M19.8 14.8h-13"/><path d="m10.4 11.2-3.8 3.6 3.8 3.6"/>'
             + '</svg></span>'
-            + '<span class="brand"><img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"></span>';
+            + '<span class="dots"></span>'
+            + '</span>'
+            + '<span class="node brand"><img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"></span>';
         card.insertBefore(bridge, fayda);
-        bridge.insertBefore(fayda, bridge.firstChild);
+        bridge.querySelector('#faydaNode').appendChild(fayda);
 
         /* What the linking is for, sitting with the marks. */
         var reason = document.body.dataset.linkReason;
@@ -441,6 +486,11 @@
             cta.textContent = reason + ', link your Fayda ID';
             bridge.insertAdjacentElement('afterend', cta);
         }
+
+        /* The popup keeps "LINK YOUR FAYDA ID"; the screen says what
+           linking achieves. */
+        var head = card.querySelector('h2');
+        if (head) head.textContent = 'Verify your M-PESA account with Fayda';
 
         var go = card.querySelector('.modal-btn.primary');
         if (go && !go.querySelector('.arrow')) {
