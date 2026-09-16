@@ -555,7 +555,8 @@
 
         /* The prompt belongs on this screen in the options-first flow, and
            only while the account is still unlinked. */
-        if (!isFaydaActivated()) setTimeout(openFayda, 120);
+        const FAYDA_DELAY = 1000; // a beat on the screen before the prompt
+        if (!isFaydaActivated()) setTimeout(openFayda, FAYDA_DELAY);
     </script>
 
 </body>
