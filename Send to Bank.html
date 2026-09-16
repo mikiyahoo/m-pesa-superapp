@@ -181,6 +181,11 @@
             font-size: 16px;
             font-weight: 700;
             color: #1c1c1c;
+        }
+
+        .bank-row .bank-name.placeholder {
+            font-weight: 500;
+            color: #9a9a9a;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -508,7 +513,7 @@
                 <label>SELECT BANK</label>
                 <div class="underline">
                     <div class="bank-row" onclick="toggleBankList()">
-                        <span class="bank-name" id="bankName">Commercial Bank of Ethiopia</span>
+                        <span class="bank-name placeholder" id="bankName">Select bank</span>
                         <span class="icon-btn chevron" id="bankChevron">
                             <svg viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></svg>
                         </span>
@@ -613,8 +618,8 @@
             { name: 'Zemen Bank',                  logo: 'zemen-bank.png' }
         ];
 
-        const DEFAULT_BANK = BANKS[0].name;
-        let selectedBank = DEFAULT_BANK;
+        const BANK_PLACEHOLDER = 'Select bank';
+        let selectedBank = '';
 
         /* ---------- Bank list ---------- */
         function buildBankList() {
@@ -635,7 +640,9 @@
 
         function selectBank(name) {
             selectedBank = name;
-            document.getElementById('bankName').textContent = name;
+            const label = document.getElementById('bankName');
+            label.textContent = name;
+            label.classList.remove('placeholder');
             buildBankList();
             toggleBankList();
             validate();
@@ -671,7 +678,7 @@
         function validate() {
             const account = document.getElementById('accountNumber').value.trim();
             const amount = amountValue();
-            const ok = account.length >= 8 && amount > 0 && amount <= BALANCE;
+            const ok = selectedBank !== '' && account.length >= 8 && amount > 0 && amount <= BALANCE;
 
             const btn = document.getElementById('continueBtn');
             btn.classList.toggle('enabled', ok);
@@ -680,8 +687,10 @@
 
         /* ---------- Actions ---------- */
         function resetForm() {
-            selectedBank = DEFAULT_BANK;
-            document.getElementById('bankName').textContent = DEFAULT_BANK;
+            selectedBank = '';
+            const bankLabel = document.getElementById('bankName');
+            bankLabel.textContent = BANK_PLACEHOLDER;
+            bankLabel.classList.add('placeholder');
             document.getElementById('accountNumber').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('description').value = '';
@@ -713,7 +722,7 @@
         }
 
         /* ---------- Fayda modal ---------- */
-        const FAYDA_DELAY = 10000; // 10s after the screen opens
+        const FAYDA_DELAY = 2000; // 2s after the screen opens
 
         function openFayda() {
             document.getElementById('faydaModal').classList.add('show');
