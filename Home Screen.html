@@ -890,7 +890,9 @@
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <button class="nav-item" onclick="window.location.href='index.html'">
-                <i data-lucide="house"></i>
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M3.4 10.4 12 3.6l8.6 6.8V20a1 1 0 0 1-1 1h-5v-6h-5.2v6h-5a1 1 0 0 1-1-1v-9.6Z" fill="currentColor"/>
+                </svg>
                 <span>HOME</span>
             </button>
             <button class="nav-item active" onclick="setNav(this, 'M-PESA')">
@@ -898,11 +900,18 @@
                 <span>M-PESA</span>
             </button>
             <button class="nav-item" onclick="setNav(this, 'SAFARICOM')">
-                <i data-lucide="smartphone"></i>
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="7" y="2.6" width="10" height="18.8" rx="2.2" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
                 <span>SAFARICOM</span>
             </button>
             <button class="nav-item" onclick="setNav(this, 'MINI APPS')">
-                <i data-lucide="layout-grid"></i>
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="2.9" y="3.1" width="7.6" height="7.6" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M17.3 2.9 21.2 10.7h-7.8l3.9-7.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                    <circle cx="6.7" cy="17.5" r="3.8" stroke="currentColor" stroke-width="1.6"/>
+                    <circle cx="17.3" cy="17.5" r="3.8" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
                 <span>MINI APPS</span>
             </button>
         </nav>
