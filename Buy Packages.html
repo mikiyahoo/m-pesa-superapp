@@ -264,6 +264,8 @@
 
         /* ---------- Android system navigation ---------- */
         .system-nav {
+            position: relative;
+            z-index: 31; /* stays above the sheet overlay */
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             align-items: center;
@@ -278,6 +280,488 @@
         .system-nav svg { width: 19px; height: 19px; display: block; }
 
         /* ---------- Fayda modal ---------- */
+        /* ---------- Flow steps ---------- */
+        .step {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            flex-direction: column;
+        }
+
+        .step.active { display: flex; }
+
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .back-btn:active { background-color: #f2f2f2; }
+
+        .back-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #444444;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ---------- Package cards ---------- */
+        .pack {
+            margin: 0 16px 14px 16px;
+            border: 1px solid #C9DDF5;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .pack-head {
+            position: relative;
+            padding: 12px 14px;
+            background: #123FA8;
+            overflow: hidden;
+        }
+
+        /* The green sweep that curves in from the right */
+        .pack-head::after {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -46px;
+            width: 130px;
+            height: 180%;
+            border-radius: 50%;
+            background: #2BB24B;
+        }
+
+        .pack-head .inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pack-head .clock {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #DCE7F7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .pack-head .clock svg { width: 17px; height: 17px; display: block; }
+
+        .pack-head .eyebrow {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #BBD0EE;
+            letter-spacing: 0.9px;
+        }
+
+        .pack-head .title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.2px;
+        }
+
+        .pack-head .meta {
+            font-size: 11.5px;
+            font-weight: 500;
+            color: #CFE0F5;
+        }
+
+        .pack-head .meta b { color: #ffffff; font-weight: 600; }
+
+        .pay-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 14px;
+            background: #ffffff;
+        }
+
+        .pay-row + .pay-row { border-top: 1px solid #EFEFEF; }
+
+        /* room for the deal badge pinned to the top-right corner */
+        .pay-row.deal { padding-top: 24px; }
+
+        .pay-row .logo {
+            width: 30px;
+            height: 26px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pay-row .logo img { max-width: 100%; max-height: 100%; display: block; }
+
+        .pay-row .copy { flex-grow: 1; min-width: 0; }
+
+        .pay-row .what {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #2b2b2b;
+        }
+
+        .pay-row .bonus {
+            font-size: 12px;
+            font-weight: 400;
+            color: #8A8A8A;
+        }
+
+        .pay-row .right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .pay-row .price {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #2b2b2b;
+        }
+
+        .buy-btn {
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: #ffffff;
+            background: #2BB24B;
+            border-radius: 20px;
+            padding: 6px 20px;
+        }
+
+        .buy-btn:active { transform: scale(0.97); }
+
+        .deal-tag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #E8254C;
+            color: #ffffff;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            padding: 3px 10px;
+            border-bottom-left-radius: 8px;
+        }
+
+        /* ---------- Buy sheet ---------- */
+        .sheet-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.28);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 48px; /* clears the phone's system nav */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 30;
+        }
+
+        .sheet-overlay.show { opacity: 1; visibility: visible; }
+
+        .sheet {
+            background: #ffffff;
+            border-radius: 14px 14px 0 0;
+            padding: 10px 0 16px 0;
+            box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
+        .sheet-overlay.show .sheet { transform: translateY(0); }
+
+        .sheet-handle {
+            width: 42px;
+            height: 4px;
+            border-radius: 2px;
+            background-color: #d9d9d9;
+            margin: 4px auto 20px auto;
+        }
+
+        .sheet h2 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #6b6b6b;
+            letter-spacing: 0.6px;
+            padding: 0 20px;
+            margin-bottom: 16px;
+        }
+
+        .sheet-item {
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 12px 20px;
+            text-align: left;
+        }
+
+        .sheet-item:active { background-color: #fafafa; }
+
+        .sheet-item .ic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #F5A31A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sheet-item .ic svg { width: 21px; height: 21px; display: block; }
+
+        .sheet-item .lbl {
+            font-size: 14.5px;
+            font-weight: 500;
+            color: #5a5a5a;
+            letter-spacing: 0.5px;
+        }
+
+        /* ---------- Confirm ---------- */
+        .confirm-card {
+            margin: 14px 16px 0 16px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+            padding: 0 0 18px 0;
+            overflow: hidden;
+        }
+
+        .confirm-top {
+            background: #FAFAFA;
+            padding: 14px 0 0 0;
+            text-align: center;
+        }
+
+        .confirm-chip {
+            display: inline-block;
+            background: #EDEDED;
+            color: #4a4a4a;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 5px 14px;
+            border-radius: 12px;
+        }
+
+        .confirm-top img {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 12px auto -22px auto;
+            border: 3px solid #ffffff;
+        }
+
+        .confirm-rows { padding: 32px 18px 0 18px; }
+
+        .c-row { margin-bottom: 16px; }
+
+        .c-row .k {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9a9a9a;
+            letter-spacing: 0.8px;
+            margin-bottom: 3px;
+        }
+
+        .c-row .v {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1c1c1c;
+            letter-spacing: 0.3px;
+        }
+
+        .c-row .sub {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #8A8A8A;
+            letter-spacing: 0.4px;
+            margin-top: 2px;
+        }
+
+        .primary-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: calc(100% - 32px);
+            margin: 16px;
+            padding: 14px 0;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #ffffff;
+            background: #2BB24B;
+            border-radius: 28px;
+            flex-shrink: 0;
+        }
+
+        .primary-btn:active { transform: scale(0.99); }
+
+        .primary-btn svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* ---------- Receipt summary (PIN + done) ---------- */
+        .summary { text-align: center; padding: 6px 16px 0 16px; }
+
+        .summary img {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 8px auto;
+        }
+
+        .summary h2 {
+            font-size: 19px;
+            font-weight: 600;
+            color: #1c1c1c;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+        }
+
+        .summary .line {
+            font-size: 11.5px;
+            color: #3a3a3a;
+            letter-spacing: 0.4px;
+            margin-bottom: 3px;
+        }
+
+        .summary .line b { font-weight: 700; }
+        .summary .line .muted { color: #b0b0b0; }
+
+        /* ---------- PIN ---------- */
+        .pin-label {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4a4a4a;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        .pin-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1.5px solid #E0E0E0;
+        }
+
+        .pin-dot.filled { background: #2BB24B; border-color: #2BB24B; }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px 0;
+            padding: 0 24px;
+        }
+
+        .key {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 27px;
+            font-weight: 400;
+            color: #6a6a6a;
+            padding: 9px 0;
+            border-radius: 8px;
+        }
+
+        .key:active { background-color: #f4f4f4; }
+
+        .key svg { width: 26px; height: 26px; display: block; margin: 0 auto; }
+
+        /* ---------- Done ---------- */
+        .done-mark { margin: 26px auto 14px auto; display: block; width: 74px; height: 74px; }
+
+        .done-msg {
+            text-align: center;
+            font-size: 14.5px;
+            font-weight: 500;
+            color: #2BB24B;
+            line-height: 1.45;
+            padding: 0 26px;
+        }
+
+        .done-actions {
+            display: flex;
+            justify-content: center;
+            gap: 46px;
+            margin-top: auto;
+            padding-top: 22px;
+        }
+
+        .done-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+            width: 88px;
+        }
+
+        .done-action .ic {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #F2F2F2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .done-action .ic svg { width: 21px; height: 21px; stroke: #7a7a7a; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+        .done-action span {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #8A8A8A;
+            letter-spacing: 0.6px;
+            text-align: center;
+            line-height: 1.3;
+        }
         .modal-overlay {
             position: absolute;
             inset: 0;
@@ -435,6 +919,8 @@
             </div>
         </div>
 
+        <section class="step active" id="stepCategories">
+
         <!-- App bar -->
         <div class="app-bar">
             <button class="close-btn" onclick="window.location.href='Home Screen.html'" aria-label="Close">
@@ -473,6 +959,111 @@
             <div class="grid" id="otherGrid"></div>
 
         </div>
+        </section>
+
+        <!-- Package list for a category -->
+        <section class="step" id="stepList">
+            <div class="app-bar">
+                <button class="back-btn" onclick="showStep('stepCategories')" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M15 5.5 8 12l7 6.5"/></svg>
+                </button>
+                <h1 id="listTitle">DAILY</h1>
+                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+            </div>
+            <div class="scroll">
+                <p class="section-label" id="listLabel" style="margin-top:10px">DAILY</p>
+                <div id="packList"></div>
+            </div>
+        </section>
+
+        <!-- Purchase confirmation -->
+        <section class="step" id="stepConfirm">
+            <div class="app-bar">
+                <button class="back-btn" onclick="backToList()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M15 5.5 8 12l7 6.5"/></svg>
+                </button>
+                <h1>CONFIRM</h1>
+                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+            </div>
+            <div class="scroll">
+                <div class="confirm-card">
+                    <div class="confirm-top">
+                        <span class="confirm-chip">BUY PACKAGE</span>
+                        <img src="assets/avatars/avatar-2.png" alt="">
+                    </div>
+                    <div class="confirm-rows" id="confirmRows"></div>
+                </div>
+            </div>
+            <button class="primary-btn" onclick="goToPin()">
+                BUY PACKAGE
+                <svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg>
+            </button>
+        </section>
+
+        <!-- PIN -->
+        <section class="step" id="stepPin">
+            <div class="app-bar">
+                <button class="back-btn" onclick="showStep('stepConfirm')" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M15 5.5 8 12l7 6.5"/></svg>
+                </button>
+                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+            </div>
+            <div class="scroll">
+                <div class="summary" id="pinSummary"></div>
+                <p class="pin-label" style="margin-top:40px">ENTER M-PESA PIN:</p>
+                <div class="pin-dots" id="pinDots">
+                    <span class="pin-dot"></span><span class="pin-dot"></span>
+                    <span class="pin-dot"></span><span class="pin-dot"></span>
+                </div>
+                <div class="keypad">
+                    <button class="key" onclick="pinPress('1')">1</button>
+                    <button class="key" onclick="pinPress('2')">2</button>
+                    <button class="key" onclick="pinPress('3')">3</button>
+                    <button class="key" onclick="pinPress('4')">4</button>
+                    <button class="key" onclick="pinPress('5')">5</button>
+                    <button class="key" onclick="pinPress('6')">6</button>
+                    <button class="key" onclick="pinPress('7')">7</button>
+                    <button class="key" onclick="pinPress('8')">8</button>
+                    <button class="key" onclick="pinPress('9')">9</button>
+                    <button class="key" onclick="pinBack()" aria-label="Delete">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="1.8" stroke-linecap="round"><path d="M9 5.5h11v13H9L3.5 12 9 5.5Z"/><path d="m12.5 9.6 4.4 4.8M16.9 9.6l-4.4 4.8"/></svg>
+                    </button>
+                    <button class="key" onclick="pinPress('0')">0</button>
+                    <button class="key" onclick="pinFill()" aria-label="Fingerprint">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="1.4" stroke-linecap="round"><path d="M5.2 9.6a7.6 7.6 0 0 1 13.6 0"/><path d="M6.4 14.6c.5-1.3.8-2.7.8-4a4.8 4.8 0 0 1 9.6 0c0 1.3.3 2.7.8 4"/><path d="M9.2 17.2c.6-1.4.9-2.9.9-4.6a1.9 1.9 0 0 1 3.8 0c0 1.7.3 3.2.9 4.6"/><path d="M12 12.6v2.2"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Processing -->
+        <section class="step" id="stepDone">
+            <div class="app-bar">
+                <button class="close-btn" onclick="window.location.href='Home Screen.html'" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+            </div>
+            <div class="scroll" style="display:flex; flex-direction:column">
+                <div class="summary" id="doneSummary"></div>
+                <svg class="done-mark" viewBox="0 0 48 48" fill="none">
+                    <path d="M40 24a16 16 0 1 1-6.4-12.8" stroke="#2BB24B" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="m17 24 5.5 5.5L34 18" stroke="#2BB24B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <p class="done-msg">We are processing your request, you will receive a confirmation by SMS</p>
+                <div class="done-actions">
+                    <button class="done-action" onclick="showToast('ADDED TO FAVORITES')">
+                        <span class="ic"><svg viewBox="0 0 24 24"><path d="m12 3.8 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.9l5.8-.8L12 3.8Z"/></svg></span>
+                        <span>ADD TO<br>FAVORITES</span>
+                    </button>
+                    <button class="done-action" onclick="showToast('CHAT WITH US')">
+                        <span class="ic"><svg viewBox="0 0 24 24"><path d="M4.5 4.5h15v11h-9l-4 3.2V4.5Z"/><path d="M8 8.5h8M8 11.5h5"/></svg></span>
+                        <span>CHAT WITH US</span>
+                    </button>
+                </div>
+            </div>
+            <button class="primary-btn" onclick="window.location.href='Home Screen.html'">DONE</button>
+        </section>
 
         <!-- Android System Navigation -->
         <div class="system-nav">
@@ -485,6 +1076,35 @@
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <rect x="5.4" y="5.4" width="13.2" height="13.2" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
             </svg>
+        </div>
+
+        <!-- Buy for which number -->
+        <div class="sheet-overlay" id="buySheet" onclick="if (event.target === this) closeBuySheet()">
+            <div class="sheet">
+                <div class="sheet-handle"></div>
+                <h2>BUY PACKAGE</h2>
+                <button class="sheet-item" onclick="chooseBuyer('mine')">
+                    <span class="ic">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M12 2.8 22 7.6 12 12.4 2 7.6 12 2.8Z" fill="#fff"/>
+                            <path d="M2 11.3 4.7 10 12 13.6 19.3 10 22 11.3 12 16.1 2 11.3Z" fill="#fff"/>
+                            <path d="M2 15.2 4.7 13.9 12 17.5 19.3 13.9 22 15.2 12 20 2 15.2Z" fill="#fff"/>
+                        </svg>
+                    </span>
+                    <span class="lbl">FOR MY NUMBER</span>
+                </button>
+                <button class="sheet-item" onclick="chooseBuyer('other')">
+                    <span class="ic">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M12 2.8 22 7.6 12 12.4 2 7.6 12 2.8Z" fill="#fff"/>
+                            <path d="M2 11.3 4.7 10 12 13.6 19.3 10 22 11.3 12 16.1 2 11.3Z" fill="#fff"/>
+                            <circle cx="18.4" cy="17.6" r="2.5" fill="#fff"/>
+                            <path d="M13.6 22.2c0-2 2.1-3.3 4.8-3.3s4.8 1.3 4.8 3.3H13.6Z" fill="#fff"/>
+                        </svg>
+                    </span>
+                    <span class="lbl">FOR OTHER NUMBER</span>
+                </button>
+            </div>
         </div>
 
         <!-- Link Fayda ID modal -->
@@ -563,16 +1183,228 @@
 
         function linkFayda() {
             closeFayda();
-            try { sessionStorage.setItem('faydaReturn', 'Buy Packages.html'); } catch (e) {}
+            try {
+                sessionStorage.setItem('faydaReturn', 'Buy Packages.html');
+                /* Hold the purchase so we can drop back onto it afterwards. */
+                sessionStorage.setItem('pendingPurchase', JSON.stringify({ picked: picked, buyer: buyer }));
+            } catch (e) {}
             window.location.href = 'Fayda Verification.html';
         }
 
-        setTimeout(openFayda, FAYDA_DELAY);
-
-        /* ---------- Actions ---------- */
-        function openCategory(name) {
-            showToast(name);
+        /* Returning from the linking flow lands back on the confirmation,
+           with the package still chosen and no second prompt. */
+        function restorePurchase() {
+            var saved = null;
+            try {
+                saved = sessionStorage.getItem('pendingPurchase');
+                sessionStorage.removeItem('pendingPurchase');
+            } catch (e) {}
+            if (!saved) return;
+            try {
+                var state = JSON.parse(saved);
+                if (!state.picked || !state.buyer) return;
+                picked = state.picked;
+                buyer = state.buyer;
+                goToConfirm(false);
+            } catch (e) {}
         }
+
+
+        /* ---------- Packages ---------- */
+        const ME    = { name: 'MIKIAS DEREJE', phone: '0911 032 052' };
+        const OTHER_PERSON = { name: 'ALEX NJERU', phone: '079 123 1222' };
+        const BALANCE_LABEL = '4,678 BIRR';
+
+        /* data/price tiers per category; anything not listed falls back to DAILY */
+        const TIERS = {
+            DAILY:     { validity: 'DAILY',   items: [['150MB', 5, '100MB'], ['400MB', 12, '200MB'], ['1GB', 25, '500MB']] },
+            WEEKLY:    { validity: 'WEEKLY',  items: [['1GB', 60, '500MB'], ['3GB', 150, '1GB'], ['6GB', 250, '2GB']] },
+            MONTHLY:   { validity: 'MONTHLY', items: [['4GB', 200, '1GB'], ['10GB', 450, '3GB'], ['20GB', 800, '5GB']] },
+            NIGHT:     { validity: 'NIGHTLY', items: [['2GB', 15, '1GB'], ['5GB', 30, '2GB'], ['10GB', 50, '4GB']] },
+            MEGA:      { validity: 'MONTHLY', items: [['30GB', 900, '8GB'], ['50GB', 1400, '12GB'], ['100GB', 2400, '25GB']] },
+            UNLIMITED: { validity: 'MONTHLY', items: [['INTERNET UNLIMITED', 960, 'unlimited nights'], ['INTERNET UNLIMITED PLUS', 1500, 'unlimited nights']] },
+            SOCIAL:    { validity: 'WEEKLY',  items: [['SOCIAL 1GB', 40, '500MB'], ['SOCIAL 3GB', 95, '1GB'], ['SOCIAL 6GB', 170, '2GB']] }
+        };
+
+        function tiersFor(category) {
+            return TIERS[category] || TIERS.DAILY;
+        }
+
+        function packageName(category, data) {
+            return data.indexOf('UNLIMITED') !== -1
+                ? tiersFor(category).validity + ' ' + data
+                : category + ' DATA: ' + data;
+        }
+
+        /* ---------- Flow state ---------- */
+        let picked = null;   // { category, name, price, validity, payWith }
+        let buyer = null;    // ME or OTHER_PERSON
+        let pendingPick = null;
+
+        let faydaTimer;
+
+        function showStep(id) {
+            /* A queued prompt belongs to the step that queued it. */
+            clearTimeout(faydaTimer);
+            document.querySelectorAll('.step').forEach(el => el.classList.toggle('active', el.id === id));
+            const scroll = document.querySelector('#' + id + ' .scroll');
+            if (scroll) scroll.scrollTop = 0;
+        }
+
+        /* ---------- Step 1: category -> package list ---------- */
+        function openCategory(name) {
+            const tiers = tiersFor(name);
+            document.getElementById('listTitle').textContent = name;
+            document.getElementById('listLabel').textContent = name;
+            document.getElementById('packList').innerHTML = tiers.items.map((it, i) => {
+                const [data, price, extra] = it;
+                const label = packageName(name, data);
+                const money = price.toFixed(2) + ' BIRR';
+                return `
+                <div class="pack">
+                    <div class="pack-head">
+                        <div class="inner">
+                            <span class="clock">
+                                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="#123FA8"/><path d="M12 7v5.2l3.4 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                            <div>
+                                <div class="eyebrow">M-PESA OFFER</div>
+                                <div class="title">${label}</div>
+                                <div class="meta"><b>${tiers.validity}</b> Buy once</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pay-row deal">
+                        <span class="deal-tag">SPECIAL DEAL</span>
+                        <span class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt=""></span>
+                        <span class="copy">
+                            <span class="what">Pay with M-PESA</span><br>
+                            <span class="bonus">Get extra ${extra} data</span>
+                        </span>
+                        <span class="right">
+                            <span class="price">${money}</span>
+                            <button class="buy-btn" onclick="startBuy('${name}', ${i}, 'M-PESA')">BUY</button>
+                        </span>
+                    </div>
+                    <div class="pay-row">
+                        <span class="logo"><img src="assets/banks logo/safaricom-ke.jpg" alt=""></span>
+                        <span class="copy"><span class="what">Pay with Airtime</span></span>
+                        <span class="right">
+                            <span class="price">${money}</span>
+                            <button class="buy-btn" onclick="startBuy('${name}', ${i}, 'AIRTIME')">BUY</button>
+                        </span>
+                    </div>
+                </div>`;
+            }).join('');
+            showStep('stepList');
+        }
+
+        /* ---------- Step 2: who is it for ---------- */
+        function startBuy(category, index, payWith) {
+            const tiers = tiersFor(category);
+            const [data, price] = tiers.items[index];
+            pendingPick = {
+                category: category,
+                name: packageName(category, data),
+                price: price,
+                validity: tiers.validity,
+                payWith: payWith
+            };
+            document.getElementById('buySheet').classList.add('show');
+        }
+
+        function closeBuySheet() {
+            document.getElementById('buySheet').classList.remove('show');
+        }
+
+        function chooseBuyer(which) {
+            closeBuySheet();
+            buyer = which === 'mine' ? ME : OTHER_PERSON;
+            picked = pendingPick;
+            goToConfirm(true);
+        }
+
+        /* ---------- Step 3: confirm ---------- */
+        function goToConfirm(promptFayda) {
+            renderConfirm();
+            showStep('stepConfirm');
+            /* The linking prompt belongs here, once there is something to buy. */
+            if (promptFayda) faydaTimer = setTimeout(openFayda, FAYDA_DELAY);
+        }
+
+        function backToList() {
+            if (picked) openCategory(picked.category); else showStep('stepCategories');
+        }
+
+        function row(k, v, sub) {
+            return '<div class="c-row"><div class="k">' + k + '</div><div class="v">' + v + '</div>'
+                + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
+        }
+
+        function renderConfirm() {
+            document.getElementById('confirmRows').innerHTML =
+                row('BUY TO', buyer.name)
+                + row('PHONE NUMBER', buyer.phone)
+                + row(picked.category + ' PACKAGE', picked.name)
+                + row('PACKAGE TYPE', 'BUY ONCE')
+                + row('VALIDITY PERIOD', picked.validity)
+                + row('PRICE', picked.price + ' BIRR')
+                + row('PAYMENT METHOD', picked.payWith,
+                      picked.payWith === 'M-PESA' ? 'BALANCE ' + BALANCE_LABEL : 'AIRTIME BALANCE');
+        }
+
+        function summaryHtml() {
+            return '<img src="assets/avatars/avatar-2.png" alt="">'
+                + '<h2>' + buyer.name + '</h2>'
+                + '<div class="line"><b>PHONE NUMBER</b> ' + buyer.phone + '</div>'
+                + '<div class="line"><b>' + picked.category + ' PACKAGE</b> ' + picked.name + '</div>'
+                + '<div class="line"><b>PACKAGE TYPE</b> BUY ONCE</div>'
+                + '<div class="line"><b>VALIDITY PERIOD</b> ' + picked.validity + '</div>'
+                + '<div class="line"><b>' + picked.price + ' BIRR</b> <span class="muted">FEE: 0.00 Birr</span></div>';
+        }
+
+        /* ---------- Step 4: PIN ---------- */
+        let pin = '';
+
+        function goToPin() {
+            pin = '';
+            paintPin();
+            document.getElementById('pinSummary').innerHTML = summaryHtml();
+            showStep('stepPin');
+        }
+
+        function paintPin() {
+            document.querySelectorAll('#pinDots .pin-dot')
+                .forEach((d, i) => d.classList.toggle('filled', i < pin.length));
+        }
+
+        function pinPress(digit) {
+            if (pin.length >= 4) return;
+            pin += digit;
+            paintPin();
+            if (pin.length === 4) setTimeout(finishPurchase, 320);
+        }
+
+        function pinBack() {
+            pin = pin.slice(0, -1);
+            paintPin();
+        }
+
+        function pinFill() {
+            pin = '1234';
+            paintPin();
+            setTimeout(finishPurchase, 320);
+        }
+
+        /* ---------- Step 5: done ---------- */
+        function finishPurchase() {
+            document.getElementById('doneSummary').innerHTML = summaryHtml();
+            showStep('stepDone');
+        }
+
+        /* Runs last: restorePurchase() assigns `picked`/`buyer`, which are
+           let-bound above and would be in the temporal dead zone earlier. */
+        restorePurchase();
 
         let toastTimer;
         function showToast(message) {
@@ -583,5 +1415,7 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
         }
     </script>
+
+    <script src="assets/prototype-mode.js"></script>
 </body>
 </html>
