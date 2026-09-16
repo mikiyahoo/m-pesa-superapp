@@ -20,6 +20,57 @@
 (function () {
     'use strict';
 
+    /* ---------------------------------------------------- entry point */
+    /* A run always starts at the app home. Opening or refreshing any
+       other screen bounces there, while moving between screens inside a
+       run is left alone -- both look like a plain navigation to the
+       browser, so a session marker tells them apart. */
+    var ENTRY = 'index.html';
+    var RUN_KEY = 'appRunning';
+
+    function onEntryPage() {
+        var path = location.pathname;
+        return path === '' || path === '/' || /\/index\.html$/i.test(path);
+    }
+
+    function wasReloaded() {
+        try {
+            var entry = performance.getEntriesByType('navigation')[0];
+            return !!entry && entry.type === 'reload';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function beginRun() {
+        try {
+            sessionStorage.removeItem('faydaActivated');
+            sessionStorage.removeItem('pendingWithdraw');
+            sessionStorage.removeItem('pendingPurchase');
+            sessionStorage.setItem(RUN_KEY, '1');
+        } catch (e) {}
+    }
+
+    /* Returns false when the page is being navigated away from. */
+    function guardEntry() {
+        var running = false;
+        try { running = sessionStorage.getItem(RUN_KEY) === '1'; } catch (e) {}
+        var fresh = !running || wasReloaded();
+
+        if (onEntryPage()) {
+            if (fresh) beginRun();
+            return true;
+        }
+        if (!fresh) return true;
+
+        /* Drop the marker so the home screen treats this as a new run. */
+        try { sessionStorage.removeItem(RUN_KEY); } catch (e) {}
+        location.replace(ENTRY);
+        return false;
+    }
+
+    if (!guardEntry()) return;
+
     var MODE_KEY = 'faydaMode';
     var STYLE_KEY = 'faydaPrompt';
 
