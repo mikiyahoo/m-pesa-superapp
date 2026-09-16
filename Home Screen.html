@@ -399,6 +399,7 @@
         .system-nav {
             position: sticky;
             bottom: 0;
+            z-index: 31; /* stays above the sheet overlay */
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             align-items: center;
@@ -425,7 +426,7 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding-bottom: 48px; /* clears the Android system nav */
+            padding-bottom: 48px; /* clears the phone's system nav */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.25s ease, visibility 0.25s ease;
