@@ -1104,9 +1104,11 @@
 
         function withdrawOption(name) {
             closeWithdraw();
-            if (withdrawGate() === 'after' && !isFaydaActivated()) {
-                /* Let the sheet slide away before the prompt lands. */
-                setTimeout(openFayda, 200);
+            if (withdrawGate() === 'after') {
+                /* Carry on to the chosen method's screen; the linking
+                   prompt is raised there rather than over the sheet. */
+                try { sessionStorage.setItem('withdrawMethod', name); } catch (e) {}
+                window.location.href = 'Withdraw.html';
                 return;
             }
             showToast(name);

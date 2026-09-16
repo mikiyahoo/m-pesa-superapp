@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .mobile-container {
+            width: 360px;
+            height: 808px; /* 760px screen + 48px system nav */
+            background-color: #ffffff;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Status bar ---------- */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px 4px 16px;
+            flex-shrink: 0;
+        }
+
+        .status-bar .time {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666666;
+        }
+
+        .status-icons svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            display: block;
+        }
+
+        /* ---------- App bar ---------- */
+        .app-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px 12px 16px;
+            flex-shrink: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            border-radius: 50%;
+        }
+
+        .close-btn:active { background-color: #f2f2f2; }
+
+        .close-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #444444;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .progress .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #2FC56D;
+        }
+
+        .progress .track {
+            width: 44px;
+            height: 4px;
+            border-radius: 2px;
+            background: #E4E4E4;
+        }
+
+        /* ---------- Body ---------- */
+        .screen {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 300;
+            color: #2f2f2f;
+            letter-spacing: 0.6px;
+            margin-top: 34px;
+        }
+
+        /* The entry line: a caret, then the number or its placeholder */
+        .entry {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            margin-top: 86px;
+            padding: 0 20px;
+            cursor: text;
+        }
+
+        .caret {
+            width: 2px;
+            height: 28px;
+            background: #2FC56D;
+            flex-shrink: 0;
+            animation: blink 1.1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .entry .value {
+            font-size: 23px;
+            font-weight: 400;
+            color: #2f2f2f;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .entry .value.empty { color: #b8b8b8; }
+
+        /* ---------- Continue ---------- */
+        .continue-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: calc(100% - 44px);
+            margin: auto 22px 0 22px;
+            padding: 15px 0;
+            border: none;
+            cursor: not-allowed;
+            font-family: 'Barlow', sans-serif;
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: #c2c2c2;
+            background: #F2F2F2;
+            border-radius: 28px;
+            flex-shrink: 0;
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .continue-btn .arrow {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+        }
+
+        .continue-btn .arrow svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .continue-btn.enabled {
+            background: #2BB24B;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        /* ---------- Keypad ---------- */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 18px 24px 10px 24px;
+            flex-shrink: 0;
+        }
+
+        .key {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 26px;
+            font-weight: 400;
+            color: #6a6a6a;
+            padding: 9px 0;
+            border-radius: 8px;
+        }
+
+        .key:active { background-color: #f4f4f4; }
+
+        .key.blank { visibility: hidden; }
+
+        /* ---------- Android system navigation ---------- */
+        .system-nav {
+            position: sticky;
+            bottom: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            align-items: center;
+            justify-items: center;
+            height: 48px;
+            background-color: #ffffff;
+            border-top: 1px solid #f0f0f0;
+            flex-shrink: 0;
+            color: #666666;
+        }
+
+        .system-nav svg {
+            width: 19px;
+            height: 19px;
+            display: block;
+        }
+
+        /* ---------- Link Fayda modal ---------- */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 30;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 26px 22px 24px 22px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.16);
+            transform: translateY(12px) scale(0.98);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.show .modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            border-radius: 50%;
+        }
+
+        .modal-close svg {
+            width: 20px;
+            height: 20px;
+            stroke: #F0333F;
+            stroke-width: 2.4;
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        .modal-card img.fayda {
+            width: 82px;
+            height: 82px;
+            object-fit: contain;
+            margin: 6px auto 20px auto;
+            display: block;
+        }
+
+        .modal-card h2 {
+            font-size: 22px;
+            font-weight: 500;
+            color: #3a3a3a;
+            letter-spacing: 0.4px;
+            margin-bottom: 12px;
+        }
+
+        .modal-card p {
+            font-size: 13.5px;
+            font-weight: 400;
+            color: #808080;
+            line-height: 1.5;
+            margin-bottom: 22px;
+        }
+
+        .modal-btn {
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 14px 0;
+            border-radius: 28px;
+        }
+
+        .modal-btn.primary {
+            background: #2BB24B;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .modal-btn.secondary {
+            background: #F2F2F2;
+            color: #6a6a6a;
+        }
+
+        /* ---------- Toast ---------- */
+        .toast {
+            position: absolute;
+            left: 50%;
+            bottom: 90px;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(9, 126, 70, 0.95);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 20;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+
+    <script src="assets/prototype-mode.js?v=6"></script>
+</head>
+<body data-link-reason="To withdraw money">
+
+    <div class="mobile-container">
+
+        <div class="status-bar">
+            <span class="time">9:00</span>
+            <div class="status-icons">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29ZM13 5.83l1.88 1.88L13 9.59V5.83Zm1.88 10.46L13 18.17v-3.76l1.88 1.88Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.1 8.9a14.2 14.2 0 0 1 19.8 0L12.9 20.3a1.1 1.1 0 0 1-1.8 0L2.1 8.9Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20.9 3.6v16.1c0 .5-.4.9-.9.9H4.6c-.8 0-1.2-1-.6-1.5L19.4 3c.6-.6 1.5-.2 1.5.6Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9.6 1.8h4.8c.5 0 .9.4.9.9v1.1H8.7V2.7c0-.5.4-.9.9-.9Z"/>
+                    <rect x="6.6" y="4.3" width="10.8" height="17.9" rx="2.2"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="app-bar">
+            <button class="close-btn" onclick="window.location.href='Home Screen.html'" aria-label="Close">
+                <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+            </button>
+            <span class="progress">
+                <span class="dot"></span>
+                <span class="track"></span>
+            </span>
+        </div>
+
+        <div class="screen">
+            <h1 id="title">WITHDRAW AT AGENT</h1>
+
+            <div class="entry" onclick="showToast('USE THE KEYPAD')">
+                <span class="caret"></span>
+                <span class="value empty" id="value">Enter Agent Number</span>
+            </div>
+
+            <button class="continue-btn" id="continueBtn" onclick="submitNumber()" disabled>
+                CONTINUE
+                <span class="arrow"><svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></span>
+            </button>
+
+            <div class="keypad">
+                <button class="key" onclick="press('1')">1</button>
+                <button class="key" onclick="press('2')">2</button>
+                <button class="key" onclick="press('3')">3</button>
+                <button class="key" onclick="press('4')">4</button>
+                <button class="key" onclick="press('5')">5</button>
+                <button class="key" onclick="press('6')">6</button>
+                <button class="key" onclick="press('7')">7</button>
+                <button class="key" onclick="press('8')">8</button>
+                <button class="key" onclick="press('9')">9</button>
+                <span class="key blank" aria-hidden="true"></span>
+                <button class="key" onclick="press('0')">0</button>
+                <span class="key blank" aria-hidden="true"></span>
+            </div>
+        </div>
+
+        <div class="system-nav">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M14.8 4.8 6 12l8.8 7.2V4.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="6.9" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="5.4" y="5.4" width="13.2" height="13.2" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+        </div>
+
+        <!-- Link Fayda ID modal -->
+        <div class="modal-overlay" id="faydaModal">
+            <div class="modal-card">
+                <button class="modal-close" onclick="closeFayda()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+                <img class="fayda" src="assets/fayda-logo-hq.png" alt="Fayda">
+                <h2>LINK YOUR FAYDA ID</h2>
+                <p>Link your account with Fayda to enjoy a more secure and seamless experience on the app.</p>
+                <button class="modal-btn primary" onclick="linkFayda()">CONTINUE</button>
+                <button class="modal-btn secondary" onclick="closeFayda()">SKIP</button>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        /* ---------- Which withdrawal was chosen ---------- */
+        const METHODS = {
+            'WITHDRAW AT AGENT': { title: 'WITHDRAW AT AGENT', placeholder: 'Enter Agent Number' },
+            'WITHDRAW AT ATM':   { title: 'WITHDRAW AT ATM',   placeholder: 'Enter ATM Number' },
+            /* Scanning falls back to keying the agent in by hand */
+            'SCAN TO WITHDRAW':  { title: 'SCAN TO WITHDRAW',  placeholder: 'Enter Agent Number' }
+        };
+
+        function chosenMethod() {
+            var name = '';
+            try { name = sessionStorage.getItem('withdrawMethod') || ''; } catch (e) {}
+            return METHODS[name] || METHODS['WITHDRAW AT AGENT'];
+        }
+
+        const method = chosenMethod();
+        document.getElementById('title').textContent = method.title;
+
+        /* ---------- Number entry ---------- */
+        let digits = '';
+
+        function paint() {
+            const el = document.getElementById('value');
+            el.textContent = digits === '' ? method.placeholder : digits;
+            el.classList.toggle('empty', digits === '');
+
+            const btn = document.getElementById('continueBtn');
+            const ok = digits.length >= 5;
+            btn.classList.toggle('enabled', ok);
+            btn.disabled = !ok;
+        }
+
+        function press(d) {
+            if (digits.length >= 10) return;
+            digits += d;
+            paint();
+        }
+
+        function submitNumber() {
+            showToast(method.title + ': ' + digits);
+        }
+
+        /* ---------- Link Fayda ---------- */
+        function openFayda() {
+            document.getElementById('faydaModal').classList.add('show');
+        }
+
+        function closeFayda() {
+            document.getElementById('faydaModal').classList.remove('show');
+        }
+
+        function linkFayda() {
+            closeFayda();
+            try { sessionStorage.setItem('faydaReturn', 'Withdraw.html'); } catch (e) {}
+            window.location.href = 'Fayda Verification.html';
+        }
+
+        function isFaydaActivated() {
+            try { return sessionStorage.getItem('faydaActivated') === '1'; }
+            catch (e) { return false; }
+        }
+
+        /* ---------- Toast ---------- */
+        let toastTimer;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+        }
+
+        paint();
+
+        /* The prompt belongs on this screen in the options-first flow, and
+           only while the account is still unlinked. */
+        if (!isFaydaActivated()) setTimeout(openFayda, 120);
+    </script>
+
+</body>
+</html>
