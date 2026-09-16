@@ -655,7 +655,7 @@
 
         .masked { letter-spacing: 2px; }
     </style>
-    <script src="assets/prototype-mode.js?v=4"></script>
+    <script src="assets/prototype-mode.js?v=5"></script>
 </head>
 <body>
 
@@ -1074,7 +1074,14 @@
         }
 
         /* Withdraw is gated: link Fayda first, then the options sheet. */
+        function withdrawGate() {
+            return (window.prototypeMode && window.prototypeMode.withdrawGate) || 'before';
+        }
+
         function openWithdrawFlow() {
+            /* 'after' shows the options first and asks to link once one
+               is picked; 'before' gates the whole thing up front. */
+            if (withdrawGate() === 'after') { openWithdraw(); return; }
             if (isFaydaActivated()) { openWithdraw(); } else { openFayda(); }
         }
 
@@ -1097,6 +1104,11 @@
 
         function withdrawOption(name) {
             closeWithdraw();
+            if (withdrawGate() === 'after' && !isFaydaActivated()) {
+                /* Let the sheet slide away before the prompt lands. */
+                setTimeout(openFayda, 200);
+                return;
+            }
             showToast(name);
         }
 

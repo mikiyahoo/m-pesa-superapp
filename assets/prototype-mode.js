@@ -73,10 +73,17 @@
 
     var MODE_KEY = 'faydaMode';
     var STYLE_KEY = 'faydaPrompt';
+    var GATE_KEY = 'withdrawGate';
 
     var MODES = [
         { id: 'optional',  label: 'OPTIONAL',  hint: 'Prompt can be skipped' },
         { id: 'mandatory', label: 'MANDATORY', hint: 'Send to bank & withdraw' }
+    ];
+
+    /* Where the linking prompt sits in the withdraw flow. */
+    var GATES = [
+        { id: 'before', label: 'GATE FIRST',    hint: 'Fayda, then options' },
+        { id: 'after',  label: 'OPTIONS FIRST', hint: 'Options, then Fayda' }
     ];
 
     function read(key, allowed, fallback) {
@@ -116,6 +123,16 @@
     function currentStyle() {
         return read(STYLE_KEY, ['popup', 'screen'], 'popup');
     }
+
+    function currentGate() {
+        return read(GATE_KEY, ['before', 'after'], 'before');
+    }
+
+    window.prototypeMode = {
+        activation: currentMode(),
+        prompt: currentStyle(),
+        withdrawGate: currentGate()
+    };
 
     /* ---------------------------------------------------------- styles */
     function injectStyles() {
@@ -336,7 +353,7 @@
     }
 
     /* ---------------------------------------------------------- sidebar */
-    function injectRail(mode, style) {
+    function injectRail(mode, style, gate) {
         var rail = document.createElement('nav');
         rail.className = 'proto-rail';
 
@@ -351,10 +368,22 @@
             + '<button class="proto-switch' + (style === 'screen' ? ' on' : '') + '" id="protoStyle">'
             + '<span class="t">FULL SCREEN</span><span class="sw"></span>'
             + '</button>'
-            + '<p class="proto-hint">' + (style === 'screen' ? 'Full-bleed screen' : 'Centred popup card') + '</p>';
+            + '<p class="proto-hint">' + (style === 'screen' ? 'Full-bleed screen' : 'Centred popup card') + '</p>'
+            + '<h4 class="later">WITHDRAW FLOW</h4>'
+            + GATES.map(function (g) {
+                return '<button class="proto-tab' + (g.id === gate ? ' on' : '') + '" data-gate="' + g.id + '">'
+                    + '<span class="t">' + g.label + '</span>'
+                    + '<span class="h">' + g.hint + '</span>'
+                    + '</button>';
+            }).join('');
 
         rail.addEventListener('click', function (ev) {
             var tab = ev.target.closest('.proto-tab');
+            if (tab && tab.dataset.gate) {
+                /* Withdraw lives on the M-PESA screen, so land there. */
+                if (tab.dataset.gate !== gate) write(GATE_KEY, tab.dataset.gate, 'Home Screen.html');
+                return;
+            }
             if (tab) {
                 if (tab.dataset.mode !== mode) write(MODE_KEY, tab.dataset.mode, 'Home Screen.html');
                 return;
@@ -436,9 +465,10 @@
     function init() {
         var mode = currentMode();
         var style = currentStyle();
+        var gate = currentGate();
 
         injectStyles();
-        injectRail(mode, style);
+        injectRail(mode, style, gate);
 
         var modal = document.getElementById('faydaModal');
         if (!modal) return;
