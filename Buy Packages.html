@@ -733,9 +733,25 @@
             height: 44px;
             border-radius: 50%;
             border: 1.5px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .pin-dot.filled { background: #2BB24B; border-color: #2BB24B; }
+        /* A filled slot is a green ring around a green pip, not a solid disc */
+        .pin-dot::after {
+            content: '';
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            background: #2BB24B;
+            transform: scale(0);
+            transition: transform 0.15s ease;
+        }
+
+        .pin-dot.filled { border: 2px solid #2BB24B; }
+
+        .pin-dot.filled::after { transform: scale(1); }
 
         .keypad {
             display: grid;
