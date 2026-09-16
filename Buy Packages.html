@@ -708,7 +708,7 @@
             margin-bottom: 3px;
         }
 
-        .summary .line b { font-weight: 700; }
+        .summary .line b { font-weight: 700; margin-right: 7px; }
         .summary .line .muted { color: #b0b0b0; }
 
         /* ---------- PIN ---------- */
@@ -718,19 +718,19 @@
             font-weight: 500;
             color: #4a4a4a;
             letter-spacing: 0.8px;
-            margin-bottom: 16px;
+            margin-bottom: 30px;
         }
 
         .pin-dots {
             display: flex;
             justify-content: center;
-            gap: 16px;
-            margin-bottom: 26px;
+            gap: 12px;
+            margin-bottom: 80px;
         }
 
         .pin-dot {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: 1.5px solid #E0E0E0;
         }
@@ -749,16 +749,19 @@
             border: none;
             cursor: pointer;
             font-family: 'Barlow', sans-serif;
-            font-size: 27px;
+            font-size: 32px;
             font-weight: 400;
             color: #6a6a6a;
             padding: 9px 0;
             border-radius: 8px;
         }
 
+        /* the reference leaves the bottom-left cell empty */
+        .key.blank { visibility: hidden; }
+
         .key:active { background-color: #f4f4f4; }
 
-        .key svg { width: 26px; height: 26px; display: block; margin: 0 auto; }
+        .key svg { width: 32px; height: 32px; display: block; margin: 0 auto; }
 
         /* ---------- Done ---------- */
         .done-mark { margin: 26px auto 14px auto; display: block; width: 74px; height: 74px; }
@@ -1060,7 +1063,7 @@
             </div>
             <div class="scroll">
                 <div class="summary" id="pinSummary"></div>
-                <p class="pin-label" style="margin-top:40px">ENTER M-PESA PIN:</p>
+                <p class="pin-label" style="margin-top:80px">ENTER M-PESA PIN:</p>
                 <div class="pin-dots" id="pinDots">
                     <span class="pin-dot"></span><span class="pin-dot"></span>
                     <span class="pin-dot"></span><span class="pin-dot"></span>
@@ -1075,9 +1078,7 @@
                     <button class="key" onclick="pinPress('7')">7</button>
                     <button class="key" onclick="pinPress('8')">8</button>
                     <button class="key" onclick="pinPress('9')">9</button>
-                    <button class="key" onclick="pinBack()" aria-label="Delete">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="1.8" stroke-linecap="round"><path d="M9 5.5h11v13H9L3.5 12 9 5.5Z"/><path d="m12.5 9.6 4.4 4.8M16.9 9.6l-4.4 4.8"/></svg>
-                    </button>
+                    <span class="key blank" aria-hidden="true"></span>
                     <button class="key" onclick="pinPress('0')">0</button>
                     <button class="key" onclick="pinFill()" aria-label="Fingerprint">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="1.4" stroke-linecap="round"><path d="M5.2 9.6a7.6 7.6 0 0 1 13.6 0"/><path d="M6.4 14.6c.5-1.3.8-2.7.8-4a4.8 4.8 0 0 1 9.6 0c0 1.3.3 2.7.8 4"/><path d="M9.2 17.2c.6-1.4.9-2.9.9-4.6a1.9 1.9 0 0 1 3.8 0c0 1.7.3 3.2.9 4.6"/><path d="M12 12.6v2.2"/></svg>
@@ -1437,11 +1438,6 @@
             pin += digit;
             paintPin();
             if (pin.length === 4) setTimeout(finishPurchase, 320);
-        }
-
-        function pinBack() {
-            pin = pin.slice(0, -1);
-            paintPin();
         }
 
         function pinFill() {
