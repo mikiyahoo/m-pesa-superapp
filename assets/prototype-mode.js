@@ -487,10 +487,9 @@
             bridge.insertAdjacentElement('afterend', cta);
         }
 
-        /* The popup keeps "LINK YOUR FAYDA ID"; the screen says what
-           linking achieves. */
+        /* Title case here; the popup's markup carries it in caps. */
         var head = card.querySelector('h2');
-        if (head) head.textContent = 'Verify your M-PESA account with Fayda';
+        if (head) head.textContent = 'Link Your Fayda ID';
 
         var go = card.querySelector('.modal-btn.primary');
         if (go && !go.querySelector('.arrow')) {
