@@ -115,10 +115,13 @@
         document.body.appendChild(rail);
     }
 
-    /* In mandatory mode the prompt keeps only CONTINUE. */
+    /* In mandatory mode the prompt keeps only CONTINUE.
+       Screens marked always-optional opt out: buying a package is not
+       gated on activation, so its prompt keeps SKIP either way. */
     function applyMode(mode) {
         var modal = document.getElementById('faydaModal');
         if (!modal || mode !== 'mandatory') return;
+        if (document.body.dataset.activation === 'always-optional') return;
 
         var close = modal.querySelector('.modal-close');
         var skip = modal.querySelector('.modal-btn.secondary');

@@ -127,6 +127,22 @@
             background: #E4E4E4;
         }
 
+        /* Later steps show how far along the purchase is */
+        .progress .bar {
+            width: 74px;
+            height: 5px;
+            border-radius: 3px;
+            background: #E4E4E4;
+            overflow: hidden;
+        }
+
+        .progress .bar .fill {
+            display: block;
+            height: 100%;
+            border-radius: 3px;
+            background: #2FC56D;
+        }
+
         /* ---------- Scroll ---------- */
         .scroll {
             flex: 1;
@@ -545,7 +561,7 @@
 
         /* ---------- Confirm ---------- */
         .confirm-card {
-            margin: 14px 16px 0 16px;
+            margin: 18px 18px 0 18px;
             background: #ffffff;
             border-radius: 10px;
             box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
@@ -580,9 +596,43 @@
             border: 3px solid #ffffff;
         }
 
-        .confirm-rows { padding: 32px 18px 0 18px; }
+        .confirm-rows { padding: 34px 24px 0 24px; }
 
-        .c-row { margin-bottom: 16px; }
+        .c-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .c-row:last-child { margin-bottom: 0; }
+
+        .c-row .text { flex-grow: 1; min-width: 0; }
+
+        .edit-btn {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            background: #F2F2F2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-btn:active { background: #E8E8E8; }
+
+        .edit-btn svg {
+            width: 17px;
+            height: 17px;
+            stroke: #7a7a7a;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
 
         .c-row .k {
             font-size: 11px;
@@ -895,7 +945,7 @@
         }
     </style>
 </head>
-<body>
+<body data-activation="always-optional">
 
     <div class="mobile-container">
 
@@ -965,7 +1015,7 @@
         <section class="step" id="stepList">
             <div class="app-bar">
                 <button class="back-btn" onclick="showStep('stepCategories')" aria-label="Back">
-                    <svg viewBox="0 0 24 24"><path d="M15 5.5 8 12l7 6.5"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M20 12H4.4"/><path d="m10.6 5.4-6.2 6.6 6.2 6.6"/></svg>
                 </button>
                 <h1 id="listTitle">DAILY</h1>
                 <span class="progress"><span class="dot"></span><span class="track"></span></span>
@@ -980,10 +1030,10 @@
         <section class="step" id="stepConfirm">
             <div class="app-bar">
                 <button class="back-btn" onclick="backToList()" aria-label="Back">
-                    <svg viewBox="0 0 24 24"><path d="M15 5.5 8 12l7 6.5"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M20 12H4.4"/><path d="m10.6 5.4-6.2 6.6 6.2 6.6"/></svg>
                 </button>
                 <h1>CONFIRM</h1>
-                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+                <span class="progress"><span class="bar"><span class="fill" style="width:34%"></span></span></span>
             </div>
             <div class="scroll">
                 <div class="confirm-card">
@@ -1004,9 +1054,9 @@
         <section class="step" id="stepPin">
             <div class="app-bar">
                 <button class="back-btn" onclick="showStep('stepConfirm')" aria-label="Back">
-                    <svg viewBox="0 0 24 24"><path d="M15 5.5 8 12l7 6.5"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M20 12H4.4"/><path d="m10.6 5.4-6.2 6.6 6.2 6.6"/></svg>
                 </button>
-                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+                <span class="progress"><span class="bar"><span class="fill" style="width:44%"></span></span></span>
             </div>
             <div class="scroll">
                 <div class="summary" id="pinSummary"></div>
@@ -1042,7 +1092,7 @@
                 <button class="close-btn" onclick="window.location.href='Home Screen.html'" aria-label="Close">
                     <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
                 </button>
-                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+                <span class="progress"><span class="bar"><span class="fill" style="width:44%"></span></span></span>
             </div>
             <div class="scroll" style="display:flex; flex-direction:column">
                 <div class="summary" id="doneSummary"></div>
@@ -1334,21 +1384,27 @@
             if (picked) openCategory(picked.category); else showStep('stepCategories');
         }
 
-        function row(k, v, sub) {
-            return '<div class="c-row"><div class="k">' + k + '</div><div class="v">' + v + '</div>'
-                + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
+        const PENCIL = '<svg viewBox="0 0 24 24"><path d="M16.5 4.4a2 2 0 0 1 2.8 2.8L8.6 17.9l-3.7.9.9-3.7L16.5 4.4Z"/></svg>';
+
+        function row(k, v, sub, editable) {
+            return '<div class="c-row"><div class="text">'
+                + '<div class="k">' + k + '</div><div class="v">' + v + '</div>'
+                + (sub ? '<div class="sub">' + sub + '</div>' : '')
+                + '</div>'
+                + (editable ? '<button class="edit-btn" onclick="showToast(\'EDIT ' + k + '\')" aria-label="Edit">' + PENCIL + '</button>' : '')
+                + '</div>';
         }
 
         function renderConfirm() {
             document.getElementById('confirmRows').innerHTML =
                 row('BUY TO', buyer.name)
                 + row('PHONE NUMBER', buyer.phone)
-                + row(picked.category + ' PACKAGE', picked.name)
+                + row(picked.category + ' PACKAGE', picked.name, null, true)
                 + row('PACKAGE TYPE', 'BUY ONCE')
                 + row('VALIDITY PERIOD', picked.validity)
                 + row('PRICE', picked.price + ' BIRR')
                 + row('PAYMENT METHOD', picked.payWith,
-                      picked.payWith === 'M-PESA' ? 'BALANCE ' + BALANCE_LABEL : 'AIRTIME BALANCE');
+                      picked.payWith === 'M-PESA' ? 'BALANCE ' + BALANCE_LABEL : 'AIRTIME BALANCE', true);
         }
 
         function summaryHtml() {
