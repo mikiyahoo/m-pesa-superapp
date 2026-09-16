@@ -150,6 +150,27 @@
             '    z-index: 2000;',
             '    overflow-y: auto;',
             '}',
+            '.proto-home {',
+            '    display: flex;',
+            '    align-items: center;',
+            '    gap: 10px;',
+            '    padding: 9px 16px;',
+            '    margin-bottom: 16px;',
+            '    text-decoration: none;',
+            '    border-left: 3px solid transparent;',
+            '    color: rgba(255,255,255,0.85);',
+            '    font-size: 12.5px;',
+            '    font-weight: 700;',
+            '    letter-spacing: 0.8px;',
+            '}',
+            '.proto-home:hover { background: rgba(255,255,255,0.08); color: #ffffff; }',
+            '.proto-home svg {',
+            '    width: 17px;',
+            '    height: 17px;',
+            '    fill: currentColor;',
+            '    flex-shrink: 0;',
+            '    display: block;',
+            '}',
             '.proto-rail h4 {',
             '    font-size: 10px;',
             '    font-weight: 700;',
@@ -406,7 +427,12 @@
         var rail = document.createElement('nav');
         rail.className = 'proto-rail';
 
-        rail.innerHTML = '<h4>FAYDA ACTIVATION</h4>'
+        /* A way back to the app home from anywhere in the prototype. */
+        rail.innerHTML = '<a class="proto-home" href="index.html">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+            + '<path d="M3.4 10.4 12 3.6l8.6 6.8V20a1 1 0 0 1-1 1h-5v-6h-5.2v6h-5a1 1 0 0 1-1-1v-9.6Z"/>'
+            + '</svg><span>HOME</span></a>'
+            + '<h4>FAYDA ACTIVATION</h4>'
             + MODES.map(function (m) {
                 return '<button class="proto-tab' + (m.id === mode ? ' on' : '') + '" data-mode="' + m.id + '">'
                     + '<span class="t">' + m.label + '</span>'
