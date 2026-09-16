@@ -1039,7 +1039,11 @@
 
         function linkFayda() {
             closeFayda();
-            try { sessionStorage.setItem('faydaReturn', 'Home Screen.html'); } catch (e) {}
+            try {
+                sessionStorage.setItem('faydaReturn', 'Home Screen.html');
+                /* Resume the withdraw sheet once linking is done. */
+                sessionStorage.setItem('pendingWithdraw', '1');
+            } catch (e) {}
             window.location.href = 'Fayda Verification.html';
         }
 
@@ -1093,7 +1097,22 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
         }
 
+        /* Coming back from Fayda linking that started at withdraw:
+           pick the flow back up instead of making the user tap again. */
+        function resumeWithdraw() {
+            var pending = false;
+            try {
+                pending = sessionStorage.getItem('pendingWithdraw') === '1';
+                sessionStorage.removeItem('pendingWithdraw');
+            } catch (e) {}
+            if (pending && isFaydaActivated()) {
+                /* Short beat so the sheet slides up rather than appearing. */
+                setTimeout(openWithdraw, 260);
+            }
+        }
+
         lucide.createIcons();
+        resumeWithdraw();
     </script>
 </body>
 </html>
