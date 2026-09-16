@@ -1205,7 +1205,7 @@
                 if (!state.picked || !state.buyer) return;
                 picked = state.picked;
                 buyer = state.buyer;
-                goToConfirm(false);
+                showDone(false);
             } catch (e) {}
         }
 
@@ -1321,15 +1321,13 @@
             closeBuySheet();
             buyer = which === 'mine' ? ME : OTHER_PERSON;
             picked = pendingPick;
-            goToConfirm(true);
+            goToConfirm();
         }
 
         /* ---------- Step 3: confirm ---------- */
-        function goToConfirm(promptFayda) {
+        function goToConfirm() {
             renderConfirm();
             showStep('stepConfirm');
-            /* The linking prompt belongs here, once there is something to buy. */
-            if (promptFayda) faydaTimer = setTimeout(openFayda, FAYDA_DELAY);
         }
 
         function backToList() {
@@ -1398,8 +1396,14 @@
 
         /* ---------- Step 5: done ---------- */
         function finishPurchase() {
+            showDone(true);
+        }
+
+        function showDone(promptFayda) {
             document.getElementById('doneSummary').innerHTML = summaryHtml();
             showStep('stepDone');
+            /* The linking prompt belongs here, once the purchase is placed. */
+            if (promptFayda) faydaTimer = setTimeout(openFayda, FAYDA_DELAY);
         }
 
         /* Runs last: restorePurchase() assigns `picked`/`buyer`, which are
