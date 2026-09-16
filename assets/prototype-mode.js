@@ -37,10 +37,25 @@
         }
     }
 
-    function write(key, value) {
+    /* Without a destination this just reloads in place, which is what the
+       prompt-style toggle wants: you stay where you are and watch the
+       prompt change. Switching activation restarts the demo at the home
+       screen instead, and clears the run's state so the prompt actually
+       appears rather than being skipped by an earlier activation. */
+    function write(key, value, destination) {
         try { localStorage.setItem(key, value); } catch (e) {}
-        /* Reload so the screen re-reads both choices from a clean state. */
-        window.location.reload();
+
+        if (!destination) {
+            window.location.reload();
+            return;
+        }
+
+        try {
+            sessionStorage.removeItem('faydaActivated');
+            sessionStorage.removeItem('pendingWithdraw');
+            sessionStorage.removeItem('pendingPurchase');
+        } catch (e) {}
+        window.location.href = destination;
     }
 
     function currentMode() {
@@ -279,7 +294,7 @@
         rail.addEventListener('click', function (ev) {
             var tab = ev.target.closest('.proto-tab');
             if (tab) {
-                if (tab.dataset.mode !== mode) write(MODE_KEY, tab.dataset.mode);
+                if (tab.dataset.mode !== mode) write(MODE_KEY, tab.dataset.mode, 'Home Screen.html');
                 return;
             }
             if (ev.target.closest('#protoStyle')) {
