@@ -922,14 +922,14 @@
         <!-- Link Fayda ID modal -->
         <div class="modal-overlay" id="faydaModal">
             <div class="modal-card">
-                <button class="modal-close" onclick="closeFayda()" aria-label="Close">
+                <button class="modal-close" onclick="dismissFayda()" aria-label="Close">
                     <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
                 </button>
                 <img class="fayda" src="assets/fayda-logo-hq.png" alt="Fayda">
                 <h2>LINK YOUR FAYDA ID</h2>
                 <p>Link your account with Fayda to enjoy a more secure and seamless experience on the app.</p>
                 <button class="modal-btn primary" onclick="linkFayda()">CONTINUE</button>
-                <button class="modal-btn secondary" onclick="closeFayda()">SKIP</button>
+                <button class="modal-btn secondary" onclick="dismissFayda()">SKIP</button>
             </div>
         </div>
 
@@ -1036,6 +1036,14 @@
 
         function closeFayda() {
             document.getElementById('faydaModal').classList.remove('show');
+        }
+
+        /* Declining the link should not abandon the withdraw the user asked
+           for, so fall through to the options sheet. */
+        function dismissFayda() {
+            closeFayda();
+            /* Let the modal clear before the sheet slides up. */
+            setTimeout(openWithdraw, 200);
         }
 
         function linkFayda() {
