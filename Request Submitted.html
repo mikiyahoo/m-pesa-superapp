@@ -311,6 +311,8 @@
 
     <script>
         function goBackToApp() {
+            /* Fayda is linked at this point, so withdraw is unlocked. */
+            try { sessionStorage.setItem('faydaActivated', '1'); } catch (e) {}
             var target = 'Send to Bank.html';
             try { target = sessionStorage.getItem('faydaReturn') || target; } catch (e) {}
             window.location.href = target;
