@@ -174,6 +174,17 @@
             '@media (min-width: 720px) { body { padding-left: 196px; } }',
             '@media (max-width: 719px) { .proto-rail { display: none; } }',
 
+            /* ----- the phone's own navigation ----- */
+            /* Back/home/recents is device chrome, not app surface. No
+               overlay may dim or cover it: someone always has to be able
+               to leave. Sits above every overlay in the prototype, the
+               highest of which is 40. */
+            '.system-nav {',
+            '    position: sticky;',
+            '    bottom: 0;',
+            '    z-index: 50;',
+            '}',
+
             /* ----- full-screen prompt ----- */
             '#faydaModal.fayda-screen {',
             '    background: #ffffff;',
