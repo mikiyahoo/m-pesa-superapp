@@ -283,9 +283,9 @@
             '    margin: 0 0 auto 0;',
             '    max-width: 290px;',
             '    font-size: 26px;',
-            '    font-weight: 700;',
+            '    font-weight: 400;',
             '    color: #1f1f1f;',
-            '    letter-spacing: 0.2px;',
+            '    letter-spacing: 0.8px;',
             '    line-height: 1.25;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge {',
@@ -486,10 +486,6 @@
             cta.textContent = reason + ', link your Fayda ID';
             bridge.insertAdjacentElement('afterend', cta);
         }
-
-        /* Title case here; the popup's markup carries it in caps. */
-        var head = card.querySelector('h2');
-        if (head) head.textContent = 'Link Your Fayda ID';
 
         var go = card.querySelector('.modal-btn.primary');
         if (go && !go.querySelector('.arrow')) {
