@@ -288,129 +288,183 @@
             '    border-radius: 0;',
             '    box-shadow: none;',
             '    transform: none;',
-            '    padding: 54px 26px 24px 26px;',
+            '    overflow: hidden;',
+            '    padding: 54px 24px 20px 24px;',
             '    display: flex;',
             '    flex-direction: column;',
             '    align-items: center;',
             '}',
+            /* soft mint blobs bleeding off two corners */
+            '#faydaModal.fayda-screen .modal-card::before,',
+            '#faydaModal.fayda-screen .modal-card::after {',
+            '    content: "";',
+            '    position: absolute;',
+            '    border-radius: 50%;',
+            '    background: #EAF7EF;',
+            '    z-index: 0;',
+            '}',
+            '#faydaModal.fayda-screen .modal-card::before {',
+            '    top: -120px;',
+            '    right: -90px;',
+            '    width: 300px;',
+            '    height: 300px;',
+            '}',
+            '#faydaModal.fayda-screen .modal-card::after {',
+            '    bottom: -110px;',
+            '    left: -90px;',
+            '    width: 230px;',
+            '    height: 230px;',
+            '}',
+            '#faydaModal.fayda-screen .modal-card > * { position: relative; z-index: 1; }',
             '#faydaModal.fayda-screen .modal-close {',
+            '    position: absolute;',
             '    top: 14px;',
             '    left: 12px;',
             '    right: auto;',
+            '    z-index: 2;',
             '}',
-            '#faydaModal.fayda-screen .modal-close svg { stroke: #4a4a4a; stroke-width: 2; }',
+            '#faydaModal.fayda-screen .modal-close svg { stroke: #1a1a1a; stroke-width: 2.4; width: 24px; height: 24px; }',
             '#faydaModal.fayda-screen h2 {',
             '    order: 1;',
-            '    margin: 0 0 auto 0;',
-            '    max-width: 290px;',
-            '    font-size: 26px;',
-            '    font-weight: 400;',
-            '    color: #1f1f1f;',
-            '    letter-spacing: 0.8px;',
-            '    line-height: 1.25;',
+            '    margin: 0;',
+            '    max-width: 215px;',
+            '    font-size: 32px;',
+            '    font-weight: 700;',
+            '    color: #111111;',
+            '    letter-spacing: 0.4px;',
+            '    line-height: 1.14;',
             '}',
-            '#faydaModal.fayda-screen .fayda-bridge {',
+            '#faydaModal.fayda-screen .fayda-cta {',
             '    order: 2;',
+            '    margin: 12px 0 0 0;',
+            '    max-width: 280px;',
+            '    font-size: 12.5px;',
+            '    font-weight: 600;',
+            '    text-transform: uppercase;',
+            '    color: #5c6b62;',
+            '    letter-spacing: 0.8px;',
+            '    line-height: 1.4;',
+            '}',
+            /* ----- the two marks ----- */
+            '#faydaModal.fayda-screen .fayda-bridge {',
+            '    order: 3;',
             '    display: flex;',
             '    align-items: center;',
             '    width: 100%;',
-            '    max-width: 296px;',
-            '    padding: 16px 18px;',
-            '    background: #ffffff;',
-            '    border: 1px solid #EDEFF0;',
-            '    border-radius: 18px;',
-            '    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);',
+            '    max-width: 300px;',
+            '    margin-top: 34px;',
             '}',
-            /* each mark sits in its own green ring */
             '#faydaModal.fayda-screen .fayda-bridge .node {',
-            '    width: 64px;',
-            '    height: 64px;',
+            '    width: 88px;',
+            '    height: 88px;',
             '    flex-shrink: 0;',
-            '    border-radius: 50%;',
-            '    border: 3px solid #2BB24B;',
+            '    border-radius: 20px;',
             '    background: #ffffff;',
+            '    border: 1px solid #EDF4EF;',
+            '    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);',
             '    display: flex;',
             '    align-items: center;',
             '    justify-content: center;',
-            '    overflow: hidden;',
             '}',
-            '#faydaModal.fayda-screen .fayda-bridge .node.brand img { width: 40px; display: block; }',
+            '#faydaModal.fayda-screen .fayda-bridge .node.brand img { width: 74px; display: block; }',
             '#faydaModal.fayda-screen .modal-card img.fayda {',
-            '    width: 58px;',
-            '    height: 58px;',
+            '    width: 68px;',
+            '    height: 68px;',
             '    margin: 0;',
             '}',
-            /* dashed run with the exchange badge riding on it */
             '#faydaModal.fayda-screen .fayda-bridge .link {',
             '    flex-grow: 1;',
             '    display: flex;',
             '    align-items: center;',
             '    gap: 5px;',
-            '    padding: 0 8px;',
+            '    padding: 0 6px;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .dots {',
             '    flex-grow: 1;',
-            '    border-top: 2px dashed #D9DDDF;',
+            '    border-top: 3px dotted #2BB24B;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .swap {',
-            '    width: 30px;',
-            '    height: 30px;',
+            '    width: 42px;',
+            '    height: 42px;',
             '    flex-shrink: 0;',
             '    border-radius: 50%;',
-            '    background: #ffffff;',
-            '    border: 1px solid #ECEFF0;',
-            '    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);',
+            '    background: #17A04A;',
+            '    box-shadow: 0 4px 12px rgba(23, 160, 74, 0.35);',
             '    display: flex;',
             '    align-items: center;',
             '    justify-content: center;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .swap svg {',
-            '    width: 16px;',
-            '    height: 16px;',
-            '    stroke: #2BB24B;',
+            '    width: 21px;',
+            '    height: 21px;',
+            '    stroke: #ffffff;',
             '    stroke-width: 2;',
             '    fill: none;',
             '    stroke-linecap: round;',
             '    stroke-linejoin: round;',
             '    display: block;',
             '}',
-            '#faydaModal.fayda-screen .fayda-cta {',
-            '    order: 3;',
-            '    margin: 26px 0 0 0;',
-            '    max-width: 280px;',
-            '    font-size: 18px;',
+            /* ----- what linking gets you ----- */
+            '#faydaModal.fayda-screen .fayda-benefits {',
+            '    order: 4;',
+            '    width: 100%;',
+            '    max-width: 300px;',
+            '    margin-top: 30px;',
+            '    padding: 0 16px;',
+            '    background: #F2F8F4;',
+            '    border-radius: 16px;',
+            '    text-align: left;',
+            '}',
+            '#faydaModal.fayda-screen .fayda-benefit {',
+            '    display: flex;',
+            '    align-items: center;',
+            '    gap: 14px;',
+            '    padding: 15px 0;',
+            '}',
+            '#faydaModal.fayda-screen .fayda-benefit + .fayda-benefit { border-top: 1px solid #E2EEE7; }',
+            '#faydaModal.fayda-screen .fayda-benefit .ic {',
+            '    width: 44px;',
+            '    height: 44px;',
+            '    flex-shrink: 0;',
+            '    border-radius: 50%;',
+            '    background: #DDEFE4;',
+            '    display: flex;',
+            '    align-items: center;',
+            '    justify-content: center;',
+            '}',
+            '#faydaModal.fayda-screen .fayda-benefit .ic svg { width: 21px; height: 21px; display: block; }',
+            '#faydaModal.fayda-screen .fayda-benefit .t {',
+            '    font-size: 13px;',
             '    font-weight: 700;',
             '    text-transform: uppercase;',
-            '    color: #2f2f2f;',
-            '    letter-spacing: 0.7px;',
-            '    line-height: 1.4;',
+            '    color: #12492C;',
+            '    letter-spacing: 0.6px;',
+            '    line-height: 1.32;',
             '}',
-            '#faydaModal.fayda-screen p {',
-            '    order: 4;',
-            '    margin: auto 0 18px 0;',
-            '    font-size: 13px;',
-            '    color: #7a7a7a;',
-            '    line-height: 1.5;',
-            '}',
+            /* the popup's standing copy has nothing left to say here */
+            '#faydaModal.fayda-screen p:not(.fayda-cta) { display: none; }',
             '#faydaModal.fayda-screen .modal-btn.primary {',
             '    order: 5;',
             '    width: 100%;',
             '    position: relative;',
-            '    margin: 0;',
+            '    margin: auto 0 0 0;',
+            '    padding: 17px 0;',
+            '    font-size: 14.5px;',
+            '    background: #128A3E;',
             '}',
             '#faydaModal.fayda-screen .modal-btn.secondary { display: none; }',
             '#faydaModal.fayda-screen .modal-btn.primary .arrow {',
             '    position: absolute;',
-            '    right: 22px;',
+            '    right: 26px;',
             '    top: 50%;',
             '    transform: translateY(-50%);',
             '    display: flex;',
             '}',
             '#faydaModal.fayda-screen .modal-btn.primary .arrow svg {',
-            '    width: 18px;',
-            '    height: 18px;',
+            '    width: 19px;',
+            '    height: 19px;',
             '    stroke: #ffffff;',
-            '    stroke-width: 2.2;',
+            '    stroke-width: 2.4;',
             '    fill: none;',
             '    stroke-linecap: round;',
             '    stroke-linejoin: round;',
@@ -487,16 +541,15 @@
         var fayda = card && card.querySelector('img.fayda');
         if (!card || !fayda) return;
 
-        /* One card: Fayda seal, a dashed run with an exchange badge, the
-           M-PESA mark -- each ringed in green. */
+        /* Each mark on its own tile, chained together. */
         var bridge = document.createElement('div');
         bridge.className = 'fayda-bridge';
         bridge.innerHTML = '<span class="node" id="faydaNode"></span>'
             + '<span class="link">'
             + '<span class="dots"></span>'
             + '<span class="swap"><svg viewBox="0 0 24 24">'
-            + '<path d="M4.2 9.2h13"/><path d="m13.6 5.6 3.8 3.6-3.8 3.6"/>'
-            + '<path d="M19.8 14.8h-13"/><path d="m10.4 11.2-3.8 3.6 3.8 3.6"/>'
+            + '<path d="M10.1 13.6a3.7 3.7 0 0 0 5.4.3l2.6-2.6a3.7 3.7 0 1 0-5.3-5.2l-1.5 1.5"/>'
+            + '<path d="M13.9 10.4a3.7 3.7 0 0 0-5.4-.3l-2.6 2.6a3.7 3.7 0 1 0 5.3 5.2l1.5-1.5"/>'
             + '</svg></span>'
             + '<span class="dots"></span>'
             + '</span>'
@@ -504,13 +557,37 @@
         card.insertBefore(bridge, fayda);
         bridge.querySelector('#faydaNode').appendChild(fayda);
 
-        /* What the linking is for, sitting with the marks. */
+        /* Replaces the popup's standing paragraph with what linking buys. */
+        var BENEFITS = [
+            ['SECURE IDENTITY VERIFICATION',
+             '<path d="M12 2.6 20 5.6v6c0 4.6-3.2 8.3-8 9.8-4.8-1.5-8-5.2-8-9.8v-6l8-3Z" fill="#17A04A"/>'
+             + '<path d="m8.3 12.2 2.6 2.6 4.9-5" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'],
+            ['FASTER ACCOUNT SERVICES',
+             '<path d="M13.6 2.2 4.8 13.1c-.4.5-.05 1.2.58 1.2H10l-1.5 8.5 8.8-10.9c.4-.5.05-1.2-.58-1.2H12l1.6-8.5Z" fill="#17A04A"/>'],
+            ['SEAMLESS M-PESA EXPERIENCE',
+             '<g stroke="#17A04A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+             + '<path d="M10.1 13.6a3.7 3.7 0 0 0 5.4.3l2.6-2.6a3.7 3.7 0 1 0-5.3-5.2l-1.5 1.5"/>'
+             + '<path d="M13.9 10.4a3.7 3.7 0 0 0-5.4-.3l-2.6 2.6a3.7 3.7 0 1 0 5.3 5.2l1.5-1.5"/>'
+             + '</g>']
+        ];
+
+        var benefits = document.createElement('div');
+        benefits.className = 'fayda-benefits';
+        benefits.innerHTML = BENEFITS.map(function (b) {
+            return '<div class="fayda-benefit">'
+                + '<span class="ic"><svg viewBox="0 0 24 24">' + b[1] + '</svg></span>'
+                + '<span class="t">' + b[0] + '</span>'
+                + '</div>';
+        }).join('');
+        bridge.insertAdjacentElement('afterend', benefits);
+
+        /* Why the prompt appeared, kept under the title. */
         var reason = document.body.dataset.linkReason;
         if (reason) {
             var cta = document.createElement('p');
             cta.className = 'fayda-cta';
             cta.textContent = reason + ', link your Fayda ID';
-            bridge.insertAdjacentElement('afterend', cta);
+            card.appendChild(cta);
         }
 
         var go = card.querySelector('.modal-btn.primary');
