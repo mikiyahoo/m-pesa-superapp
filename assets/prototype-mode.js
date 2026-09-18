@@ -306,7 +306,9 @@
             '#faydaModal.fayda-screen h2 {',
             '    order: 1;',
             '    margin: 0;',
-            '    max-width: 280px;',
+            /* 150px clears "LINK YOUR" (119px) and cannot fit a third
+               word, so the title always breaks after YOUR */
+            '    max-width: 150px;',
             '    font-size: 24px;',
             '    font-weight: 300;',
             '    color: #2f2f2f;',
