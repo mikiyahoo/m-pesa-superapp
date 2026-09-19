@@ -336,6 +336,396 @@
         }
 
         /* ---------- Fayda modal ---------- */
+        /* ---------- Flow steps ---------- */
+        .step {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            flex-direction: column;
+        }
+
+        .step.active { display: flex; }
+
+        .flow-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px 12px 16px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .flow-bar h2 {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 19px;
+            font-weight: 300;
+            color: #2f2f2f;
+            letter-spacing: 0.8px;
+            pointer-events: none;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .back-btn:active { background-color: #f2f2f2; }
+
+        .back-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #444444;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .flow-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .flow-scroll::-webkit-scrollbar { display: none; }
+
+        /* ---------- Confirm ---------- */
+        .confirm-card {
+            margin: 22px 18px 0 18px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.09);
+            padding-bottom: 22px;
+            overflow: hidden;
+        }
+
+        .confirm-top {
+            background: #FAFAFA;
+            padding: 14px 0 0 0;
+            text-align: center;
+        }
+
+        .confirm-chip {
+            display: inline-block;
+            background: #EDEDED;
+            color: #4a4a4a;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 5px 14px;
+            border-radius: 12px;
+        }
+
+        .confirm-top img {
+            width: 62px;
+            height: 62px;
+            object-fit: contain;
+            display: block;
+            margin: 14px auto -22px auto;
+        }
+
+        .confirm-rows { padding: 36px 22px 0 22px; }
+
+        .c-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 26px;
+        }
+
+        .c-row:last-child { margin-bottom: 0; }
+
+        .c-row .text { flex-grow: 1; min-width: 0; }
+
+        .c-row .k {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9a9a9a;
+            letter-spacing: 0.8px;
+            margin-bottom: 3px;
+        }
+
+        .c-row .v {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1c1c1c;
+            letter-spacing: 0.3px;
+        }
+
+        .c-row .sub {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #8A8A8A;
+            letter-spacing: 0.4px;
+            margin-top: 3px;
+        }
+
+        .edit-btn {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            background: #F2F2F2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-btn:active { background: #E8E8E8; }
+
+        .edit-btn svg {
+            width: 17px;
+            height: 17px;
+            stroke: #7a7a7a;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .flow-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: calc(100% - 36px);
+            margin: 16px 18px;
+            padding: 16px 0;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.1px;
+            color: #ffffff;
+            background: #2BB24B;
+            border-radius: 28px;
+            flex-shrink: 0;
+        }
+
+        .flow-btn .arrow {
+            position: absolute;
+            right: 26px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+        }
+
+        .flow-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: #ffffff;
+            stroke-width: 2.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ---------- Receipt summary (PIN + done) ---------- */
+        .summary { text-align: center; padding: 4px 16px 0 16px; }
+
+        .summary img {
+            width: 62px;
+            height: 62px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 8px auto;
+        }
+
+        .summary h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1c1c1c;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+        }
+
+        .summary .line {
+            font-size: 11.5px;
+            color: #3a3a3a;
+            letter-spacing: 0.4px;
+            margin-bottom: 3px;
+        }
+
+        .summary .line b { font-weight: 700; margin-right: 7px; }
+        .summary .line .muted { color: #b0b0b0; }
+
+        /* ---------- PIN ---------- */
+        .pin-label {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4a4a4a;
+            letter-spacing: 0.8px;
+            margin: 80px 0 30px 0;
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 80px;
+        }
+
+        .pin-dot {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1.5px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pin-dot::after {
+            content: '';
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            background: #2BB24B;
+            transform: scale(0);
+            transition: transform 0.15s ease;
+        }
+
+        .pin-dot.filled { border: 2px solid #2BB24B; }
+
+        .pin-dot.filled::after { transform: scale(1); }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 0 24px 6px 24px;
+            flex-shrink: 0;
+        }
+
+        .key {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 30px;
+            font-weight: 400;
+            color: #6a6a6a;
+            padding: 8px 0;
+            border-radius: 8px;
+        }
+
+        .key:active { background-color: #f4f4f4; }
+
+        .key.blank { visibility: hidden; }
+
+        .key svg { width: 30px; height: 30px; display: block; margin: 0 auto; }
+
+        /* ---------- Success ---------- */
+        .result-chip {
+            display: inline-block;
+            margin-top: 10px;
+            background: #FDE4EA;
+            color: #F0335F;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 6px 14px;
+            border-radius: 14px;
+        }
+
+        .check-ring { margin: 40px auto 20px auto; display: block; width: 84px; height: 84px; }
+
+        .done-msg {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2BB24B;
+            letter-spacing: 0.2px;
+        }
+
+        .txn-id {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: fit-content;
+            margin: 14px auto 0 auto;
+            background: #E8F7EE;
+            color: #16A34A;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            padding: 8px 16px;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+
+        .txn-id svg {
+            width: 16px;
+            height: 16px;
+            stroke: #16A34A;
+            stroke-width: 1.8;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .done-actions {
+            display: flex;
+            justify-content: center;
+            gap: 34px;
+            margin-top: auto;
+            padding-top: 26px;
+        }
+
+        .done-action {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+            width: 86px;
+        }
+
+        .done-action .ic {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #F2F2F2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .done-action .ic svg {
+            width: 21px;
+            height: 21px;
+            stroke: #7a7a7a;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .done-action span {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #8A8A8A;
+            letter-spacing: 0.6px;
+            text-align: center;
+            line-height: 1.3;
+        }
+
         .modal-overlay {
             position: absolute;
             inset: 0;
@@ -498,6 +888,8 @@
             </div>
         </div>
 
+        <section class="step active" id="stepForm">
+
         <!-- Header -->
         <header class="screen-header">
             <button class="close-btn" onclick="window.location.href='Home Screen.html'" aria-label="Close">
@@ -546,7 +938,7 @@
                 <div class="underline">
                     <input type="text" id="amount" inputmode="decimal" placeholder="Birr  0" oninput="onAmountInput(this)">
                 </div>
-                <p class="hint">BALANCE: 5,000.00 BIRR</p>
+                <p class="hint">BALANCE: 50,000.00 BIRR</p>
             </div>
 
             <!-- Description -->
@@ -570,6 +962,101 @@
                 <svg viewBox="0 0 24 24"><path d="M4 12h15M13.5 6.5 20 12l-6.5 5.5"/></svg>
             </button>
         </div>
+        </section>
+
+        <!-- Confirm -->
+        <section class="step" id="stepConfirm">
+            <div class="flow-bar">
+                <button class="back-btn" onclick="showStep('stepForm')" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M20 12H4.4"/><path d="m10.6 5.4-6.2 6.6 6.2 6.6"/></svg>
+                </button>
+                <h2>CONFIRM</h2>
+            </div>
+            <div class="flow-scroll">
+                <div class="confirm-card">
+                    <div class="confirm-top">
+                        <span class="confirm-chip">SEND TO BANK</span>
+                        <img id="confirmLogo" src="" alt="">
+                    </div>
+                    <div class="confirm-rows" id="confirmRows"></div>
+                </div>
+            </div>
+            <button class="flow-btn" onclick="goToPin()">
+                SEND
+                <span class="arrow"><svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></span>
+            </button>
+        </section>
+
+        <!-- PIN -->
+        <section class="step" id="stepPin">
+            <div class="flow-bar">
+                <button class="close-btn" onclick="showStep('stepConfirm')" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+            </div>
+            <div class="flow-scroll">
+                <div class="summary" id="pinSummary"></div>
+                <p class="pin-label">ENTER M-PESA PIN:</p>
+                <div class="pin-dots" id="pinDots">
+                    <span class="pin-dot"></span><span class="pin-dot"></span>
+                    <span class="pin-dot"></span><span class="pin-dot"></span>
+                </div>
+                <div class="keypad">
+                    <button class="key" onclick="pinPress('1')">1</button>
+                    <button class="key" onclick="pinPress('2')">2</button>
+                    <button class="key" onclick="pinPress('3')">3</button>
+                    <button class="key" onclick="pinPress('4')">4</button>
+                    <button class="key" onclick="pinPress('5')">5</button>
+                    <button class="key" onclick="pinPress('6')">6</button>
+                    <button class="key" onclick="pinPress('7')">7</button>
+                    <button class="key" onclick="pinPress('8')">8</button>
+                    <button class="key" onclick="pinPress('9')">9</button>
+                    <span class="key blank" aria-hidden="true"></span>
+                    <button class="key" onclick="pinPress('0')">0</button>
+                    <button class="key" onclick="pinFill()" aria-label="Fingerprint">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="1.4" stroke-linecap="round">
+                            <path d="M5.2 9.6a7.6 7.6 0 0 1 13.6 0"/>
+                            <path d="M6.4 14.6c.5-1.3.8-2.7.8-4a4.8 4.8 0 0 1 9.6 0c0 1.3.3 2.7.8 4"/>
+                            <path d="M9.2 17.2c.6-1.4.9-2.9.9-4.6a1.9 1.9 0 0 1 3.8 0c0 1.7.3 3.2.9 4.6"/>
+                            <path d="M12 12.6v2.2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Success -->
+        <section class="step" id="stepDone">
+            <div class="flow-bar">
+                <button class="close-btn" onclick="window.location.href='Home Screen.html'" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+            </div>
+            <div class="flow-scroll" style="display:flex; flex-direction:column">
+                <div class="summary" id="doneSummary"></div>
+                <svg class="check-ring" viewBox="0 0 48 48" fill="none">
+                    <path d="M40 24a16 16 0 1 1-6.4-12.8" stroke="#2BB24B" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="m17 24 5.5 5.5L34 18" stroke="#2BB24B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <p class="done-msg">Your transaction is successful</p>
+                <div class="txn-id" id="txnId" onclick="copyId()"></div>
+                <div class="done-actions">
+                    <button class="done-action" onclick="showToast('ADDED TO FAVORITES')">
+                        <span class="ic"><svg viewBox="0 0 24 24"><path d="m12 3.8 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.9l5.8-.8L12 3.8Z"/></svg></span>
+                        <span>ADD TO<br>FAVORITES</span>
+                    </button>
+                    <button class="done-action" onclick="showToast('RECEIPT DOWNLOADED')">
+                        <span class="ic"><svg viewBox="0 0 24 24"><path d="M6.5 3.5h11v17l-2.2-1.6-2.2 1.6-2.2-1.6-2.2 1.6-2.2-1.6V3.5Z"/><path d="M9.2 8h5.6M9.2 11.4h5.6"/></svg></span>
+                        <span>DOWNLOAD<br>RECEIPT</span>
+                    </button>
+                    <button class="done-action" onclick="showToast('SHARING DETAILS')">
+                        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 15.5V4.2"/><path d="m7.8 8.4 4.2-4.2 4.2 4.2"/><path d="M4.8 14v5.2h14.4V14"/></svg></span>
+                        <span>SHARE<br>DETAILS</span>
+                    </button>
+                </div>
+            </div>
+            <button class="flow-btn" onclick="window.location.href='Home Screen.html'">DONE</button>
+        </section>
 
         <!-- Android System Navigation -->
         <div class="system-nav">
@@ -603,21 +1090,25 @@
     </div>
 
     <script>
-        const BALANCE = 5000;
+        const BALANCE = 50000;
 
         const BANKS = [
-            { name: 'Commercial Bank of Ethiopia', logo: 'cbe-logo.png' },
-            { name: 'Awash Bank',                  logo: 'awass-bank.png' },
-            { name: 'Dashen Bank',                 logo: 'dashen-bank.png' },
-            { name: 'Bank of Abyssinia',           logo: 'abyssinya-bank.png' },
-            { name: 'Amhara Bank',                 logo: 'amhara-bank.png' },
-            { name: 'Hibret Bank',                 logo: 'Hibret-bank.png' },
-            { name: 'Cooperative Bank of Oromia',  logo: 'coop-bank.png' },
-            { name: 'Nib International Bank',      logo: 'nib-bank.png' },
-            { name: 'Oromia International Bank',   logo: 'oromia-i-bank.png' },
-            { name: 'Wegagen Bank',                logo: 'wegagen-bank.png' },
-            { name: 'Zemen Bank',                  logo: 'zemen-bank.png' }
+            { name: 'Commercial Bank of Ethiopia', logo: 'cbe-logo.png',        biz: '4801' },
+            { name: 'Awash Bank',                  logo: 'awass-bank.png',      biz: '4901' },
+            { name: 'Dashen Bank',                 logo: 'dashen-bank.png',     biz: '5001' },
+            { name: 'Bank of Abyssinia',           logo: 'abyssinya-bank.png',  biz: '5101' },
+            { name: 'Amhara Bank',                 logo: 'amhara-bank.png',     biz: '5201' },
+            { name: 'Hibret Bank',                 logo: 'Hibret-bank.png',     biz: '5301' },
+            { name: 'Cooperative Bank of Oromia',  logo: 'coop-bank.png',       biz: '5401' },
+            { name: 'Nib International Bank',      logo: 'nib-bank.png',        biz: '5501' },
+            { name: 'Oromia International Bank',   logo: 'oromia-i-bank.png',   biz: '5601' },
+            { name: 'Wegagen Bank',                logo: 'wegagen-bank.png',    biz: '5701' },
+            { name: 'Zemen Bank',                  logo: 'zemen-bank.png',      biz: '5801' }
         ];
+
+        /* Linking is asked for once a transfer crosses this. */
+        const FAYDA_THRESHOLD = 10000;
+        const FEE_RATE = 0.001;
 
         const BANK_PLACEHOLDER = 'Select bank';
         let selectedBank = '';
@@ -679,7 +1170,7 @@
         function validate() {
             const account = document.getElementById('accountNumber').value.trim();
             const amount = amountValue();
-            const ok = selectedBank !== '' && account.length >= 8 && amount > 0 && amount <= BALANCE;
+            const ok = selectedBank !== '' && account.length >= 7 && amount > 0 && amount <= BALANCE;
 
             const btn = document.getElementById('continueBtn');
             btn.classList.toggle('enabled', ok);
@@ -703,13 +1194,136 @@
             showToast('FORM RESET');
         }
 
+        function bankDetails(name) {
+            for (var i = 0; i < BANKS.length; i++) {
+                if (BANKS[i].name === name) return BANKS[i];
+            }
+            return BANKS[0];
+        }
+
+        function money(n) {
+            return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function showStep(id) {
+            document.querySelectorAll('.step').forEach(function (el) {
+                el.classList.toggle('active', el.id === id);
+            });
+            var scroll = document.querySelector('#' + id + ' .flow-scroll');
+            if (scroll) scroll.scrollTop = 0;
+        }
+
         function submitTransfer() {
             const amount = amountValue();
             if (amount > BALANCE) {
                 showToast('INSUFFICIENT BALANCE');
                 return;
             }
-            showToast('SENDING ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ' BIRR');
+
+            /* Above the threshold the account has to be linked first. */
+            if (amount > FAYDA_THRESHOLD && !isFaydaActivated()) {
+                openFayda();
+                return;
+            }
+
+            goToConfirm();
+        }
+
+        /* ---------- Confirm ---------- */
+        function row(k, v, sub, editable) {
+            return '<div class="c-row"><div class="text">'
+                + '<div class="k">' + k + '</div><div class="v">' + v + '</div>'
+                + (sub ? '<div class="sub">' + sub + '</div>' : '')
+                + '</div>'
+                + (editable ? '<button class="edit-btn" onclick="showStep(\'stepForm\')" aria-label="Edit">'
+                    + '<svg viewBox="0 0 24 24"><path d="M16.5 4.4a2 2 0 0 1 2.8 2.8L8.6 17.9l-3.7.9.9-3.7L16.5 4.4Z"/></svg>'
+                    + '</button>' : '')
+                + '</div>';
+        }
+
+        function transferDetails() {
+            const bank = bankDetails(selectedBank);
+            const amount = amountValue();
+            return {
+                bank: bank,
+                account: document.getElementById('accountNumber').value.trim(),
+                amount: amount,
+                fee: Math.round(amount * FEE_RATE * 100) / 100
+            };
+        }
+
+        function goToConfirm() {
+            const t = transferDetails();
+            document.getElementById('confirmLogo').src = 'assets/banks logo/' + t.bank.logo;
+            document.getElementById('confirmRows').innerHTML =
+                row('BANK NAME', t.bank.name.toUpperCase())
+                + row('BANK BUSINESS NUMBER', t.bank.biz, null, true)
+                + row('BANK ACCOUNT NUMBER', t.account, null, true)
+                + row('AMOUNT', money(t.amount) + ' Birr', 'FEE: ' + money(t.fee) + ' Birr', true);
+            showStep('stepConfirm');
+        }
+
+        function summaryHtml() {
+            const t = transferDetails();
+            return '<img src="assets/banks logo/' + t.bank.logo + '" alt="">'
+                + '<h3>' + t.bank.name.toUpperCase() + '</h3>'
+                + '<div class="line"><b>BANK BUSINESS NUMBER</b>' + t.bank.biz + '</div>'
+                + '<div class="line"><b>BANK ACCOUNT NUMBER</b>' + t.account + '</div>'
+                + '<div class="line"><b>' + money(t.amount) + ' Birr</b> <span class="muted">FEE: ' + money(t.fee) + ' Birr</span></div>';
+        }
+
+        /* ---------- PIN ---------- */
+        let pin = '';
+
+        function goToPin() {
+            pin = '';
+            paintPin();
+            document.getElementById('pinSummary').innerHTML = summaryHtml();
+            showStep('stepPin');
+        }
+
+        function paintPin() {
+            document.querySelectorAll('#pinDots .pin-dot')
+                .forEach(function (d, i) { d.classList.toggle('filled', i < pin.length); });
+        }
+
+        function pinPress(digit) {
+            if (pin.length >= 4) return;
+            pin += digit;
+            paintPin();
+            if (pin.length === 4) setTimeout(finishTransfer, 320);
+        }
+
+        function pinFill() {
+            pin = '1234';
+            paintPin();
+            setTimeout(finishTransfer, 320);
+        }
+
+        /* ---------- Success ---------- */
+        function newTransactionId() {
+            var digits = String(Math.floor(100000 + Math.random() * 900000));
+            var letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            var tail = letters[Math.floor(Math.random() * letters.length)]
+                + letters[Math.floor(Math.random() * letters.length)];
+            return 'FRT' + digits + tail;
+        }
+
+        let transactionId = '';
+
+        function finishTransfer() {
+            transactionId = newTransactionId();
+            document.getElementById('doneSummary').innerHTML = summaryHtml()
+                + '<span class="result-chip">SEND TO BANK &#9662;</span>';
+            document.getElementById('txnId').innerHTML = 'ID: ' + transactionId
+                + '<svg viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="12" rx="2"/>'
+                + '<path d="M15.5 5.5h-9a2 2 0 0 0-2 2v9"/></svg>';
+            showStep('stepDone');
+        }
+
+        function copyId() {
+            try { navigator.clipboard.writeText(transactionId); } catch (e) {}
+            showToast('ID COPIED');
         }
 
         /* ---------- Toast ---------- */
@@ -723,8 +1337,6 @@
         }
 
         /* ---------- Fayda modal ---------- */
-        const FAYDA_DELAY = 900; // a beat on the screen before the prompt
-
         function openFayda() {
             document.getElementById('faydaModal').classList.add('show');
         }
@@ -733,16 +1345,48 @@
             document.getElementById('faydaModal').classList.remove('show');
         }
 
+        function isFaydaActivated() {
+            try { return sessionStorage.getItem('faydaActivated') === '1'; }
+            catch (e) { return false; }
+        }
+
         function linkFayda() {
             closeFayda();
-            try { sessionStorage.setItem('faydaReturn', 'Send to Bank.html'); } catch (e) {}
+            try {
+                sessionStorage.setItem('faydaReturn', 'Send to Bank.html');
+                /* Hold the transfer so it survives the linking detour. */
+                sessionStorage.setItem('pendingTransfer', JSON.stringify({
+                    bank: selectedBank,
+                    account: document.getElementById('accountNumber').value,
+                    amount: document.getElementById('amount').value
+                }));
+            } catch (e) {}
             window.location.href = 'Fayda Verification.html';
         }
 
-        setTimeout(openFayda, FAYDA_DELAY);
+        /* Coming back from linking: put the transfer back and carry on to
+           the confirmation the user was heading for. */
+        function restoreTransfer() {
+            var saved = null;
+            try {
+                saved = sessionStorage.getItem('pendingTransfer');
+                sessionStorage.removeItem('pendingTransfer');
+            } catch (e) {}
+            if (!saved) return;
+            try {
+                var t = JSON.parse(saved);
+                if (!t.bank) return;
+                selectBank(t.bank);
+                document.getElementById('accountNumber').value = t.account || '';
+                document.getElementById('amount').value = t.amount || '';
+                validate();
+                if (isFaydaActivated()) goToConfirm();
+            } catch (e) {}
+        }
 
         buildBankList();
         validate();
+        restoreTransfer();
     </script>
 </body>
 </html>
