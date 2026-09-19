@@ -9,13 +9,9 @@
                              (screens marked data-activation="always-optional"
                               opt out, e.g. buying a package)
 
-     prompt      popup     - the centred card
-                 screen    - a full-bleed screen with the M-PESA and Fayda
-                             marks bridged together
-
-   The screen variant is applied by restyling the existing #faydaModal
-   rather than replacing it, so each page's own openFayda()/closeFayda()
-   keep working untouched.
+   Activation is always presented as a full screen. It is applied by
+   restyling the existing #faydaModal rather than replacing it, so each
+   page's own openFayda()/closeFayda() keep working untouched.
 ------------------------------------------------------------------ */
 (function () {
     'use strict';
@@ -72,7 +68,6 @@
     if (!guardEntry()) return;
 
     var MODE_KEY = 'faydaMode';
-    var STYLE_KEY = 'faydaPrompt';
     var GATE_KEY = 'withdrawGate';
 
     var MODES = [
@@ -95,18 +90,11 @@
         }
     }
 
-    /* Without a destination this just reloads in place, which is what the
-       prompt-style toggle wants: you stay where you are and watch the
-       prompt change. Switching activation restarts the demo at the home
-       screen instead, and clears the run's state so the prompt actually
-       appears rather than being skipped by an earlier activation. */
+    /* Switching a variant restarts the demo at `destination`, clearing the
+       run's state so the prompt actually appears rather than being skipped
+       by an earlier activation. */
     function write(key, value, destination) {
         try { localStorage.setItem(key, value); } catch (e) {}
-
-        if (!destination) {
-            window.location.reload();
-            return;
-        }
 
         try {
             sessionStorage.removeItem('faydaActivated');
@@ -120,17 +108,12 @@
         return read(MODE_KEY, ['optional', 'mandatory'], 'optional');
     }
 
-    function currentStyle() {
-        return read(STYLE_KEY, ['popup', 'screen'], 'popup');
-    }
-
     function currentGate() {
         return read(GATE_KEY, ['before', 'after'], 'before');
     }
 
     window.prototypeMode = {
         activation: currentMode(),
-        prompt: currentStyle(),
         withdrawGate: currentGate()
     };
 
@@ -208,57 +191,6 @@
             '.proto-tab.on { background: rgba(255,255,255,0.14); border-left-color: #ffffff; }',
             '.proto-tab.on .t { color: #ffffff; }',
             '.proto-tab.on .h { color: rgba(255,255,255,0.8); }',
-            /* ----- toggle ----- */
-            '.proto-switch {',
-            '    display: flex;',
-            '    align-items: center;',
-            '    justify-content: space-between;',
-            '    gap: 10px;',
-            '    width: 100%;',
-            '    background: none;',
-            '    border: none;',
-            '    cursor: pointer;',
-            '    font-family: Barlow, sans-serif;',
-            '    padding: 10px 16px;',
-            '}',
-            '.proto-switch:hover { background: rgba(255,255,255,0.08); }',
-            '.proto-switch .t {',
-            '    font-size: 12.5px;',
-            '    font-weight: 700;',
-            '    letter-spacing: 0.8px;',
-            '    color: rgba(255,255,255,0.78);',
-            '    text-align: left;',
-            '}',
-            '.proto-switch.on .t { color: #ffffff; }',
-            '.proto-switch .sw {',
-            '    width: 36px;',
-            '    height: 20px;',
-            '    border-radius: 10px;',
-            '    background: rgba(0,0,0,0.28);',
-            '    flex-shrink: 0;',
-            '    position: relative;',
-            '    transition: background-color 0.18s ease;',
-            '}',
-            '.proto-switch .sw::after {',
-            '    content: "";',
-            '    position: absolute;',
-            '    top: 3px;',
-            '    left: 3px;',
-            '    width: 14px;',
-            '    height: 14px;',
-            '    border-radius: 50%;',
-            '    background: #ffffff;',
-            '    transition: transform 0.18s ease;',
-            '}',
-            '.proto-switch.on .sw { background: #0A5B34; }',
-            '.proto-switch.on .sw::after { transform: translateX(16px); }',
-            '.proto-hint {',
-            '    font-size: 10.5px;',
-            '    font-weight: 500;',
-            '    color: rgba(255,255,255,0.5);',
-            '    padding: 0 16px;',
-            '    line-height: 1.4;',
-            '}',
             /* Keep the phone centred in the space that is left over. */
             '@media (min-width: 720px) { body { padding-left: 196px; } }',
             '@media (max-width: 719px) { .proto-rail { display: none; } }',
@@ -422,7 +354,7 @@
             '    letter-spacing: 0.6px;',
             '    line-height: 1.32;',
             '}',
-            /* the popup's standing copy has nothing left to say here */
+            /* the markup's standing copy has nothing left to say here */
             '#faydaModal.fayda-screen p:not(.fayda-cta) { display: none; }',
             '#faydaModal.fayda-screen .modal-btn.primary {',
             '    order: 5;',
@@ -458,7 +390,7 @@
     }
 
     /* ---------------------------------------------------------- sidebar */
-    function injectRail(mode, style, gate) {
+    function injectRail(mode, gate) {
         var rail = document.createElement('nav');
         rail.className = 'proto-rail';
 
@@ -474,11 +406,6 @@
                     + '<span class="h">' + m.hint + '</span>'
                     + '</button>';
             }).join('')
-            + '<h4 class="later">PROMPT STYLE</h4>'
-            + '<button class="proto-switch' + (style === 'screen' ? ' on' : '') + '" id="protoStyle">'
-            + '<span class="t">FULL SCREEN</span><span class="sw"></span>'
-            + '</button>'
-            + '<p class="proto-hint">' + (style === 'screen' ? 'Full-bleed screen' : 'Centred popup card') + '</p>'
             + '<h4 class="later">WITHDRAW FLOW</h4>'
             + GATES.map(function (g) {
                 return '<button class="proto-tab' + (g.id === gate ? ' on' : '') + '" data-gate="' + g.id + '">'
@@ -494,12 +421,8 @@
                 if (tab.dataset.gate !== gate) write(GATE_KEY, tab.dataset.gate, 'Home Screen.html');
                 return;
             }
-            if (tab) {
-                if (tab.dataset.mode !== mode) write(MODE_KEY, tab.dataset.mode, 'Home Screen.html');
-                return;
-            }
-            if (ev.target.closest('#protoStyle')) {
-                write(STYLE_KEY, style === 'screen' ? 'popup' : 'screen');
+            if (tab && tab.dataset.mode !== mode) {
+                write(MODE_KEY, tab.dataset.mode, 'Home Screen.html');
             }
         });
 
@@ -538,7 +461,7 @@
         card.insertBefore(bridge, fayda);
         bridge.querySelector('#faydaNode').appendChild(fayda);
 
-        /* Replaces the popup's standing paragraph with what linking buys. */
+        /* Replaces the markup's standing paragraph with what linking buys. */
         var BENEFITS = [
             ['SECURE IDENTITY VERIFICATION',
              '<path d="M12 2.6 20 5.6v6c0 4.6-3.2 8.3-8 9.8-4.8-1.5-8-5.2-8-9.8v-6l8-3Z" fill="#17A04A"/>'
@@ -613,17 +536,16 @@
 
     function init() {
         var mode = currentMode();
-        var style = currentStyle();
         var gate = currentGate();
 
         injectStyles();
-        injectRail(mode, style, gate);
+        injectRail(mode, gate);
 
         var modal = document.getElementById('faydaModal');
         if (!modal) return;
 
         applyMode(modal, mode);
-        if (style === 'screen') applyScreenStyle(modal);
+        applyScreenStyle(modal);
     }
 
     if (document.readyState === 'loading') {
