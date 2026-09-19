@@ -509,7 +509,7 @@
             font-weight: 700;
             letter-spacing: 1.1px;
             color: #ffffff;
-            background: #2BB24B;
+            background: #2FC56D;
             border-radius: 28px;
             flex-shrink: 0;
         }
@@ -593,12 +593,12 @@
             width: 17px;
             height: 17px;
             border-radius: 50%;
-            background: #2BB24B;
+            background: #2FC56D;
             transform: scale(0);
             transition: transform 0.15s ease;
         }
 
-        .pin-dot.filled { border: 2px solid #2BB24B; }
+        .pin-dot.filled { border: 2px solid #2FC56D; }
 
         .pin-dot.filled::after { transform: scale(1); }
 
@@ -646,7 +646,7 @@
             text-align: center;
             font-size: 16px;
             font-weight: 500;
-            color: #2BB24B;
+            color: #2FC56D;
             letter-spacing: 0.2px;
         }
 
@@ -658,7 +658,7 @@
             width: fit-content;
             margin: 14px auto 0 auto;
             background: #E8F7EE;
-            color: #16A34A;
+            color: #2FC56D;
             font-size: 15px;
             font-weight: 700;
             letter-spacing: 0.6px;
@@ -670,7 +670,7 @@
         .txn-id svg {
             width: 16px;
             height: 16px;
-            stroke: #16A34A;
+            stroke: #2FC56D;
             stroke-width: 1.8;
             fill: none;
             stroke-linecap: round;
@@ -858,7 +858,7 @@
             transform: translateX(-50%) translateY(0);
         }
     </style>
-    <script src="assets/prototype-mode.js?v=20"></script>
+    <script src="assets/prototype-mode.js?v=21"></script>
 </head>
 <body data-link-reason="To send money to a bank">
 
@@ -1035,8 +1035,8 @@
             <div class="flow-scroll" style="display:flex; flex-direction:column">
                 <div class="summary" id="doneSummary"></div>
                 <svg class="check-ring" viewBox="0 0 48 48" fill="none">
-                    <path d="M40 24a16 16 0 1 1-6.4-12.8" stroke="#2BB24B" stroke-width="2.4" stroke-linecap="round"/>
-                    <path d="m17 24 5.5 5.5L34 18" stroke="#2BB24B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M40 24a16 16 0 1 1-6.4-12.8" stroke="#2FC56D" stroke-width="2.4" stroke-linecap="round"/>
+                    <path d="m17 24 5.5 5.5L34 18" stroke="#2FC56D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 <p class="done-msg">Your transaction is successful</p>
                 <div class="txn-id" id="txnId" onclick="copyId()"></div>

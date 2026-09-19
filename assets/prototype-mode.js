@@ -292,15 +292,15 @@
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .dots {',
             '    flex-grow: 1;',
-            '    border-top: 3px dotted #2BB24B;',
+            '    border-top: 3px dotted #2FC56D;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .swap {',
             '    width: 42px;',
             '    height: 42px;',
             '    flex-shrink: 0;',
             '    border-radius: 50%;',
-            '    background: #17A04A;',
-            '    box-shadow: 0 4px 12px rgba(23, 160, 74, 0.35);',
+            '    background: #2FC56D;',
+            '    box-shadow: 0 4px 12px rgba(47, 197, 109, 0.35);',
             '    display: flex;',
             '    align-items: center;',
             '    justify-content: center;',
@@ -361,7 +361,7 @@
             '    margin: 14px 0 0 0;',
             '    padding: 17px 0;',
             '    font-size: 14.5px;',
-            '    background: #128A3E;',
+            '    background: #2FC56D;',
             '}',
             '#faydaModal.fayda-screen .modal-btn.secondary { display: none; }',
             '#faydaModal.fayda-screen .modal-btn.primary .arrow {',
@@ -462,12 +462,12 @@
         /* Replaces the markup's standing paragraph with what linking buys. */
         var BENEFITS = [
             ['SECURE IDENTITY VERIFICATION',
-             '<path d="M12 2.6 20 5.6v6c0 4.6-3.2 8.3-8 9.8-4.8-1.5-8-5.2-8-9.8v-6l8-3Z" fill="#17A04A"/>'
+             '<path d="M12 2.6 20 5.6v6c0 4.6-3.2 8.3-8 9.8-4.8-1.5-8-5.2-8-9.8v-6l8-3Z" fill="#2FC56D"/>'
              + '<path d="m8.3 12.2 2.6 2.6 4.9-5" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'],
             ['FASTER ACCOUNT SERVICES',
-             '<path d="M13.6 2.2 4.8 13.1c-.4.5-.05 1.2.58 1.2H10l-1.5 8.5 8.8-10.9c.4-.5.05-1.2-.58-1.2H12l1.6-8.5Z" fill="#17A04A"/>'],
+             '<path d="M13.6 2.2 4.8 13.1c-.4.5-.05 1.2.58 1.2H10l-1.5 8.5 8.8-10.9c.4-.5.05-1.2-.58-1.2H12l1.6-8.5Z" fill="#2FC56D"/>'],
             ['SEAMLESS M-PESA EXPERIENCE',
-             '<g stroke="#17A04A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+             '<g stroke="#2FC56D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">'
              + '<path d="M10.1 13.6a3.7 3.7 0 0 0 5.4.3l2.6-2.6a3.7 3.7 0 1 0-5.3-5.2l-1.5 1.5"/>'
              + '<path d="M13.9 10.4a3.7 3.7 0 0 0-5.4-.3l-2.6 2.6a3.7 3.7 0 1 0 5.3 5.2l1.5-1.5"/>'
              + '</g>']
