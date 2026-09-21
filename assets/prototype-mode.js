@@ -1,17 +1,18 @@
 /* ------------------------------------------------------------------
-   Prototype variant switcher.
+   Prototype bootstrap.
 
-   Two independent choices, both driven from the sidebar and both kept
-   in localStorage so they survive reloads and carry across screens:
+   Linking prompts are dismissible as a rule. The one exception is
+   baked into the send-to-bank flow: an amount above 7,000 Br makes the
+   link prompt mandatory because the money is not allowed to move until
+   the account is linked. That case is raised by the flow itself through
+   window.prototypeMode.forceMandatory().
 
-     activation  optional  - the link prompt can be dismissed
-                 mandatory - no SKIP, no close; CONTINUE is the only move
-                             (screens marked data-activation="always-optional"
-                              opt out, e.g. buying a package)
-
-   Activation is always presented as a full screen. It is applied by
+   Every prompt is presented as a full screen. It is applied by
    restyling the existing #faydaModal rather than replacing it, so each
    page's own openFayda()/closeFayda() keep working untouched.
+
+   The withdraw flow is fixed to options first: the linking ask is
+   raised on the chosen method's screen, never before the sheet.
 ------------------------------------------------------------------ */
 (function () {
     'use strict';
@@ -67,54 +68,17 @@
 
     if (!guardEntry()) return;
 
-    var MODE_KEY = 'faydaMode';
-    var GATE_KEY = 'withdrawGate';
-
-    var MODES = [
-        { id: 'optional',  label: 'OPTIONAL',  hint: 'Prompt can be skipped' },
-        { id: 'mandatory', label: 'MANDATORY', hint: 'Send to bank & withdraw' }
-    ];
-
-    /* Where the linking prompt sits in the withdraw flow. */
-    var GATES = [
-        { id: 'before', label: 'GATE FIRST',    hint: 'Fayda, then options' },
-        { id: 'after',  label: 'OPTIONS FIRST', hint: 'Options, then Fayda' }
-    ];
-
-    function read(key, allowed, fallback) {
-        try {
-            var v = localStorage.getItem(key);
-            return allowed.indexOf(v) === -1 ? fallback : v;
-        } catch (e) {
-            return fallback;
-        }
-    }
-
-    /* Switching a variant restarts the demo at `destination`, clearing the
-       run's state so the prompt actually appears rather than being skipped
-       by an earlier activation. */
-    function write(key, value, destination) {
-        try { localStorage.setItem(key, value); } catch (e) {}
-
-        try {
-            sessionStorage.removeItem('faydaActivated');
-            sessionStorage.removeItem('pendingWithdraw');
-            sessionStorage.removeItem('pendingPurchase');
-        } catch (e) {}
-        window.location.href = destination;
-    }
-
-    function currentMode() {
-        return read(MODE_KEY, ['optional', 'mandatory'], 'optional');
-    }
-
-    function currentGate() {
-        return read(GATE_KEY, ['before', 'after'], 'before');
-    }
-
     window.prototypeMode = {
-        activation: currentMode(),
-        withdrawGate: currentGate()
+        /* Linking is forced only where the money has to be locked behind
+           it (sending more than 7,000 Br to a bank), so the flow that
+           raises that prompt applies the mandate itself. */
+        forceMandatory: function (modal) {
+            if (!modal) return;
+            var close = modal.querySelector('.modal-close');
+            var skip = modal.querySelector('.modal-btn.secondary');
+            if (close) close.remove();
+            if (skip) skip.remove();
+        }
     };
 
     /* ---------------------------------------------------------- styles */
@@ -161,36 +125,6 @@
             '    color: rgba(255,255,255,0.55);',
             '    margin: 0 0 12px 16px;',
             '}',
-            '.proto-rail h4.later { margin-top: 26px; }',
-            '.proto-tab {',
-            '    display: block;',
-            '    width: 100%;',
-            '    text-align: left;',
-            '    background: none;',
-            '    border: none;',
-            '    border-left: 3px solid transparent;',
-            '    cursor: pointer;',
-            '    font-family: Barlow, sans-serif;',
-            '    padding: 10px 14px;',
-            '}',
-            '.proto-tab:hover { background: rgba(255,255,255,0.08); }',
-            '.proto-tab .t {',
-            '    display: block;',
-            '    font-size: 12.5px;',
-            '    font-weight: 700;',
-            '    letter-spacing: 0.8px;',
-            '    color: rgba(255,255,255,0.78);',
-            '}',
-            '.proto-tab .h {',
-            '    display: block;',
-            '    font-size: 10.5px;',
-            '    font-weight: 500;',
-            '    color: rgba(255,255,255,0.5);',
-            '    margin-top: 2px;',
-            '}',
-            '.proto-tab.on { background: rgba(255,255,255,0.14); border-left-color: #ffffff; }',
-            '.proto-tab.on .t { color: #ffffff; }',
-            '.proto-tab.on .h { color: rgba(255,255,255,0.8); }',
             /* Keep the phone centred in the space that is left over. */
             '@media (min-width: 720px) { body { padding-left: 196px; } }',
             '@media (max-width: 719px) { .proto-rail { display: none; } }',
@@ -388,55 +322,38 @@
     }
 
     /* ---------------------------------------------------------- sidebar */
-    function injectRail(mode, gate) {
+    function injectRail() {
         var rail = document.createElement('nav');
         rail.className = 'proto-rail';
 
-        /* A way back to the app home from anywhere in the prototype. */
+        /* Quick navigation between the prototype's screens. */
         rail.innerHTML = '<a class="proto-home" href="index.html">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<path d="M3.4 10.4 12 3.6l8.6 6.8V20a1 1 0 0 1-1 1h-5v-6h-5.2v6h-5a1 1 0 0 1-1-1v-9.6Z"/>'
             + '</svg><span>HOME</span></a>'
-            + '<h4>FAYDA ACTIVATION</h4>'
-            + MODES.map(function (m) {
-                return '<button class="proto-tab' + (m.id === mode ? ' on' : '') + '" data-mode="' + m.id + '">'
-                    + '<span class="t">' + m.label + '</span>'
-                    + '<span class="h">' + m.hint + '</span>'
-                    + '</button>';
-            }).join('')
-            + '<h4 class="later">WITHDRAW FLOW</h4>'
-            + GATES.map(function (g) {
-                return '<button class="proto-tab' + (g.id === gate ? ' on' : '') + '" data-gate="' + g.id + '">'
-                    + '<span class="t">' + g.label + '</span>'
-                    + '<span class="h">' + g.hint + '</span>'
-                    + '</button>';
-            }).join('');
-
-        rail.addEventListener('click', function (ev) {
-            var tab = ev.target.closest('.proto-tab');
-            if (tab && tab.dataset.gate) {
-                /* Withdraw lives on the M-PESA screen, so land there. */
-                if (tab.dataset.gate !== gate) write(GATE_KEY, tab.dataset.gate, 'Home Screen.html');
-                return;
-            }
-            if (tab && tab.dataset.mode !== mode) {
-                write(MODE_KEY, tab.dataset.mode, 'Home Screen.html');
-            }
-        });
+            + '<h4>FLOWS</h4>'
+            + '<a class="proto-home" href="Withdraw.html">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+            + '<path d="M4 6.5h16a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 17.5H4A1.5 1.5 0 0 1 2.5 16V8A1.5 1.5 0 0 1 4 6.5Z"/>'
+            + '<circle cx="12" cy="12" r="2.4"/>'
+            + '<path d="M5.5 9.2h.01M18.5 14.8h.01"/>'
+            + '</svg><span>WITHDRAW TO BANK</span></a>'
+            + '<a class="proto-home" href="Send to Bank.html">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+            + '<path d="M3.5 9.6 12 4.4l8.5 5.2v1.7H3.5V9.6Z"/>'
+            + '<path d="M5.6 12h12.8V19H5.6z"/>'
+            + '<path d="M9 19v-4h6v4"/>'
+            + '</svg><span>SEND TO BANK</span></a>'
+            + '<a class="proto-home" href="Buy Packages.html">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+            + '<path d="M12 3.4 20 7.4v9.2l-8 4-8-4V7.4l8-4Z"/>'
+            + '<path d="M4 7.6l8 4 8-4M12 11.6v8.8"/>'
+            + '</svg><span>BUY PACKAGE</span></a>';
 
         document.body.appendChild(rail);
     }
 
-    /* ------------------------------------------------------- variants */
-    function applyMode(modal, mode) {
-        if (mode !== 'mandatory') return;
-        if (document.body.dataset.activation === 'always-optional') return;
-
-        var close = modal.querySelector('.modal-close');
-        var skip = modal.querySelector('.modal-btn.secondary');
-        if (close) close.remove();
-        if (skip) skip.remove();
-    }
+    /* ------------------------------------------------------- prompt */
 
     function applyScreenStyle(modal) {
         var card = modal.querySelector('.modal-card');
@@ -533,16 +450,12 @@
     }
 
     function init() {
-        var mode = currentMode();
-        var gate = currentGate();
-
         injectStyles();
-        injectRail(mode, gate);
+        injectRail();
 
         var modal = document.getElementById('faydaModal');
         if (!modal) return;
 
-        applyMode(modal, mode);
         applyScreenStyle(modal);
     }
 
