@@ -655,7 +655,7 @@
 
         .masked { letter-spacing: 2px; }
     </style>
-    <script src="assets/prototype-mode.js?v=23"></script>
+    <script src="assets/prototype-mode.js?v=24"></script>
 </head>
 <body>
 
@@ -1087,8 +1087,16 @@
             } catch (e) {}
         }
 
+        /* Arriving from the sidebar's withdraw entry: raise the sheet so
+           the run starts at the choice of method. */
+        function openWithdrawFromLink() {
+            if (location.search.indexOf('withdraw') === -1) return;
+            setTimeout(openWithdraw, 260);
+        }
+
         lucide.createIcons();
         resetPrototypeOnReload();
+        openWithdrawFromLink();
     </script>
 </body>
 </html>

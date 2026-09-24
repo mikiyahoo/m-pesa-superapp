@@ -350,7 +350,7 @@
             + '<path d="M3.4 10.4 12 3.6l8.6 6.8V20a1 1 0 0 1-1 1h-5v-6h-5.2v6h-5a1 1 0 0 1-1-1v-9.6Z"/>'
             + '</svg><span>HOME</span></a>'
             + '<h4>FLOWS</h4>'
-            + '<a class="proto-home" href="Withdraw.html">'
+            + '<a class="proto-home" href="Home Screen.html?withdraw=1">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<path d="M4 6.5h16a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 17.5H4A1.5 1.5 0 0 1 2.5 16V8A1.5 1.5 0 0 1 4 6.5Z"/>'
             + '<circle cx="12" cy="12" r="2.4"/>'
