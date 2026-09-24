@@ -159,10 +159,35 @@
             margin-top: 8px;
         }
 
+        .hint b {
+            font-weight: 600;
+            color: #2FC56D;
+        }
+
+        /* Orange means one thing only: the balance will not cover it. */
+        .hint.short b,
+        .hint.short { color: #F5A31A; }
+
+        #amount { color: #2FC56D; font-weight: 600; }
+
+        #amount.short { color: #F5A31A; }
+
+        /* The name the bank returns for the account number */
+        .account-name {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #2FC56D;
+            letter-spacing: 0.7px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .account-name.show { display: block; }
+
         .counter {
             font-size: 11px;
             font-weight: 500;
-            color: #B4B4B4;
+            color: #2FC56D;
             letter-spacing: 0.5px;
             margin-top: 8px;
             text-align: right;
@@ -530,6 +555,102 @@
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
+        }
+
+        /* ---------- Confirmation sheet ---------- */
+        .sheet-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.28);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 48px; /* leaves the phone nav showing */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 30;
+        }
+
+        .sheet-overlay.show { opacity: 1; visibility: visible; }
+
+        .sheet {
+            background: #ffffff;
+            border-radius: 16px 16px 0 0;
+            padding: 22px 22px 20px 22px;
+            box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
+        .sheet-overlay.show .sheet { transform: translateY(0); }
+
+        .sheet-label {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #9a9a9a;
+            letter-spacing: 1px;
+        }
+
+        .sheet-avatar {
+            position: relative;
+            width: 58px;
+            height: 58px;
+            margin: 10px auto 22px auto;
+        }
+
+        .sheet-avatar .initials {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: #EAF1FB;
+            color: #2C6ED5;
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sheet-avatar .badge {
+            position: absolute;
+            right: -4px;
+            bottom: -2px;
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 50%;
+        }
+
+        .sheet-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .sheet-btn {
+            flex: 1;
+            border: none;
+            cursor: pointer;
+            font-family: 'Barlow', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 14px 0;
+            border-radius: 26px;
+        }
+
+        .sheet-btn.ghost {
+            background: #ffffff;
+            border: 1px solid #DCDCDC;
+            color: #4a4a4a;
+        }
+
+        .sheet-btn.primary {
+            background: #2FC56D;
+            color: #ffffff;
         }
 
         /* ---------- Receipt summary (PIN + done) ---------- */
@@ -930,6 +1051,7 @@
                     <input type="text" id="accountNumber" inputmode="numeric" maxlength="16"
                            placeholder="Enter Bank Account Number" oninput="onAccountInput(this)">
                 </div>
+                <p class="account-name" id="accountName"></p>
             </div>
 
             <!-- Amount -->
@@ -938,16 +1060,16 @@
                 <div class="underline">
                     <input type="text" id="amount" inputmode="decimal" placeholder="Birr  0" oninput="onAmountInput(this)">
                 </div>
-                <p class="hint">BALANCE: 50,000.00 BIRR</p>
+                <p class="hint" id="balanceHint"><b>BALANCE:</b> 50,000.00 BIRR</p>
             </div>
 
             <!-- Description -->
             <div class="field">
                 <label>DESCRIPTION (OPTIONAL)</label>
                 <div class="underline">
-                    <input type="text" id="description" maxlength="10" placeholder="Enter description" oninput="onDescriptionInput(this)">
+                    <input type="text" id="description" maxlength="100" placeholder="Enter description" oninput="onDescriptionInput(this)">
                 </div>
-                <p class="counter" id="descCounter">0/10</p>
+                <p class="counter" id="descCounter">0/100</p>
             </div>
 
         </div>
@@ -965,27 +1087,21 @@
         </section>
 
         <!-- Confirm -->
-        <section class="step" id="stepConfirm">
-            <div class="flow-bar">
-                <button class="back-btn" onclick="showStep('stepForm')" aria-label="Back">
-                    <svg viewBox="0 0 24 24"><path d="M20 12H4.4"/><path d="m10.6 5.4-6.2 6.6 6.2 6.6"/></svg>
-                </button>
-                <h2>CONFIRM</h2>
-            </div>
-            <div class="flow-scroll">
-                <div class="confirm-card">
-                    <div class="confirm-top">
-                        <span class="confirm-chip">SEND TO BANK</span>
-                        <img id="confirmLogo" src="" alt="">
-                    </div>
-                    <div class="confirm-rows" id="confirmRows"></div>
+        <!-- Confirmation rises over the form rather than replacing it -->
+        <div class="sheet-overlay" id="confirmSheet" onclick="if (event.target === this) closeConfirm()">
+            <div class="sheet">
+                <p class="sheet-label">CONFIRM</p>
+                <div class="sheet-avatar">
+                    <span class="initials" id="confirmInitials"></span>
+                    <img class="badge" id="confirmLogo" src="" alt="">
+                </div>
+                <div class="confirm-rows" id="confirmRows"></div>
+                <div class="sheet-actions">
+                    <button class="sheet-btn ghost" onclick="closeConfirm()">CLOSE</button>
+                    <button class="sheet-btn primary" onclick="confirmTransfer()">CONFIRM</button>
                 </div>
             </div>
-            <button class="flow-btn" onclick="goToPin()">
-                SEND
-                <span class="arrow"><svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></span>
-            </button>
-        </section>
+        </div>
 
         <!-- PIN -->
         <section class="step" id="stepPin">
@@ -1173,7 +1289,25 @@
         }
 
         function onDescriptionInput(el) {
-            document.getElementById('descCounter').textContent = el.value.length + '/10';
+            document.getElementById('descCounter').textContent = el.value.length + '/100';
+        }
+
+        /* The account's name appears once there are enough digits to
+           resolve one, and the balance turns orange the moment the
+           amount would outrun it. */
+        function paintLookup() {
+            const account = document.getElementById('accountNumber').value.trim();
+            const name = document.getElementById('accountName');
+            if (account.length >= 7) {
+                name.textContent = 'NAME: ' + accountHolder(account);
+                name.classList.add('show');
+            } else {
+                name.classList.remove('show');
+            }
+
+            const short = amountValue() > BALANCE;
+            document.getElementById('balanceHint').classList.toggle('short', short);
+            document.getElementById('amount').classList.toggle('short', short);
         }
 
         function amountValue() {
@@ -1186,6 +1320,8 @@
             const account = document.getElementById('accountNumber').value.trim();
             const amount = amountValue();
             const ok = selectedBank !== '' && account.length >= 7 && amount > 0 && amount <= BALANCE;
+
+            paintLookup();
 
             const btn = document.getElementById('continueBtn');
             btn.classList.toggle('enabled', ok);
@@ -1201,7 +1337,7 @@
             document.getElementById('accountNumber').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('description').value = '';
-            document.getElementById('descCounter').textContent = '0/10';
+            document.getElementById('descCounter').textContent = '0/100';
             document.getElementById('bankList').classList.remove('open');
             document.getElementById('bankChevron').classList.remove('open');
             buildBankList();
@@ -1269,15 +1405,30 @@
             };
         }
 
+        function initials(name) {
+            return name.split(/\s+/).slice(0, 2).map(function (w) { return w[0]; }).join('');
+        }
+
         function goToConfirm() {
             const t = transferDetails();
+            const holder = accountHolder(t.account);
+            document.getElementById('confirmInitials').textContent = initials(holder);
             document.getElementById('confirmLogo').src = 'assets/banks logo/' + t.bank.logo;
             document.getElementById('confirmRows').innerHTML =
                 row('BANK NAME', t.bank.name.toUpperCase())
-                + row('BANK BUSINESS NUMBER', t.bank.biz, null, true)
-                + row('BANK ACCOUNT NUMBER', t.account, null, true)
-                + row('AMOUNT', money(t.amount) + ' Birr', 'FEE: ' + money(t.fee) + ' Birr', true);
-            showStep('stepConfirm');
+                + row('NAME', holder)
+                + row('BANK ACCOUNT NUMBER', t.account)
+                + row('AMOUNT', money(t.amount) + ' BIRR', 'FEE: ' + money(t.fee) + ' BIRR');
+            document.getElementById('confirmSheet').classList.add('show');
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirmSheet').classList.remove('show');
+        }
+
+        function confirmTransfer() {
+            closeConfirm();
+            goToPin();
         }
 
         function summaryHtml() {
