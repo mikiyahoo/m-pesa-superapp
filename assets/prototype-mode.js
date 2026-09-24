@@ -7,9 +7,11 @@
    the account is linked. That case is raised by the flow itself through
    window.prototypeMode.forceMandatory().
 
-   Every prompt is presented as a full screen. It is applied by
-   restyling the existing #faydaModal rather than replacing it, so each
-   page's own openFayda()/closeFayda() keep working untouched.
+   Prompts are presented as a full screen, except on screens marked
+   data-prompt="popup" (buying a package), which keep the centred card.
+   The full screen is applied by restyling the existing #faydaModal
+   rather than replacing it, so each page's own openFayda()/closeFayda()
+   keep working untouched.
 
    The withdraw flow is fixed to options first: the linking ask is
    raised on the chosen method's screen, never before the sheet.
@@ -181,14 +183,15 @@
             '    line-height: 1.25;',
             '}',
             '#faydaModal.fayda-screen .fayda-cta {',
-            '    order: 4;',
-            '    margin: auto 0 0 0;',
-            '    max-width: 290px;',
+            '    order: 3;',
+            '    margin: 22px 0 0 0;',
+            '    max-width: 270px;',
             '    font-size: 13px;',
-            '    font-weight: 500;',
-            '    color: #a6aeaa;',
-            '    letter-spacing: 0.2px;',
-            '    line-height: 1.45;',
+            '    font-weight: 600;',
+            '    text-transform: uppercase;',
+            '    color: #8d9691;',
+            '    letter-spacing: 0.7px;',
+            '    line-height: 1.4;',
             '}',
             /* ----- the two marks ----- */
             '#faydaModal.fayda-screen .fayda-bridge {',
@@ -196,53 +199,61 @@
             '    display: flex;',
             '    align-items: center;',
             '    width: 100%;',
-            '    max-width: 300px;',
-            '    margin-top: 34px;',
-            '}',
-            '#faydaModal.fayda-screen .fayda-bridge .node {',
-            '    width: 88px;',
-            '    height: 88px;',
-            '    flex-shrink: 0;',
-            '    border-radius: 20px;',
+            '    max-width: 296px;',
+            '    margin-top: 30px;',
+            '    padding: 16px 18px;',
             '    background: #ffffff;',
-            '    border: 1px solid #EDF4EF;',
-            '    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.08);',
+            '    border: 1px solid #EDEFF0;',
+            '    border-radius: 18px;',
+            '    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);',
+            '}',
+            /* each mark sits in its own green ring */
+            '#faydaModal.fayda-screen .fayda-bridge .node {',
+            '    width: 64px;',
+            '    height: 64px;',
+            '    flex-shrink: 0;',
+            '    border-radius: 50%;',
+            '    border: 3px solid #2FC56D;',
+            '    background: #ffffff;',
             '    display: flex;',
             '    align-items: center;',
             '    justify-content: center;',
+            '    overflow: hidden;',
             '}',
-            '#faydaModal.fayda-screen .fayda-bridge .node.brand img { width: 74px; display: block; }',
+            '#faydaModal.fayda-screen .fayda-bridge .node.brand img { width: 40px; display: block; }',
             '#faydaModal.fayda-screen .modal-card img.fayda {',
-            '    width: 68px;',
-            '    height: 68px;',
+            '    width: 58px;',
+            '    height: 58px;',
             '    margin: 0;',
             '}',
+            /* dashed run with the exchange badge riding on it */
             '#faydaModal.fayda-screen .fayda-bridge .link {',
             '    flex-grow: 1;',
             '    display: flex;',
             '    align-items: center;',
             '    gap: 5px;',
-            '    padding: 0 6px;',
+            '    padding: 0 8px;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .dots {',
             '    flex-grow: 1;',
-            '    border-top: 3px dotted #2FC56D;',
+            '    border-top: 2px dashed #D9DDDF;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .swap {',
-            '    width: 42px;',
-            '    height: 42px;',
+            '    width: 30px;',
+            '    height: 30px;',
             '    flex-shrink: 0;',
             '    border-radius: 50%;',
-            '    background: #2FC56D;',
-            '    box-shadow: 0 4px 12px rgba(47, 197, 109, 0.35);',
+            '    background: #ffffff;',
+            '    border: 1px solid #ECEFF0;',
+            '    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);',
             '    display: flex;',
             '    align-items: center;',
             '    justify-content: center;',
             '}',
             '#faydaModal.fayda-screen .fayda-bridge .swap svg {',
-            '    width: 21px;',
-            '    height: 21px;',
-            '    stroke: #ffffff;',
+            '    width: 16px;',
+            '    height: 16px;',
+            '    stroke: #2FC56D;',
             '    stroke-width: 2;',
             '    fill: none;',
             '    stroke-linecap: round;',
@@ -251,10 +262,10 @@
             '}',
             /* ----- what linking gets you ----- */
             '#faydaModal.fayda-screen .fayda-benefits {',
-            '    order: 3;',
+            '    order: 4;',
             '    width: 100%;',
             '    max-width: 300px;',
-            '    margin-top: 30px;',
+            '    margin-top: 26px;',
             '    padding: 0 16px;',
             '    background: #FAFBFC;',
             '    border-radius: 16px;',
@@ -286,10 +297,17 @@
             '    letter-spacing: 0.6px;',
             '    line-height: 1.32;',
             '}',
-            /* the markup's standing copy has nothing left to say here */
-            '#faydaModal.fayda-screen p:not(.fayda-cta) { display: none; }',
-            '#faydaModal.fayda-screen .modal-btn.primary {',
+            '#faydaModal.fayda-screen p:not(.fayda-cta) {',
             '    order: 5;',
+            '    margin: auto 0 0 0;',
+            '    max-width: 290px;',
+            '    font-size: 13px;',
+            '    font-weight: 400;',
+            '    color: #9aa19d;',
+            '    line-height: 1.5;',
+            '}',
+            '#faydaModal.fayda-screen .modal-btn.primary {',
+            '    order: 6;',
             '    width: 100%;',
             '    position: relative;',
             '    margin: 14px 0 0 0;',
@@ -367,8 +385,8 @@
             + '<span class="link">'
             + '<span class="dots"></span>'
             + '<span class="swap"><svg viewBox="0 0 24 24">'
-            + '<path d="M10.1 13.6a3.7 3.7 0 0 0 5.4.3l2.6-2.6a3.7 3.7 0 1 0-5.3-5.2l-1.5 1.5"/>'
-            + '<path d="M13.9 10.4a3.7 3.7 0 0 0-5.4-.3l-2.6 2.6a3.7 3.7 0 1 0 5.3 5.2l1.5-1.5"/>'
+            + '<path d="M4.2 9.2h13"/><path d="m13.6 5.6 3.8 3.6-3.8 3.6"/>'
+            + '<path d="M19.8 14.8h-13"/><path d="m10.4 11.2-3.8 3.6 3.8 3.6"/>'
             + '</svg></span>'
             + '<span class="dots"></span>'
             + '</span>'
@@ -455,6 +473,9 @@
 
         var modal = document.getElementById('faydaModal');
         if (!modal) return;
+
+        /* A screen can opt out and keep the card it has in its markup. */
+        if (document.body.dataset.prompt === 'popup') return;
 
         applyScreenStyle(modal);
     }
