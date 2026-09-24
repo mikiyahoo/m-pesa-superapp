@@ -544,11 +544,11 @@
         }
 
         .summary h3 {
-            font-size: 19px;
+            font-size: 14px;
             font-weight: 700;
             color: #1c1c1c;
             letter-spacing: 0.6px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .summary .line {
@@ -1113,6 +1113,18 @@
         const FAYDA_ASK_DELAY = 900; // a beat on the success screen first
         const FEE_RATE = 0.001;
 
+        /* Stands in for the name a bank returns for an account number. */
+        const HOLDERS = [
+            'BETELHEM MASRE', 'ABEL TESFAYE', 'HANA GIRMA',
+            'YONAS ALEMU', 'SELAM BEKELE', 'DAWIT HAILU'
+        ];
+
+        function accountHolder(account) {
+            var sum = 0;
+            for (var i = 0; i < account.length; i++) sum += account.charCodeAt(i);
+            return HOLDERS[sum % HOLDERS.length];
+        }
+
         const BANK_PLACEHOLDER = 'Select bank';
         let selectedBank = '';
 
@@ -1253,7 +1265,7 @@
                 bank: bank,
                 account: document.getElementById('accountNumber').value.trim(),
                 amount: amount,
-                fee: Math.round(amount * FEE_RATE * 100) / 100
+                fee: Math.floor(amount * FEE_RATE * 100) / 100
             };
         }
 
@@ -1272,9 +1284,9 @@
             const t = transferDetails();
             return '<img src="assets/banks logo/' + t.bank.logo + '" alt="">'
                 + '<h3>' + t.bank.name.toUpperCase() + '</h3>'
-                + '<div class="line"><b>BANK BUSINESS NUMBER</b>' + t.bank.biz + '</div>'
+                + '<div class="line"><b>NAME</b>' + accountHolder(t.account) + '</div>'
                 + '<div class="line"><b>BANK ACCOUNT NUMBER</b>' + t.account + '</div>'
-                + '<div class="line"><b>' + money(t.amount) + ' Birr</b> <span class="muted">FEE: ' + money(t.fee) + ' Birr</span></div>';
+                + '<div class="line"><b>' + money(t.amount) + ' BIRR</b> <span class="muted">FEE: ' + money(t.fee) + ' BIRR</span></div>';
         }
 
         /* ---------- PIN ---------- */
