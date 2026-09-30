@@ -46,6 +46,8 @@
             sessionStorage.removeItem('faydaActivated');
             sessionStorage.removeItem('pendingWithdraw');
             sessionStorage.removeItem('pendingPurchase');
+            sessionStorage.removeItem('fdState');
+            sessionStorage.removeItem('savingsReturn');
             sessionStorage.setItem(RUN_KEY, '1');
         } catch (e) {}
     }
@@ -366,7 +368,18 @@
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<path d="M12 3.4 20 7.4v9.2l-8 4-8-4V7.4l8-4Z"/>'
             + '<path d="M4 7.6l8 4 8-4M12 11.6v8.8"/>'
-            + '</svg><span>BUY PACKAGE</span></a>';
+            + '</svg><span>BUY PACKAGE</span></a>'
+            + '<a class="proto-home" href="Mini Apps.html">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+            + '<rect x="2.9" y="3.1" width="7.6" height="7.6" rx="1.5"/>'
+            + '<path d="M17.3 2.9 21.2 10.7h-7.8l3.9-7.8Z"/>'
+            + '<circle cx="6.7" cy="17.5" r="3.8"/><circle cx="17.3" cy="17.5" r="3.8"/>'
+            + '</svg><span>MINI APPS</span></a>'
+            + '<a class="proto-home" href="Savings.html?tab=fixed">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+            + '<rect x="5" y="10.5" width="14" height="10" rx="2"/>'
+            + '<path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7h-2V7.8a1.5 1.5 0 0 0-3 0v2.7Z"/>'
+            + '</svg><span>FIXED DEPOSIT</span></a>';
 
         document.body.appendChild(rail);
     }

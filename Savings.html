@@ -1,0 +1,4568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savings</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        button { font-family: 'Barlow', sans-serif; }
+
+        .mobile-container {
+            width: 360px;
+            height: 808px; /* 760px screen + 48px system nav */
+            background-color: #ffffff;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Status bar ---------- */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px 4px 16px;
+            flex-shrink: 0;
+            background: #ffffff;
+            color: #333333;
+            transition: background 0.2s ease;
+        }
+
+        .status-bar .time {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-icons svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            display: block;
+        }
+
+        /* Screens with a green head carry it up under the status bar */
+        .status-bar.on-green {
+            background: #25B060;
+            color: #ffffff;
+        }
+
+        /* ---------- Steps ---------- */
+        .step {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .step.active { display: flex; }
+
+        .flow-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px 12px 16px;
+            flex-shrink: 0;
+            position: relative;
+            min-height: 50px;
+        }
+
+        .flow-bar h2 {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 19px;
+            font-weight: 300;
+            color: #2f2f2f;
+            letter-spacing: 0.8px;
+            pointer-events: none;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .icon-btn:active { background-color: rgba(0, 0, 0, 0.06); }
+
+        .icon-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: #444444;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .progress .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #2FC56D;
+        }
+
+        .progress .track {
+            width: 44px;
+            height: 4px;
+            border-radius: 2px;
+            background: #E4E4E4;
+        }
+
+        .flow-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .flow-scroll::-webkit-scrollbar { display: none; }
+
+        .flow-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: calc(100% - 36px);
+            margin: 14px 18px 16px 18px;
+            padding: 16px 0;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.1px;
+            color: #ffffff;
+            background: #2FC56D;
+            border-radius: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(47, 197, 109, 0.28);
+            transition: background 0.18s ease, color 0.18s ease;
+        }
+
+        .flow-btn .arrow {
+            position: absolute;
+            right: 26px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+        }
+
+        .flow-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .flow-btn:disabled {
+            background: #F2F2F2;
+            color: #c2c2c2;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .flow-btn.danger {
+            background: #F0335F;
+            box-shadow: 0 4px 12px rgba(240, 51, 95, 0.25);
+        }
+
+        .flow-btn.danger:disabled {
+            background: #F2F2F2;
+            color: #c2c2c2;
+            box-shadow: none;
+        }
+
+        .btn-pair {
+            display: flex;
+            gap: 12px;
+            padding: 14px 18px 16px 18px;
+            flex-shrink: 0;
+        }
+
+        .btn-pair .flow-btn { margin: 0; flex: 1; width: auto; }
+
+        .flow-btn.ghost {
+            background: #ffffff;
+            border: 1px solid #DCDCDC;
+            color: #4a4a4a;
+            box-shadow: none;
+        }
+
+        /* ---------- Savings home ---------- */
+        .home-title {
+            position: relative;
+            text-align: center;
+            font-size: 19px;
+            font-weight: 400;
+            color: #1c1c1c;
+            letter-spacing: 0.8px;
+            padding: 16px 0 12px 0;
+            flex-shrink: 0;
+        }
+
+        .home-back {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        /* the two tabs of the savings screen */
+        .tabs {
+            display: flex;
+            margin: 0 16px;
+            border-bottom: 1px solid #EDEDED;
+            flex-shrink: 0;
+        }
+
+        .tab {
+            flex: 1;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px 0 11px 0;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #A6A6A6;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tab.active { color: #1E9E4F; }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            left: 18%;
+            right: 18%;
+            bottom: -1px;
+            height: 3px;
+            border-radius: 3px 3px 0 0;
+            background: #2FC56D;
+        }
+
+        .tab .new {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: #ffffff;
+            background: #F0335F;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        .pane { display: none; padding-bottom: 20px; }
+        .pane.active { display: block; }
+
+        /* balance card */
+        .total-card {
+            position: relative;
+            overflow: hidden;
+            margin: 16px 16px 0 16px;
+            padding: 18px 18px 16px 18px;
+            border-radius: 12px;
+            background: linear-gradient(120deg, #22A75A 0%, #2FC56D 100%);
+            color: #ffffff;
+        }
+
+        .total-card .pat {
+            position: absolute;
+            right: -90px;
+            top: -120px;
+            width: 300px;
+            opacity: 0.13;
+            pointer-events: none;
+        }
+
+        .total-card > *:not(.pat) { position: relative; }
+
+        .total-card .lbl {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+        }
+
+        .total-card .lbl svg {
+            width: 19px;
+            height: 19px;
+            stroke: #ffffff;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .total-card .amt {
+            font-size: 30px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            margin: 4px 0 14px 0;
+        }
+
+        .total-card .split {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .total-card .split > div { flex: 1; }
+
+        .total-card .split > div + div {
+            border-left: 1px solid rgba(255, 255, 255, 0.35);
+            padding-left: 16px;
+            text-align: right;
+        }
+
+        .total-card .split small {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 400;
+            opacity: 0.92;
+        }
+
+        .total-card .split b {
+            display: block;
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        /* product tiles */
+        .tiles {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 18px 16px 0 16px;
+        }
+
+        .tile {
+            position: relative;
+            height: 76px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            /* label pinned to the top, the icon to the bottom corner */
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 11px 12px;
+            font-size: 12.5px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tile .ic {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tile .ic svg {
+            width: 19px;
+            height: 19px;
+            stroke: #ffffff;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .tile.t-green { background: #D9F3E3; color: #22A75A; }
+        .tile.t-green .ic { background: #2FC56D; }
+        .tile.t-blue { background: #E1E3F7; color: #3F63D6; }
+        .tile.t-blue .ic { background: #1E6FF0; }
+        .tile.t-teal { background: #D5ECEE; color: #1E9BA6; }
+        .tile.t-teal .ic { background: #1E9BA6; }
+        .tile.t-red { background: #FBD9E1; color: #F0335F; }
+        .tile.t-red .ic { background: #F0335F; }
+
+        .tile .new {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            color: #ffffff;
+            background: #F0335F;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 24px 16px 12px 16px;
+        }
+
+        .section-head span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555555;
+            letter-spacing: 1px;
+        }
+
+        .section-head button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #1E6FF0;
+        }
+
+        /* pocket and deposit cards */
+        .pocket {
+            margin: 0 16px 12px 16px;
+            padding: 14px 16px 12px 16px;
+            border-radius: 6px;
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.09);
+            cursor: pointer;
+        }
+
+        .pocket.closed { box-shadow: none; border: 1px solid #EDEDED; background: #FBFBFB; }
+
+        .pocket .bank {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6a6a6a;
+            letter-spacing: 0.4px;
+        }
+
+        .pocket .bank img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .pocket .bank .acct { margin-left: 8px; color: #8a8a8a; }
+
+        .pocket .head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        /* fixed deposit cards open straight on the name */
+        .pocket .head:first-child { margin-top: 0; }
+
+        .pocket .name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1c;
+        }
+
+        .chip {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            padding: 4px 9px;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+
+        .chip.green { background: #DDF5E6; color: #22A75A; }
+        .chip.amber { background: #FFF0DD; color: #F08A12; }
+        .chip.blue { background: #E1E9FC; color: #1E6FF0; }
+        .chip.grey { background: #EDEDED; color: #8a8a8a; }
+        .chip.red { background: #FDE4EA; color: #F0335F; }
+
+        .pocket .money {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-top: 6px;
+        }
+
+        .pocket .money small {
+            font-size: 12px;
+            color: #6a6a6a;
+            letter-spacing: 0.8px;
+            margin-right: 6px;
+        }
+
+        .pocket .money b {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1c1c1c;
+        }
+
+        .pocket .money .of { font-size: 17px; font-weight: 400; color: #6a6a6a; }
+        .pocket .money .earn { font-size: 13px; font-weight: 600; color: #22A75A; }
+
+        .bar {
+            height: 5px;
+            border-radius: 3px;
+            background: #EFEFEF;
+            margin: 12px 0 10px 0;
+            overflow: hidden;
+        }
+
+        .bar i {
+            display: block;
+            height: 100%;
+            border-radius: 3px;
+            background: #2FC56D;
+        }
+
+        .bar.amber i { background: #F7931E; }
+        .bar.blue i { background: #1E6FF0; }
+        .bar.grey i { background: #C9C9C9; }
+
+        .pocket .foot {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: #6a6a6a;
+        }
+
+        .pocket .foot .pct { color: #22A75A; }
+
+        /* the floating new-saving button */
+        .home-foot {
+            flex-shrink: 0;
+            padding: 0 18px 14px 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #ffffff 30%);
+            margin-top: -30px;
+            padding-top: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .home-foot .flow-btn { margin: 0; width: 100%; gap: 12px; }
+        .home-foot .flow-btn svg { width: 22px; height: 22px; }
+
+        /* maturity heads-up on the fixed tab */
+        /* same card as "It's easier with a target": white, soft shadow */
+        .matured-banner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 16px 16px 0 16px;
+            padding: 18px 16px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+            cursor: pointer;
+        }
+
+        .matured-banner .ic {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #F7931E;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .matured-banner .ic svg {
+            width: 22px;
+            height: 22px;
+            stroke: #ffffff;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .matured-banner .t { flex: 1; min-width: 0; }
+
+        .matured-banner b {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #5f5f5f;
+            letter-spacing: 0.6px;
+        }
+
+        .matured-banner small {
+            display: block;
+            font-size: 14px;
+            color: #ABABAB;
+            line-height: 1.3;
+            margin-top: 4px;
+        }
+
+        .matured-banner .chev { stroke: #B5B5B5; stroke-width: 1.6; }
+
+        .chev {
+            width: 18px;
+            height: 18px;
+            stroke: #9a9a9a;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+
+        /* how a fixed deposit works, on the tab */
+        .how {
+            margin: 4px 16px 0 16px;
+            padding: 4px 16px;
+            border-radius: 10px;
+            background: #F7F9F8;
+        }
+
+        .how-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 0;
+        }
+
+        .how-row + .how-row { border-top: 1px solid #ECEFEE; }
+
+        .how-row .n {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #DDF5E6;
+            color: #22A75A;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .how-row span {
+            font-size: 13px;
+            color: #4a4a4a;
+            line-height: 1.35;
+        }
+
+        /* empty tab */
+        .empty {
+            text-align: center;
+            padding: 36px 32px 10px 32px;
+        }
+
+        .empty .ring {
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 18px auto;
+            border-radius: 50%;
+            background: #E8F7EE;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty .ring svg {
+            width: 38px;
+            height: 38px;
+            stroke: #2FC56D;
+            stroke-width: 1.8;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .empty h3 {
+            font-size: 18px;
+            font-weight: 400;
+            color: #2f2f2f;
+            letter-spacing: 0.6px;
+            margin-bottom: 8px;
+        }
+
+        .empty p {
+            font-size: 13.5px;
+            color: #8a8a8a;
+            line-height: 1.5;
+        }
+
+        /* ---------- Opt in ---------- */
+        .optin-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .slides {
+            width: 100%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .slides-track {
+            display: flex;
+            transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
+        .slide {
+            flex: 0 0 100%;
+            text-align: center;
+        }
+
+        .slide .art {
+            width: 100%;
+            height: 300px;
+            border-radius: 26px;
+            overflow: hidden;
+            background: linear-gradient(160deg, #F1F8F2 0%, #E2F1E5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide .art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slide .art .medal {
+            width: 136px;
+            height: 136px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 10px 30px rgba(34, 167, 90, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide .art .medal svg {
+            width: 64px;
+            height: 64px;
+            stroke: #2FC56D;
+            stroke-width: 1.6;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .slide h3 {
+            font-size: 24px;
+            font-weight: 300;
+            color: #1c1c1c;
+            letter-spacing: 0.4px;
+            line-height: 1.2;
+            margin: 24px 0 12px 0;
+            text-transform: uppercase;
+        }
+
+        .slide p {
+            font-size: 14px;
+            color: #6a6a6a;
+            line-height: 1.45;
+            padding: 0 6px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+            margin: auto 0 16px 0;
+            padding-top: 14px;
+        }
+
+        .dots button {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            border: none;
+            background: #DADADA;
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.2s ease;
+        }
+
+        .dots button.on { background: #2FC56D; }
+
+        .optin-body .flow-btn { width: calc(100% - 20px); margin: 0 10px; }
+
+        .terms {
+            font-size: 12.5px;
+            color: #9a9a9a;
+            text-align: center;
+            line-height: 1.4;
+            margin: 12px 8px 14px 8px;
+        }
+
+        .terms a {
+            color: #2FC56D;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* ---------- Plan listing ---------- */
+        .filters {
+            display: flex;
+            gap: 8px;
+            padding: 4px 16px 14px 16px;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .filters::-webkit-scrollbar { display: none; }
+
+        .filters button {
+            border: 1px solid #E2E2E2;
+            background: #ffffff;
+            color: #6a6a6a;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 7px 14px;
+            border-radius: 18px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filters button.on {
+            background: #2FC56D;
+            border-color: #2FC56D;
+            color: #ffffff;
+        }
+
+        .lead {
+            font-size: 13px;
+            color: #8a8a8a;
+            line-height: 1.45;
+            padding: 0 18px 12px 18px;
+            text-align: center;
+        }
+
+        .lead b { color: #2f2f2f; font-weight: 600; }
+
+        .plan {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 16px 12px 16px;
+            padding: 14px 14px;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.09);
+            cursor: pointer;
+        }
+
+        .plan.off { opacity: 0.45; cursor: not-allowed; }
+
+        .logo-ring {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 4px solid #E6F5EA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .logo-ring img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        .plan .mid { flex: 1; min-width: 0; }
+
+        /* lock period mark on each plan */
+        .term-badge {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: #E6F5EA;
+            color: #22A75A;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 8.5px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            line-height: 1;
+        }
+
+        .term-badge b { font-size: 21px; font-weight: 700; margin-bottom: 2px; }
+
+        /* ----- plan card, in the package-card style ----- */
+        .pkg {
+            margin: 0 16px 14px 16px;
+            padding: 16px 14px 12px 14px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.09);
+            cursor: pointer;
+        }
+
+        .pkg.off { opacity: 0.5; cursor: not-allowed; }
+
+        .pkg-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #E8E8E8;
+        }
+
+        .pkg-ic {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #E4F7EB;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pkg-ic svg {
+            width: 22px;
+            height: 22px;
+            stroke: #1E9E4F;
+            stroke-width: 2.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .pkg-head b {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E9E4F;
+            line-height: 1.25;
+        }
+
+        .pkg-head small {
+            display: block;
+            font-size: 13px;
+            color: #ABABAB;
+            margin-top: 3px;
+        }
+
+        .pkg-head small em { font-style: normal; font-weight: 700; margin-right: 4px; }
+
+        .pkg-bot {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-top: 12px;
+        }
+
+        .pkg-bot .earn-item { flex: 1; min-width: 0; }
+        .pkg-bot .earn-item b { font-size: 15px; white-space: nowrap; }
+        .pkg-bot .earn-item small { font-size: 11px; white-space: nowrap; }
+        .pkg-bot { gap: 10px; }
+
+        .pkg-go {
+            border: none;
+            cursor: pointer;
+            background: #2FC56D;
+            color: #ffffff;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 8px 16px;
+            border-radius: 16px;
+            flex-shrink: 0;
+        }
+
+        .pkg.off .pkg-go { background: #C9C9C9; }
+
+        /* partner choice on the plan screen */
+        .partners {
+            display: flex;
+            gap: 8px;
+            padding: 0 16px 2px 16px;
+            overflow-x: auto;
+        }
+
+        .partners::-webkit-scrollbar { display: none; }
+
+        .partner {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+            padding: 6px 12px 6px 6px;
+            border-radius: 20px;
+            border: 1.5px solid #E6E6E6;
+            background: #ffffff;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            color: #4a4a4a;
+        }
+
+        .partner img { width: 24px; height: 24px; object-fit: contain; border-radius: 50%; }
+        .partner.on { border-color: #2FC56D; background: #F4FBF6; color: #1E9E4F; }
+
+        .plan .partner {
+            font-size: 12px;
+            color: #6a6a6a;
+            letter-spacing: 0.6px;
+        }
+
+        .plan .term {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1c;
+            margin: 2px 0 3px 0;
+        }
+
+        .plan .min {
+            font-size: 12px;
+            color: #8a8a8a;
+        }
+
+        .plan .rate { text-align: right; }
+
+        .plan .rate b {
+            display: block;
+            font-size: 22px;
+            font-weight: 600;
+            color: #22A75A;
+            line-height: 1;
+        }
+
+        .plan .rate small {
+            display: block;
+            font-size: 11px;
+            color: #8a8a8a;
+            letter-spacing: 0.4px;
+            margin-top: 3px;
+        }
+
+        .plan .rate .bonus {
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #F08A12;
+            background: #FFF0DD;
+            padding: 2px 7px;
+            border-radius: 5px;
+        }
+
+        /* ---------- Green head (plan details, account) ---------- */
+        .green-head {
+            position: relative;
+            overflow: hidden;
+            height: 96px;
+            flex-shrink: 0;
+            background: linear-gradient(110deg, #25B060 0%, #2FC56D 100%);
+            padding: 6px 12px 0 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .green-head.tall { height: 128px; }
+        .green-head.muted { background: linear-gradient(110deg, #8E9A93 0%, #A9B3AD 100%); }
+
+        .green-head .pat {
+            position: absolute;
+            left: 20px;
+            top: -210px;
+            width: 420px;
+            opacity: 0.13;
+            pointer-events: none;
+        }
+
+        .green-head .icon-btn svg { stroke: #ffffff; }
+
+        .detail-top {
+            text-align: center;
+            margin-top: -38px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .detail-top .logo-ring {
+            width: 76px;
+            height: 76px;
+            border-width: 6px;
+            margin: 0 auto 14px auto;
+        }
+
+        .detail-top .logo-ring img { width: 48px; height: 48px; }
+
+        .detail-top small {
+            display: block;
+            font-size: 13px;
+            color: #6a6a6a;
+            letter-spacing: 0.6px;
+        }
+
+        .detail-top small b { font-weight: 700; color: #4a4a4a; }
+
+        .detail-top h3 {
+            font-size: 22px;
+            font-weight: 300;
+            color: #1c1c1c;
+            letter-spacing: 0.4px;
+            margin-top: 4px;
+        }
+
+        .name-field {
+            margin: 26px 18px 0 18px;
+            border-bottom: 1.5px solid #8a8a8a;
+        }
+
+        .name-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #9a9a9a;
+            letter-spacing: 0.8px;
+        }
+
+        .name-field input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-family: 'Barlow', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1c;
+            padding: 6px 0 9px 0;
+            background: transparent;
+        }
+
+        .name-field input::placeholder { color: #C4C4C4; font-weight: 500; }
+
+        /* label / value table */
+        .facts {
+            margin: 20px 16px 0 16px;
+            padding: 4px 16px;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+        }
+
+        .fact {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            padding: 12px 0;
+        }
+
+        .fact + .fact { border-top: 1px solid #F0F0F0; }
+
+        /* ----- accordion version of the facts card ----- */
+        .facts.acc { padding: 0 16px; }
+
+        .acc-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 15px 0;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #4a4a4a;
+            letter-spacing: 0.8px;
+        }
+
+        .acc-head svg {
+            width: 18px;
+            height: 18px;
+            stroke: #9a9a9a;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+        }
+
+        .facts.acc.open .acc-head svg { transform: rotate(180deg); }
+        .acc-body { display: none; border-top: 1px solid #F0F0F0; }
+        .facts.acc.open .acc-body { display: block; }
+
+        .fact .k {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9a9a9a;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+        }
+
+        .fact .v {
+            font-size: 14.5px;
+            font-weight: 500;
+            color: #1c1c1c;
+            text-align: right;
+        }
+
+        .fact .v.good { color: #22A75A; font-weight: 600; }
+        .fact .v.bad { color: #F0335F; font-weight: 600; }
+        .fact .v.lost { color: #B0B0B0; text-decoration: line-through; }
+        .fact .v small { display: block; font-size: 11px; color: #9a9a9a; font-weight: 500; }
+
+        .fact.total .k { color: #1c1c1c; }
+        .fact.total .v { font-size: 17px; font-weight: 700; }
+
+        .note {
+            display: flex;
+            gap: 10px;
+            margin: 14px 16px 0 16px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: #F4F7FE;
+            font-size: 12.5px;
+            color: #5A6680;
+            line-height: 1.45;
+        }
+
+        .note svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            stroke: #1E6FF0;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            margin-top: 1px;
+        }
+
+        .note.warn { background: #FFF6E8; color: #8a6a44; }
+        .note.warn svg { stroke: #F08A12; }
+
+        /* ---------- Amount entry ---------- */
+        .amount-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 300;
+            color: #2f2f2f;
+            letter-spacing: 0.6px;
+            margin-top: 22px;
+        }
+
+        .amount-sub {
+            text-align: center;
+            font-size: 12px;
+            color: #9a9a9a;
+            letter-spacing: 0.6px;
+            margin-top: 6px;
+        }
+
+        .entry {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 10px;
+        }
+
+        .entry .num {
+            display: flex;
+            align-items: center;
+            font-size: 34px;
+            font-weight: 600;
+            color: #BDBDBD;
+        }
+
+        .entry .num.has { color: #2FC56D; }
+        .entry .num.err { color: #F0335F; }
+
+        .caret {
+            width: 2px;
+            height: 34px;
+            background: #2FC56D;
+            margin: 0 2px;
+            animation: blink 1.1s step-end infinite;
+        }
+
+        .entry .num.has .caret { order: 2; }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .entry .cur {
+            font-size: 34px;
+            font-weight: 300;
+            color: #9a9a9a;
+        }
+
+        .bal-line {
+            text-align: center;
+            font-size: 12.5px;
+            color: #6a6a6a;
+            letter-spacing: 0.6px;
+            margin-top: 6px;
+        }
+
+        .earn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 16px;
+            row-gap: 14px;
+            margin: 14px 26px 0 26px;
+        }
+
+        /* the deposit screen's two figures sit centred under the amount */
+        .earn-grid .earn-item { text-align: center; }
+
+        .earn-item small {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: #9a9a9a;
+            letter-spacing: 0.6px;
+        }
+
+        .earn-item b {
+            display: block;
+            font-size: 16px;
+            font-weight: 400;
+            color: #3a3a3a;
+            letter-spacing: 0.3px;
+            margin-top: 3px;
+        }
+
+        .earn-item.good b { color: #1E9E4F; font-weight: 500; }
+        .earn-grid.idle .earn-item.good b { color: #BDBDBD; }
+
+        .amount-msg {
+            text-align: center;
+            font-size: 12.5px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin: 22px 24px 0 24px;
+            min-height: 34px;
+            line-height: 1.4;
+            color: #22A75A;
+        }
+
+        .amount-msg.err { color: #F0335F; }
+        .amount-msg.hint { color: #9a9a9a; font-weight: 500; }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 0 24px 6px 24px;
+            flex-shrink: 0;
+        }
+
+        .key {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 30px;
+            font-weight: 400;
+            color: #6a6a6a;
+            padding: 8px 0;
+            border-radius: 8px;
+        }
+
+        .key:active { background-color: #f4f4f4; }
+        .key.blank { visibility: hidden; }
+        .key svg { width: 30px; height: 30px; display: block; margin: 0 auto; }
+
+        /* ---------- PIN ---------- */
+        /* One layout for every PIN ask: M-PESA mark, what is being
+           authorised, the four rings, and the keypad on the floor. */
+        .pin-close {
+            position: absolute;
+            top: 8px;
+            left: 14px;
+        }
+
+        .pin-close svg { stroke: #3a3a3a; }
+
+        .pin-head {
+            text-align: center;
+            padding: 38px 24px 0 24px;
+            flex-shrink: 0;
+        }
+
+        .pin-head img {
+            width: 62px;
+            height: 17px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 36px auto;
+        }
+
+        .pin-head h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1c1c1c;
+            letter-spacing: 0.5px;
+            line-height: 18px;
+        }
+
+        .pin-head p {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #1c1c1c;
+            letter-spacing: 0.4px;
+            line-height: 15px;
+            margin-top: 4px;
+        }
+
+        .pin-label {
+            text-align: center;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: #3a3a3a;
+            letter-spacing: 0.7px;
+            margin: 133px 0 14px 0;
+            flex-shrink: 0;
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .pin-dots.shake { animation: shake 0.4s ease; }
+
+        @keyframes shake {
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .pin-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid #D6D6D6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pin-dot::after {
+            content: '';
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #2FC56D;
+            transform: scale(0);
+            transition: transform 0.15s ease;
+        }
+
+        .pin-dot.filled { border-color: #2FC56D; }
+        .pin-dot.filled::after { transform: scale(1); }
+
+        .pin-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 0 24px;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .pin-keypad .key {
+            height: 57px;
+            padding: 0;
+            font-size: 24px;
+            font-weight: 400;
+            color: #5f5f5f;
+            border-radius: 8px;
+        }
+
+        .pin-keypad .key svg { width: 26px; height: 26px; }
+
+        /* ---------- Processing ---------- */
+        .processing {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px 60px 40px;
+        }
+
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 4px solid #E8F7EE;
+            border-top-color: #2FC56D;
+            animation: spin 0.9s linear infinite;
+            margin-bottom: 26px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .processing h3 {
+            font-size: 20px;
+            font-weight: 300;
+            color: #2f2f2f;
+            letter-spacing: 0.6px;
+            margin-bottom: 22px;
+        }
+
+        .checks { width: 100%; }
+
+        .check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            color: #BDBDBD;
+            padding: 6px 0;
+            transition: color 0.2s ease;
+        }
+
+        .check .b {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid #DADADA;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .check .b svg {
+            width: 11px;
+            height: 11px;
+            stroke: #ffffff;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+        }
+
+        .check.done { color: #3a3a3a; }
+        .check.done .b { background: #2FC56D; border-color: #2FC56D; }
+        .check.done .b svg { opacity: 1; }
+
+        /* ----- processing overlay ----- */
+        .proc-overlay {
+            position: absolute;
+            inset: 0 0 48px 0; /* leaves the phone nav showing */
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 30px 40px 30px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 38;
+        }
+
+        .proc-overlay.show { opacity: 1; visibility: visible; }
+
+        .proc-overlay h3 {
+            font-size: 20px;
+            font-weight: 300;
+            color: #2f2f2f;
+            letter-spacing: 0.6px;
+            margin-bottom: 22px;
+            text-align: center;
+        }
+
+        /* one step at a time, centred */
+        .proc-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #3a3a3a;
+            min-height: 24px;
+            transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+
+        .proc-line.swap { opacity: 0; transform: translateY(6px); }
+
+        .proc-line .b {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1.5px solid #DADADA;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .proc-line .b svg {
+            width: 12px;
+            height: 12px;
+            stroke: #ffffff;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+        }
+
+        .proc-line.done .b { background: #2FC56D; border-color: #2FC56D; }
+        .proc-line.done .b svg { opacity: 1; }
+
+        /* ---------- Done ---------- */
+        /* ----- result receipt ----- */
+        .rcpt {
+            margin: 34px 16px 0 16px;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .rcpt-top {
+            text-align: center;
+            padding: 20px 10px 0 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #ffffff 28%, #F5F5F5 60%, #ffffff 100%);
+        }
+
+        .rcpt-chip {
+            display: inline-block;
+            background: #EDEDED;
+            color: #3a3a3a;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 6px 12px;
+            border-radius: 14px;
+        }
+
+        .duo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .duo > span {
+            width: var(--s);
+            height: var(--s);
+            border-radius: 50%;
+            background: #ffffff;
+            border: calc(var(--s) * 0.07) solid #E6F5EA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .duo > span + span {
+            margin-left: calc(var(--s) * -0.22);
+            box-shadow: -3px 0 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .duo img { width: 64%; height: 64%; object-fit: contain; display: block; }
+
+        .detail-top .duo, .sheet-hero .duo { margin: 0 auto 12px auto; }
+        .acct-card .who .duo > span { border-width: 2px; }
+
+        .rcpt-pair {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 24px;
+        }
+
+        /* the M-PESA mark sits behind, the partner ring overlaps it */
+        .rcpt-mark {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 5px solid #E6F5EA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: -18px;
+            flex-shrink: 0;
+        }
+
+        .rcpt-mark img { width: 58px; height: 40px; object-fit: contain; display: block; }
+
+        .rcpt-ring {
+            position: relative;
+            width: 86px;
+            height: 86px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .rcpt-ring svg { position: absolute; inset: 0; width: 86px; height: 86px; }
+
+        .rcpt-ring img {
+            position: absolute;
+            left: 13px;
+            top: 13px;
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: #ffffff;
+        }
+
+        .rcpt-main { padding: 22px 32px 6px 32px; }
+
+        .rcpt-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .rcpt-item small {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #9a9a9a;
+            letter-spacing: 0.7px;
+        }
+
+        .rcpt-item b {
+            display: block;
+            font-size: 18px;
+            font-weight: 400;
+            color: #3a3a3a;
+            letter-spacing: 0.4px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .rcpt-item b.good { color: #1E9E4F; }
+        .rcpt-item b.bad { color: #F0335F; }
+
+        .copy-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: #F0F0F0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .copy-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #5f5f5f;
+            stroke-width: 1.6;
+            fill: none;
+            stroke-linejoin: round;
+        }
+
+        .rcpt-rows {
+            border-top: 1px solid #E8E8E8;
+            padding: 6px 22px 4px 22px;
+        }
+
+        .rcpt-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            padding: 14px 0;
+        }
+
+        .rcpt-row .k {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #9a9a9a;
+            letter-spacing: 0.7px;
+        }
+
+        .rcpt-row .v {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #3a3a3a;
+            letter-spacing: 0.6px;
+            text-align: right;
+        }
+
+        .rcpt-row .v.good { color: #1E9E4F; }
+        .rcpt-row .v.bad { color: #F0335F; }
+
+        .check-ring { margin: 18px auto 14px auto; display: block; width: 78px; height: 78px; }
+
+        .done-msg {
+            text-align: center;
+            font-size: 17px;
+            font-weight: 500;
+            color: #2FC56D;
+            letter-spacing: 0.2px;
+        }
+
+        .done-sub {
+            text-align: center;
+            font-size: 13px;
+            color: #8a8a8a;
+            margin: 6px 30px 0 30px;
+            line-height: 1.45;
+        }
+
+        .done-chip {
+            display: block;
+            width: fit-content;
+            margin: 12px auto 0 auto;
+        }
+
+        /* ---------- Account ---------- */
+        .acct-card {
+            position: relative;
+            z-index: 1;
+            margin: -52px 16px 0 16px;
+            padding: 18px 16px 16px 16px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .acct-card .who {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12.5px;
+            color: #6a6a6a;
+            letter-spacing: 0.4px;
+        }
+
+        .acct-card .who img { width: 20px; height: 20px; object-fit: contain; }
+
+        .acct-card .nm {
+            font-size: 14px;
+            color: #6a6a6a;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .acct-card .big {
+            font-size: 32px;
+            font-weight: 400;
+            color: #1c1c1c;
+            margin: 2px 0 8px 0;
+        }
+
+        .acct-card .chip { display: inline-block; }
+
+        .acct-card .term-bar { margin: 14px 0 6px 0; }
+
+        .acct-card .term-foot {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: #8a8a8a;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin: 20px 16px 0 16px;
+        }
+
+        .action {
+            width: 84px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            color: #4a4a4a;
+            line-height: 1.2;
+        }
+
+        .action .ic {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action .ic svg {
+            width: 22px;
+            height: 22px;
+            stroke: #ffffff;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .action:disabled { cursor: not-allowed; opacity: 0.35; filter: grayscale(1); }
+
+        .ic.green { background: #2FC56D; }
+        .ic.red { background: #F0335F; }
+        .ic.purple { background: #6A3DE8; }
+        .ic.blue { background: #1E6FF0; }
+        .ic.amber { background: #F7931E; }
+
+        .closed-note {
+            margin: 18px 16px 0 16px;
+            padding: 14px;
+            border-radius: 10px;
+            background: #F5F5F5;
+            font-size: 13px;
+            color: #6a6a6a;
+            line-height: 1.45;
+            text-align: center;
+        }
+
+        .txns-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555555;
+            letter-spacing: 1px;
+            margin: 24px 16px 6px 16px;
+        }
+
+        .txn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 9px 16px;
+        }
+
+        .txn .ic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .txn .ic svg {
+            width: 19px;
+            height: 19px;
+            stroke-width: 2.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .txn .ic.in { background: #E4F7EB; }
+        .txn .ic.in svg { stroke: #2FC56D; }
+        .txn .ic.out { background: #FDE4EA; }
+        .txn .ic.out svg { stroke: #F0335F; }
+        .txn .ic.gold { background: #FFF0DD; }
+        .txn .ic.gold svg { stroke: #F08A12; }
+
+        .txn .t {
+            flex: 1;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #4a4a4a;
+            letter-spacing: 0.6px;
+        }
+
+        .txn .a { text-align: right; }
+
+        .txn .a b {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #4a4a4a;
+        }
+
+        .txn .a small {
+            display: block;
+            font-size: 12px;
+            color: #9a9a9a;
+        }
+
+        /* ---------- Early withdrawal ---------- */
+        .warn-ring {
+            width: 76px;
+            height: 76px;
+            margin: 10px auto 16px auto;
+            border-radius: 50%;
+            background: #FDE4EA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .warn-ring svg {
+            width: 36px;
+            height: 36px;
+            stroke: #F0335F;
+            stroke-width: 1.9;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .early-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 300;
+            color: #1c1c1c;
+            letter-spacing: 0.4px;
+            line-height: 1.25;
+            padding: 0 30px;
+        }
+
+        .early-copy {
+            text-align: center;
+            font-size: 13.5px;
+            color: #6a6a6a;
+            line-height: 1.5;
+            margin: 10px 26px 0 26px;
+        }
+
+        .consent {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin: 18px 16px 6px 16px;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1.5px solid #E6E6E6;
+            cursor: pointer;
+            transition: border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .consent.on { border-color: #2FC56D; background: #F4FBF6; }
+
+        .consent .box {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid #C9C9C9;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .consent.on .box { background: #2FC56D; border-color: #2FC56D; }
+
+        .consent .box svg {
+            width: 13px;
+            height: 13px;
+            stroke: #ffffff;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+        }
+
+        .consent.on .box svg { opacity: 1; }
+
+        .consent span {
+            font-size: 13px;
+            color: #3a3a3a;
+            line-height: 1.45;
+        }
+
+        /* ---------- Payout destination ---------- */
+        .dest-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9a9a9a;
+            letter-spacing: 0.8px;
+            margin: 22px 18px 8px 18px;
+        }
+
+        .dest {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 16px 10px 16px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1.5px solid #E6E6E6;
+            cursor: pointer;
+        }
+
+        .dest.on { border-color: #2FC56D; background: #F4FBF6; }
+
+        .dest img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .dest .t { flex: 1; min-width: 0; }
+
+        .dest .t b {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1c1c1c;
+        }
+
+        .dest .t small {
+            display: block;
+            font-size: 12px;
+            color: #8a8a8a;
+        }
+
+        .radio {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #C9C9C9;
+            flex-shrink: 0;
+        }
+
+        .dest.on .radio { border: 6px solid #2FC56D; }
+
+        .home-more {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        /* ---------- ⋮ menu ---------- */
+        .menu-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 35;
+            display: none;
+        }
+
+        .menu-overlay.show { display: block; }
+
+        .menu-pop {
+            position: absolute;
+            right: 10px;
+            top: 74px;
+            min-width: 206px;
+            background: #ffffff;
+            border-radius: 2px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            padding: 4px 0;
+            animation: pop 0.14s ease;
+        }
+
+        @keyframes pop {
+            from { opacity: 0; transform: translateY(-6px); }
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 14px 18px;
+            font-size: 14.5px;
+            font-weight: 400;
+            letter-spacing: 0.8px;
+            color: #5f5f5f;
+            text-align: left;
+        }
+
+        .menu-item:active { background: #F4F4F4; }
+        .menu-item:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .menu-item svg {
+            width: 22px;
+            height: 22px;
+            stroke: #6a6a6a;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+
+        /* ---------- Confirm dialog ---------- */
+        .dialog-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 24px 48px 24px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 36;
+        }
+
+        .dialog-overlay.show { opacity: 1; visibility: visible; }
+
+        .dialog {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px 22px 12px 22px;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.2);
+        }
+
+        .dialog h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1c1c1c;
+            letter-spacing: 0.6px;
+        }
+
+        .dialog p {
+            font-size: 13.5px;
+            color: #7a7a7a;
+            line-height: 1.6;
+            margin-top: 12px;
+        }
+
+        .dialog p b { color: #3a3a3a; font-weight: 600; }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-top: 18px;
+        }
+
+        .dialog-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            padding: 10px 12px;
+            border-radius: 6px;
+        }
+
+        .dialog-actions .cancel { color: #6a6a6a; }
+        .dialog-actions .confirm { color: #F0335F; }
+        .dialog-actions button:active { background: #F4F4F4; }
+
+        /* ---------- FAQs ---------- */
+        .faq-tabs {
+            display: flex;
+            border-bottom: 1px solid #E6E6E6;
+            flex-shrink: 0;
+        }
+
+        .faq-tabs button {
+            flex: 1;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 12px 0 13px 0;
+            font-size: 12.5px;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+            color: #9a9a9a;
+            position: relative;
+        }
+
+        .faq-tabs button.on { color: #1E9E4F; }
+
+        .faq-tabs button.on::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 2px;
+            background: #2FC56D;
+        }
+
+        .faq-head {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 16px 12px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #3a3a3a;
+            letter-spacing: 0.6px;
+            border-bottom: 1px solid #EFEFEF;
+        }
+
+        .faq-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-bottom: 1px solid #EFEFEF;
+        }
+
+        .faq-row .l { flex: 1; min-width: 0; }
+
+        .faq-row .l b {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #3a3a3a;
+            letter-spacing: 0.6px;
+        }
+
+        .faq-row .l p {
+            font-size: 11.5px;
+            color: #A0A0A0;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        .faq-row .r {
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1E6FF0;
+            line-height: 1.35;
+            flex-shrink: 0;
+            max-width: 110px;
+        }
+
+        .faq-row .r .blk { color: #3a3a3a; font-weight: 500; }
+
+        .qa { border-bottom: 1px solid #EFEFEF; }
+
+        .qa-q {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 16px;
+            text-align: left;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #3a3a3a;
+            letter-spacing: 0.2px;
+        }
+
+        .qa-q span { flex: 1; }
+
+        .qa-q svg {
+            width: 18px;
+            height: 18px;
+            stroke: #9a9a9a;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .qa.open .qa-q svg { transform: rotate(180deg); }
+
+        .qa-a {
+            display: none;
+            padding: 0 16px 16px 16px;
+            font-size: 13px;
+            color: #7a7a7a;
+            line-height: 1.55;
+        }
+
+        .qa.open .qa-a { display: block; }
+
+        /* ---------- Bottom sheet ---------- */
+        .sheet-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.28);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 48px; /* leaves the phone nav showing */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 30;
+        }
+
+        .sheet-overlay.show { opacity: 1; visibility: visible; }
+
+        .sheet {
+            background: #ffffff;
+            border-radius: 16px 16px 0 0;
+            padding: 22px 22px 20px 22px;
+            box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+            max-height: 640px;
+            overflow-y: auto;
+        }
+
+        .sheet::-webkit-scrollbar { display: none; }
+
+        .sheet-overlay.show .sheet { transform: translateY(0); }
+
+        .sheet-label {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #9a9a9a;
+            letter-spacing: 1px;
+        }
+
+        .sheet-hero {
+            text-align: center;
+            margin: 12px 0 8px 0;
+        }
+
+        .sheet-hero .logo-ring { margin: 0 auto 10px auto; width: 58px; height: 58px; }
+        .sheet-hero .logo-ring img { width: 36px; height: 36px; }
+
+        .sheet-hero .round {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            margin: 0 auto 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sheet-hero .round svg {
+            width: 28px;
+            height: 28px;
+            stroke: #ffffff;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .sheet-hero h3 {
+            font-size: 19px;
+            font-weight: 400;
+            color: #1c1c1c;
+            letter-spacing: 0.4px;
+        }
+
+        .sheet-hero p {
+            font-size: 13.5px;
+            color: #7a7a7a;
+            line-height: 1.5;
+            margin-top: 6px;
+        }
+
+        .sheet .facts { margin: 14px 0 0 0; box-shadow: none; background: #F8F8F8; }
+
+        .sheet .txn { padding: 8px 0; }
+        .sheet .dest { margin: 0 0 10px 0; }
+        .sheet .dest .duo { margin: 0; }
+
+        .sheet-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .sheet-actions.row { flex-direction: row; gap: 12px; }
+
+        .sheet-btn {
+            flex: 1;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 14px 0;
+            border-radius: 26px;
+        }
+
+        .sheet-btn.ghost {
+            background: #ffffff;
+            border: 1px solid #DCDCDC;
+            color: #4a4a4a;
+        }
+
+        .sheet-btn.primary { background: #2FC56D; color: #ffffff; }
+        .sheet-btn.blue { background: #1E6FF0; color: #ffffff; }
+        .sheet-btn.danger { background: #F0335F; color: #ffffff; }
+
+        /* ---------- SMS heads-up ---------- */
+        .sms {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 8px;
+            display: flex;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #ffffff;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.18);
+            transform: translateY(-130%);
+            transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+            z-index: 45;
+            cursor: pointer;
+        }
+
+        .sms.show { transform: translateY(0); }
+
+        .sms .app {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #E8F7EE;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sms .app svg {
+            width: 16px;
+            height: 16px;
+            stroke: #2FC56D;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .sms .t { flex: 1; min-width: 0; }
+
+        .sms .t b {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1c1c1c;
+            letter-spacing: 0.4px;
+        }
+
+        .sms .t b span { font-weight: 500; color: #9a9a9a; }
+
+        .sms .t p {
+            font-size: 12.5px;
+            color: #4a4a4a;
+            line-height: 1.4;
+            margin-top: 2px;
+        }
+
+        /* ---------- Android system navigation ---------- */
+        .system-nav {
+            position: sticky;
+            bottom: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            align-items: center;
+            justify-items: center;
+            height: 48px;
+            background-color: #ffffff;
+            border-top: 1px solid #f0f0f0;
+            flex-shrink: 0;
+            color: #666666;
+        }
+
+        .system-nav svg {
+            width: 19px;
+            height: 19px;
+            display: block;
+            cursor: pointer;
+        }
+
+        /* ---------- Toast ---------- */
+        .toast {
+            position: absolute;
+            left: 50%;
+            bottom: 128px;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(9, 126, 70, 0.95);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 40;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+
+    <script src="assets/prototype-mode.js?v=26"></script>
+</head>
+<body>
+
+    <div class="mobile-container">
+
+        <div class="status-bar" id="statusBar">
+            <span class="time">9:00</span>
+            <div class="status-icons">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29ZM13 5.83l1.88 1.88L13 9.59V5.83Zm1.88 10.46L13 18.17v-3.76l1.88 1.88Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.1 8.9a14.2 14.2 0 0 1 19.8 0L12.9 20.3a1.1 1.1 0 0 1-1.8 0L2.1 8.9Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20.9 3.6v16.1c0 .5-.4.9-.9.9H4.6c-.8 0-1.2-1-.6-1.5L19.4 3c.6-.6 1.5-.2 1.5.6Z"/>
+                </svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9.6 1.8h4.8c.5 0 .9.4.9.9v1.1H8.7V2.7c0-.5.4-.9.9-.9Z"/>
+                    <rect x="6.6" y="4.3" width="10.8" height="17.9" rx="2.2"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ============ Savings home, with its two tabs ============ -->
+        <section class="step active" id="stepHome">
+            <div class="home-title">
+                <button class="icon-btn home-back" id="homeBack" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <span id="homeTitle">SAVINGS</span>
+                <button class="icon-btn home-more" id="homeMore" onclick="openMenu('fixed')" aria-label="More">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg>
+                </button>
+            </div>
+
+            <div class="flow-scroll" id="homeScroll">
+
+                <!-- My savings: the screen as it stands today -->
+                <div class="pane active" id="paneMine">
+                    <div class="total-card">
+                        <img class="pat" src="assets/M-PESA-pattern.svg" alt="">
+                        <div class="lbl">TOTAL SAVINGS BALANCE
+                            <svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/><path d="M4 20 20 4"/></svg>
+                        </div>
+                        <p class="amt">2,410.00 Birr</p>
+                        <div class="split">
+                            <div><small>Goal Savings</small><b>ETB 31,000</b></div>
+                            <div onclick="setTab('fixed')" style="cursor:pointer"><small>Fixed Deposit</small><b id="mineFixedTotal">ETB 0</b></div>
+                        </div>
+                    </div>
+
+                    <div class="tiles">
+                        <button class="tile t-green" onclick="showToast('INDIVIDUAL SAVINGS')">INDIVIDUAL
+                            <span class="ic"><svg viewBox="0 0 24 24"><path d="M5 19 12 5"/><path d="m8.5 5.6 3.5-.6.6 3.5"/><path d="M13 12l6 7"/><path d="m19.6 15.5-.6 3.5-3.5-.6"/></svg></span>
+                        </button>
+                        <button class="tile t-blue" onclick="showToast('GROUP SAVINGS')">GROUP
+                            <span class="ic"><svg viewBox="0 0 24 24"><path d="M3.5 14.5h3l3.5 2h4.5a1.5 1.5 0 0 0 0-3H11"/><path d="m14.5 13.5 4.2-2.2a1.5 1.5 0 0 1 1.6 2.5L15 18.5H9.5l-3-1.5"/><circle cx="15" cy="6.5" r="2.5"/></svg></span>
+                        </button>
+                        <button class="tile t-teal" onclick="setTab('fixed')">FIXED
+                            <span class="new" id="tileNew">NEW</span>
+                            <span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>
+                        </button>
+                        <button class="tile t-red" onclick="showToast('TARGET SAVINGS')">TARGET
+                            <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.6"/></svg></span>
+                        </button>
+                    </div>
+
+                    <div class="section-head">
+                        <span>ACTIVE POCKETS</span>
+                        <button onclick="showToast('ALL POCKETS')">SEE ALL</button>
+                    </div>
+                    <div id="pocketList"></div>
+                </div>
+
+                <!-- Fixed deposit: the new tab -->
+                <div class="pane" id="paneFixed"></div>
+            </div>
+
+            <div class="home-foot">
+                <button class="flow-btn" id="homeCta" onclick="homeCta()">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    <span id="homeCtaLabel">NEW SAVING</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ============ Opt in (P1-01) ============ -->
+        <section class="step" id="stepOptin">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+                <h2>M-PESA SAVINGS</h2>
+                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+            </div>
+            <div class="optin-body">
+                <div class="slides" id="slides">
+                    <div class="slides-track" id="slidesTrack">
+                        <div class="slide">
+                            <div class="art"><img src="assets/savings-optin.jpg" alt=""></div>
+                            <h3>Smart saving for<br>bright future!</h3>
+                            <p>Welcome to our saving product where reaching to your financial target is easy</p>
+                        </div>
+                        <div class="slide">
+                            <div class="art"><span class="medal"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span></div>
+                            <h3>Lock in a<br>fixed rate</h3>
+                            <p>Lock your money for 3, 6, 9 or 12 months at a rate that never changes.</p>
+                        </div>
+                        <div class="slide">
+                            <div class="art"><span class="medal"><svg viewBox="0 0 24 24"><path d="M4 18 9.5 12.5l3.5 3.5L20 9"/><path d="M15 9h5v5"/></svg></span></div>
+                            <h3>Interest every<br>single day</h3>
+                            <p>Interest builds up daily at 8% to 10%, and is paid in full when your term ends.</p>
+                        </div>
+                        <div class="slide">
+                            <div class="art"><span class="medal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/><path d="m9 14.5 2 2 4-4"/></svg></span></div>
+                            <h3>Collect it all<br>at maturity</h3>
+                            <p>On maturity, take your money to M-PESA or roll it into a new term in a tap.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dots" id="dots">
+                    <button class="on" onclick="goSlide(0)" aria-label="Slide 1"></button>
+                    <button onclick="goSlide(1)" aria-label="Slide 2"></button>
+                    <button onclick="goSlide(2)" aria-label="Slide 3"></button>
+                    <button onclick="goSlide(3)" aria-label="Slide 4"></button>
+                </div>
+
+                <button class="flow-btn" onclick="optIn()">OPT IN</button>
+                <p class="terms">By tapping &ldquo;Opt in&rdquo; you acknowledge that you have read and agreed to the <a href="#" onclick="showToast('TERMS AND CONDITIONS'); return false;">Terms and Conditions</a></p>
+            </div>
+        </section>
+
+        <!-- ============ Choose a plan (P1-03, P3R-02) ============ -->
+        <section class="step" id="stepPlans">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <h2 id="plansTitle">CHOOSE A PLAN</h2>
+                <span></span>
+            </div>
+            <p class="lead" id="plansLead"></p>
+            <div class="flow-scroll" id="planList"></div>
+        </section>
+
+        <!-- ============ Deposit amount (P1-05, P1-06, P1-11) ============ -->
+        <section class="step" id="stepAmount">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+                <span class="progress"><span class="dot"></span><span class="track"></span></span>
+            </div>
+            <p class="amount-title">DEPOSIT</p>
+            <p class="amount-sub" id="amountSub"></p>
+
+            <div class="entry">
+                <span class="num" id="amountNum"><span class="caret"></span><span id="amountDigits">0</span></span>
+                <span class="cur">BIRR.</span>
+            </div>
+            <p class="bal-line" id="walletLine"></p>
+            <p class="amount-msg hint" id="amountMsg"></p>
+
+            <!-- what this deposit earns, in the fee-sheet style -->
+            <div class="earn-grid" id="earnGrid"></div>
+
+            <button class="flow-btn" id="amountBtn" onclick="amountContinue()" disabled style="margin-top:auto">CONTINUE</button>
+
+            <div class="keypad">
+                <button class="key" onclick="amountPress('1')">1</button>
+                <button class="key" onclick="amountPress('2')">2</button>
+                <button class="key" onclick="amountPress('3')">3</button>
+                <button class="key" onclick="amountPress('4')">4</button>
+                <button class="key" onclick="amountPress('5')">5</button>
+                <button class="key" onclick="amountPress('6')">6</button>
+                <button class="key" onclick="amountPress('7')">7</button>
+                <button class="key" onclick="amountPress('8')">8</button>
+                <button class="key" onclick="amountPress('9')">9</button>
+                <span class="key blank" aria-hidden="true"></span>
+                <button class="key" onclick="amountPress('0')">0</button>
+                <button class="key" onclick="amountDelete()" aria-label="Delete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+                        <path d="M8.2 5.5H20a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H8.2L2.8 12l5.4-6.5Z"/>
+                        <path d="m11.5 9.5 5 5M16.5 9.5l-5 5"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- ============ PIN (shared by every journey) ============ -->
+        <section class="step" id="stepPin">
+            <button class="icon-btn pin-close" onclick="back()" aria-label="Close">
+                <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+            </button>
+            <div class="pin-head">
+                <img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA">
+                <h3 id="pinTitle"></h3>
+                <p id="pinSub"></p>
+            </div>
+            <p class="pin-label">ENTER M-PESA PIN:</p>
+            <div class="pin-dots" id="pinDots">
+                <span class="pin-dot"></span><span class="pin-dot"></span>
+                <span class="pin-dot"></span><span class="pin-dot"></span>
+            </div>
+            <div class="pin-keypad">
+                <button class="key" onclick="pinPress('1')">1</button>
+                <button class="key" onclick="pinPress('2')">2</button>
+                <button class="key" onclick="pinPress('3')">3</button>
+                <button class="key" onclick="pinPress('4')">4</button>
+                <button class="key" onclick="pinPress('5')">5</button>
+                <button class="key" onclick="pinPress('6')">6</button>
+                <button class="key" onclick="pinPress('7')">7</button>
+                <button class="key" onclick="pinPress('8')">8</button>
+                <button class="key" onclick="pinPress('9')">9</button>
+                <span class="key blank" aria-hidden="true"></span>
+                <button class="key" onclick="pinPress('0')">0</button>
+                <button class="key" onclick="pinFill()" aria-label="Fingerprint">
+                    <svg viewBox="0 0 24 24" fill="#5f5f5f"><path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-1.43-2.01-2.64-.69-1.23-1.05-2.73-1.05-4.34 0-2.97 2.54-5.39 5.66-5.39s5.66 2.42 5.66 5.39c0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-2.42-2.09-4.39-4.66-4.39-2.57 0-4.66 1.970-4.66 4.39 0 1.44.32 2.77.93 3.85.64 1.15 1.08 1.64 1.85 2.42.19.2.19.51 0 .71-.11.1-.24.15-.37.15zm7.17-1.850c-1.19 0-2.24-.3-3.1-.89-1.49-1.01-2.38-2.65-2.38-4.39 0-.28.22-.5.5-.5s.5.22.5.5c0 1.41.72 2.74 1.94 3.56.71.48 1.54.71 2.54.71.24 0 .64-.03 1.04-.1.27-.05.53.13.58.41.05.27-.13.53-.41.58-.57.11-1.07.12-1.21.12zM14.91 22c-.04 0-.09-.01-.13-.02-1.59-.44-2.63-1.03-3.72-2.1-1.4-1.39-2.17-3.24-2.17-5.22 0-1.62 1.38-2.94 3.08-2.94 1.7 0 3.08 1.32 3.08 2.94 0 1.07.93 1.94 2.08 1.94s2.08-.87 2.08-1.94c0-3.77-3.25-6.83-7.25-6.83-2.84 0-5.44 1.58-6.61 4.03-.39.81-.59 1.76-.59 2.8 0 .78.07 2.01.67 3.61.1.26-.03.55-.29.64-.26.1-.55-.04-.64-.29-.49-1.31-.73-2.61-.73-3.96 0-1.2.23-2.29.68-3.24 1.33-2.79 4.28-4.6 7.510-4.6 4.55 0 8.25 3.51 8.25 7.83 0 1.62-1.38 2.94-3.08 2.94s-3.08-1.32-3.08-2.94c0-1.07-.93-1.94-2.08-1.94s-2.08.87-2.08 1.94c0 1.71.66 3.31 1.87 4.51.95.94 1.86 1.46 3.27 1.85.27.07.42.35.35.61-.05.23-.26.38-.47.38z"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- ============ Processing ============ -->
+        <section class="step" id="stepProcessing">
+            <div class="processing">
+                <div class="spinner"></div>
+                <h3 id="procTitle">PROCESSING</h3>
+                <div class="checks" id="procChecks"></div>
+            </div>
+        </section>
+
+        <!-- ============ Result ============ -->
+        <!-- ============ Confirm deposit (P1-07, P3R-03) ============ -->
+        <section class="step" id="stepConfirm">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+                <h2 id="confirmTitle">CONFIRM DEPOSIT</h2>
+                <span></span>
+            </div>
+            <div class="flow-scroll" id="confirmBody"></div>
+            <div class="btn-pair">
+                <button class="flow-btn ghost" onclick="back()">CANCEL</button>
+                <button class="flow-btn" onclick="reviewConfirm()">CONFIRM</button>
+            </div>
+        </section>
+
+        <!-- ============ Info results: balance, statement, cancelled ============ -->
+        <section class="step" id="stepInfo">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+                <h2 id="infoTitle"></h2>
+                <span></span>
+            </div>
+            <div class="flow-scroll" id="infoBody"></div>
+            <div class="btn-pair" id="infoActions"></div>
+        </section>
+
+        <section class="step" id="stepDone">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="doneClose()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+                <h2 id="doneTitle"></h2>
+                <span></span>
+            </div>
+            <div class="flow-scroll" id="doneBody"></div>
+            <div class="btn-pair" id="doneActions"></div>
+        </section>
+
+        <!-- ============ Account overview (P2-03, P3A-02, P4-04) ============ -->
+        <section class="step" id="stepAccount" data-green>
+            <div class="flow-scroll" id="acctScroll">
+                <div class="green-head tall" id="acctHead">
+                <img class="pat" src="assets/M-PESA-pattern.svg" alt="">
+                <button class="icon-btn" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <button class="icon-btn" onclick="openMenu('account')" aria-label="More">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg>
+                </button>
+            </div>
+                <div id="acctBody"></div>
+            </div>
+        </section>
+
+        <!-- ============ Early withdrawal terms + consent (P3B-03/04) ============ -->
+        <section class="step" id="stepEarly">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <h2>EARLY WITHDRAWAL</h2>
+                <span></span>
+            </div>
+            <div class="flow-scroll" id="earlyBody"></div>
+            <div class="btn-pair">
+                <button class="flow-btn ghost" onclick="declineEarly()">KEEP SAVING</button>
+                <button class="flow-btn danger" id="earlyGo" onclick="acceptEarly()" disabled>CONTINUE</button>
+            </div>
+        </section>
+
+        <!-- ============ Withdrawal summary (P3A-04, P3B-06) ============ -->
+        <section class="step" id="stepPayout">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <h2 id="payoutTitle">WITHDRAW</h2>
+                <span></span>
+            </div>
+            <div class="flow-scroll" id="payoutBody"></div>
+            <button class="flow-btn" id="payoutCta" onclick="payoutContinue()">CONFIRM
+                <span class="arrow"><svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></span>
+            </button>
+        </section>
+
+        <!-- ============ FAQs ============ -->
+        <section class="step" id="stepFaq">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+                </button>
+                <h2>FAQS</h2>
+                <span></span>
+            </div>
+            <div class="faq-tabs">
+                <button class="on" id="faqTabInfo" onclick="setFaqTab('info')">FIXED DEPOSIT INFO</button>
+                <button id="faqTabQs" onclick="setFaqTab('qs')">FREQUENT QUESTIONS</button>
+            </div>
+            <div class="flow-scroll" id="faqBody"></div>
+        </section>
+
+        <div class="system-nav">
+            <svg viewBox="0 0 24 24" fill="none" aria-label="Back" onclick="back()">
+                <path d="M14.8 4.8 6 12l8.8 7.2V4.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-label="Home" onclick="window.location.href='index.html'">
+                <circle cx="12" cy="12" r="6.9" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="5.4" y="5.4" width="13.2" height="13.2" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+        </div>
+
+        <!-- ⋮ menu -->
+        <div class="menu-overlay" id="menu" onclick="if (event.target === this) closeMenu()">
+            <div class="menu-pop" id="menuPop"></div>
+        </div>
+
+        <!-- centred confirm dialog -->
+        <div class="dialog-overlay" id="dialog" onclick="if (event.target === this) closeDialog()">
+            <div class="dialog">
+                <h3 id="dialogTitle"></h3>
+                <p id="dialogText"></p>
+                <div class="dialog-actions">
+                    <button class="cancel" onclick="closeDialog()">CANCEL</button>
+                    <button class="confirm" id="dialogGo">CONFIRM</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing, laid over the page it was started from -->
+        <div class="proc-overlay" id="procOverlay">
+            <div class="spinner"></div>
+            <h3 id="procOverlayTitle"></h3>
+            <div class="proc-line" id="procLine">
+                <span class="b"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+                <span id="procText"></span>
+            </div>
+        </div>
+
+        <!-- One sheet, filled per use -->
+        <div class="sheet-overlay" id="sheet" onclick="if (event.target === this) closeSheet()">
+            <div class="sheet" id="sheetBody"></div>
+        </div>
+
+        <!-- SMS heads-up -->
+        <div class="sms" id="sms" onclick="hideSms()">
+            <span class="app"><svg viewBox="0 0 24 24"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/></svg></span>
+            <div class="t"><b>M-PESA <span>now</span></b><p id="smsText"></p></div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        /* ================================================================
+           Locked / Fixed Time Deposit, added to Savings as its own tab.
+           Covers: opt in -> plan -> amount -> review -> PIN -> account
+           (phase 1); balance inquiry and mini statement (phase 2);
+           maturity withdrawal, rollover and early withdrawal (phase 3);
+           closure (phase 4).
+        ================================================================ */
+
+        /* ---------- Reference data ---------- */
+        const LOGOS = 'assets/banks logo/';
+        const PARTNERS = {
+            awash:     { name: 'AWASH BANK',     logo: LOGOS + 'awass-bank.png' },
+            cbe:       { name: 'CBE',            logo: LOGOS + 'cbe-logo.png' },
+            dashen:    { name: 'DASHEN BANK',    logo: LOGOS + 'dashen-bank.png' },
+            abyssinia: { name: 'BANK OF ABYSSINIA', logo: LOGOS + 'abyssinya-bank.png' },
+            coop:      { name: 'COOP BANK',      logo: LOGOS + 'coop-bank.png' },
+            zemen:     { name: 'ZEMEN BANK',     logo: LOGOS + 'zemen-bank.png' }
+        };
+
+        /* Four lock periods. Each has its own minimum and fixed rate;
+           the saving partner is picked separately and doesn't change them. */
+        const PLANS = [
+            { id: 'm3',  months: 3,  min: 10000, rate: 8 },
+            { id: 'm6',  months: 6,  min: 20000, rate: 9 },
+            { id: 'm9',  months: 9,  min: 30000, rate: 9.5 },
+            { id: 'm12', months: 12, min: 50000, rate: 10 }
+        ];
+
+        /* Awash Bank is the only saving partner for now. */
+        const PARTNER = 'awash';
+        const PARTNER_ORDER = [PARTNER];
+
+        const POCKETS = [
+            { name: 'University Tuition', partner: 'awash',  acct: '4821',  saved: 75000, goal: 200000, days: 89,  chip: ['ON TRACK', 'green'], bar: '' },
+            { name: 'Emergency Fund',     partner: 'cbe',    acct: '0506',  saved: 7200,  goal: 15000,  days: 45,  chip: ['BEHIND', 'amber'],   bar: 'amber' },
+            { name: 'Business Startup',   partner: 'dashen', acct: '49341', saved: 50000, goal: 150000, days: 210, chip: ['ACTIVE', 'green'],   bar: 'blue' }
+        ];
+
+        const DAY = 86400000;
+        const TODAY = startOfDay(new Date());
+
+        function startOfDay(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+        function addDays(d, n) { return new Date(d.getTime() + n * DAY); }
+        function addMonths(d, n) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
+        function daysBetween(a, b) { return Math.round((startOfDay(b) - startOfDay(a)) / DAY); }
+
+        const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        function fmtDate(d) { d = new Date(d); return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
+        function ddmmyyyy(d) {
+            d = new Date(d);
+            return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+        }
+
+        function fmtShort(d) { d = new Date(d); return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+
+        function money(n) {
+            return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function whole(n) { return Math.round(n).toLocaleString('en-US'); }
+
+        function newId(prefix, len) {
+            let s = '';
+            for (let i = 0; i < len; i++) s += Math.floor(Math.random() * 10);
+            return prefix + (s[0] === '0' ? '1' + s.slice(1) : s);
+        }
+
+        /* ---------- State ---------- */
+        /* Kept in the session so the run survives moving between
+           screens; prototype-mode clears it when a new run starts. */
+        const STATE_KEY = 'fdState';
+
+        function seedState() {
+            /* Two deposits so every lifecycle state is reachable: one
+               still locked, one whose term ended a week ago. */
+            /* a 12-month deposit, 210 days from maturity */
+            const openedActive = addMonths(addDays(TODAY, 210), -12);
+            const openedMatured = addDays(addMonths(TODAY, -3), -8);
+            return {
+                optedIn: false,
+                wallet: 75000,
+                accounts: [
+                    account('FD20417731', planName(planById('m12')), planById('m12'), 50000, openedActive, PARTNER),
+                    account('FD20398165', planName(planById('m3')), planById('m3'), 10000, openedMatured, PARTNER)
+                ]
+            };
+        }
+
+        function account(id, name, plan, principal, opened, partner) {
+            return {
+                id: id,
+                name: name,
+                partner: partner,
+                months: plan.months,
+                rate: plan.rate,
+                principal: principal,
+                opened: new Date(opened).toISOString(),
+                closed: null,          // { on, paid, how }
+                txns: [{ type: 'DEPOSIT', amount: principal, on: new Date(opened).toISOString() }]
+            };
+        }
+
+        function loadState() {
+            try {
+                const raw = sessionStorage.getItem(STATE_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) {}
+            return seedState();
+        }
+
+        let S = loadState();
+
+        function save() {
+            try { sessionStorage.setItem(STATE_KEY, JSON.stringify(S)); } catch (e) {}
+        }
+
+        /* ---------- Deposit maths ---------- */
+        function maturityOf(a) { return addMonths(new Date(a.opened), a.months); }
+        function termDays(a) { return daysBetween(new Date(a.opened), maturityOf(a)); }
+
+        function statusOf(a) {
+            if (a.closed) return 'closed';
+            return TODAY >= maturityOf(a) ? 'matured' : 'active';
+        }
+
+        function elapsed(a) { return Math.min(Math.max(daysBetween(new Date(a.opened), TODAY), 0), termDays(a)); }
+
+        /* Daily accrual at the fixed rate, held until maturity */
+        function accrued(a) { return a.principal * a.rate / 100 * elapsed(a) / 365; }
+
+
+        function projected(plan, amount) {
+            const days = daysBetween(TODAY, addMonths(TODAY, plan.months));
+            return {
+                interest: amount * plan.rate / 100 * days / 365,
+                maturity: addMonths(TODAY, plan.months)
+            };
+        }
+
+        function maskId(id) { return '.....' + id.slice(-5); }
+
+        /* ---------- Navigation ---------- */
+        let stack = ['stepHome'];
+
+        function show(id) {
+            document.querySelectorAll('.step').forEach(s => s.classList.toggle('active', s.id === id));
+            const green = document.getElementById(id).hasAttribute('data-green');
+            document.getElementById('statusBar').classList.toggle('on-green', green);
+            const muted = id === 'stepAccount' && current && statusOf(current) === 'closed';
+            document.getElementById('statusBar').style.background = green && muted ? '#8E9A93' : '';
+        }
+
+        function go(id) {
+            closeSheet();
+            if (stack[stack.length - 1] !== id) stack.push(id);
+            show(id);
+        }
+
+        /* Lands on a screen with a fresh history behind it */
+        function resetTo(ids) {
+            closeSheet();
+            stack = ['stepHome'].concat(ids);
+            const top = stack[stack.length - 1];
+            if (top === 'stepHome') renderHome();
+            if (top === 'stepAccount') renderAccount();
+            show(top);
+        }
+
+        function back() {
+            if (document.getElementById('menu').classList.contains('show')) { closeMenu(); return; }
+            if (document.getElementById('dialog').classList.contains('show')) { closeDialog(); return; }
+            if (document.getElementById('sheet').classList.contains('show')) { closeSheet(); return; }
+            const top = stack[stack.length - 1];
+            if (processingNow || top === 'stepProcessing') return;
+            if (top === 'stepDone') { doneClose(); return; }
+            if (stack.length <= 1) {
+                /* Fixed deposit sits on the savings screen; back leaves it first */
+                if (tab === 'fixed') { setTab('mine'); return; }
+                window.location.href = savingsReturn();
+                return;
+            }
+            stack.pop();
+            const prev = stack[stack.length - 1];
+            if (prev === 'stepHome') renderHome();
+            if (prev === 'stepAccount') renderAccount();
+            show(prev);
+        }
+
+        /* Where leaving the savings screen goes: the mini apps list when
+           it was opened from Pocket Money, otherwise the app home. */
+        function savingsReturn() {
+            try { return sessionStorage.getItem('savingsReturn') || 'index.html'; }
+            catch (e) { return 'index.html'; }
+        }
+
+        /* ---------- Home ---------- */
+        let tab = 'mine';
+
+        function setTab(name) {
+            if (name === 'fixed' && !S.optedIn) { openOptin(); return; }
+            tab = name;
+            document.getElementById('homeTitle').textContent = name === 'fixed' ? 'FIXED DEPOSIT' : 'SAVINGS';
+            document.getElementById('homeBack').style.display = name === 'fixed' ? 'flex' : 'none';
+            document.getElementById('homeMore').style.display = name === 'fixed' ? 'flex' : 'none';
+            document.getElementById('paneMine').classList.toggle('active', name === 'mine');
+            document.getElementById('paneFixed').classList.toggle('active', name === 'fixed');
+            document.getElementById('homeScroll').scrollTop = 0;
+            renderHome();
+            if (name === 'fixed') maybeNotifyMaturity();
+        }
+
+        function homeCta() {
+            if (tab === 'fixed') startNewDeposit();
+            else showToast('NEW SAVING');
+        }
+
+        function renderHome() {
+            document.getElementById('tileNew').style.display = S.optedIn ? 'none' : '';
+            document.getElementById('homeCtaLabel').textContent = tab === 'fixed' ? 'NEW FIXED DEPOSIT' : 'NEW SAVING';
+
+            const live = S.accounts.filter(a => !a.closed);
+            document.getElementById('mineFixedTotal').textContent = 'ETB ' + whole(live.reduce((t, a) => t + a.principal, 0));
+
+            /* A locked pocket is a fixed deposit: it opens that account,
+               and leaves the list once the deposit is closed. */
+            document.getElementById('pocketList').innerHTML = POCKETS.filter(p => {
+                const fd = p.fd && findAccount(p.fd);
+                return !(fd && fd.closed);
+            }).map(p => {
+                const fd = p.fd && findAccount(p.fd);
+                const pct = p.saved / p.goal * 100;
+                const days = fd ? Math.max(daysBetween(TODAY, maturityOf(fd)), 0) : p.days;
+                const open = fd ? 'openAccount(\'' + fd.id + '\')' : 'showToast(\'' + p.name.toUpperCase() + '\')';
+                return '<div class="pocket" onclick="' + open + '">'
+                    + '<div class="bank"><img src="' + PARTNERS[p.partner].logo + '" alt="">' + PARTNERS[p.partner].name + '<span class="acct">.....' + p.acct + '</span></div>'
+                    + '<div class="head"><span class="name">' + p.name + '</span><span class="chip ' + p.chip[1] + '">' + p.chip[0] + '</span></div>'
+                    + '<div class="money"><span><small>SAVED</small><b>' + whole(p.saved) + ' BIRR</b></span><span><small>OF</small><span class="of">' + whole(p.goal) + ' BIRR</span></span></div>'
+                    + '<div class="bar ' + p.bar + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>'
+                    + '<div class="foot"><span>' + days + ' Days Left</span><span class="pct">' + pct.toFixed(1) + '%</span></div>'
+                    + '</div>';
+            }).join('');
+
+            renderFixedPane();
+        }
+
+        function statusChip(a) {
+            const s = statusOf(a);
+            if (s === 'closed') return '<span class="chip grey">CLOSED</span>';
+            if (s === 'matured') return '<span class="chip green">MATURED</span>';
+            return '<span class="chip blue">LOCKED</span>';
+        }
+
+        function depositCard(a) {
+            const s = statusOf(a);
+            const pct = elapsed(a) / termDays(a) * 100;
+            const left = daysBetween(TODAY, maturityOf(a));
+            let foot, right, bar;
+            if (s === 'closed') {
+                foot = 'Closed ' + fmtDate(a.closed.on);
+                right = '<span>' + whole(a.closed.paid) + ' BIRR PAID</span>';
+                bar = 'grey';
+            } else if (s === 'matured') {
+                foot = 'Matured ' + fmtDate(maturityOf(a));
+                right = '<span class="pct">Ready to collect</span>';
+                bar = '';
+            } else {
+                foot = left + ' Days Left';
+                right = '<span class="pct">' + a.rate + '% p.a.</span>';
+                bar = 'blue';
+            }
+            const earn = s === 'closed' ? '' : '<span class="earn">+' + money(accrued(a)) + '</span>';
+            return '<div class="pocket' + (s === 'closed' ? ' closed' : '') + '" onclick="openAccount(\'' + a.id + '\')">'
+                + '<div class="head"><span class="name">' + a.name + '</span>' + statusChip(a) + '</div>'
+                + '<div class="money"><span><small>' + (s === 'closed' ? 'WAS' : 'SAVED') + '</small><b>' + whole(a.principal) + ' BIRR</b></span>' + earn + '</div>'
+                + '<div class="bar ' + bar + '"><i style="width:' + (s === 'closed' ? 100 : pct).toFixed(1) + '%"></i></div>'
+                + '<div class="foot"><span>' + foot + '</span>' + right + '</div>'
+                + '</div>';
+        }
+
+        function renderFixedPane() {
+            const pane = document.getElementById('paneFixed');
+            const live = S.accounts.filter(a => !a.closed);
+            const closed = S.accounts.filter(a => a.closed);
+            const matured = live.filter(a => statusOf(a) === 'matured');
+            let html = '';
+
+            if (!live.length) {
+                /* P2-08 / P4-05: nothing locked right now */
+                html += '<div class="empty">'
+                    + '<span class="ring"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>'
+                    + '<h3>NO FIXED DEPOSIT YET</h3>'
+                    + '<p>Lock your savings with a partner bank and earn a fixed rate of up to 10%.</p>'
+                    + '</div>';
+            } else {
+                const locked = live.reduce((t, a) => t + a.principal, 0);
+                const interest = live.reduce((t, a) => t + accrued(a), 0);
+                html += '<div class="total-card locked">'
+                    + '<img class="pat" src="assets/M-PESA-pattern.svg" alt="">'
+                    + '<div class="lbl">TOTAL LOCKED SAVINGS <svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/></svg></div>'
+                    + '<p class="amt">' + money(locked) + ' Birr</p>'
+                    + '<div class="split"><div><small>Accrued Interest</small><b>+' + money(interest) + '</b></div>'
+                    + '<div><small>Deposits</small><b>' + live.length + ' ACTIVE</b></div></div>'
+                    + '</div>';
+            }
+
+            /* P3A-01: the term has ended */
+            matured.forEach(a => {
+                html += '<div class="matured-banner" onclick="openAccount(\'' + a.id + '\')">'
+                    + '<span class="ic"><svg viewBox="0 0 24 24"><path d="M18 8.6a6 6 0 1 0-12 0c0 6-2.4 7.4-2.4 7.4h16.8S18 14.6 18 8.6Z"/><path d="M13.7 19.6a2 2 0 0 1-3.4 0"/></svg></span>'
+                    + '<span class="t"><b>' + a.name.toUpperCase() + ' HAS MATURED</b><small>' + money(maturedTotal(a)) + ' Birr is ready to withdraw or roll over</small></span>'
+                    + '<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>'
+                    + '</div>';
+            });
+
+            if (live.length) {
+                html += '<div class="section-head"><span>MY FIXED DEPOSITS</span></div>';
+                html += live.map(depositCard).join('');
+            }
+
+            if (!live.length) {
+                html += '<div class="section-head"><span>HOW IT WORKS</span></div>'
+                    + '<div class="how">'
+                    + '<div class="how-row"><span class="n">1</span><span>Choose 3, 6, 9 or 12 months and a partner bank.</span></div>'
+                    + '<div class="how-row"><span class="n">2</span><span>Deposit from M-PESA. Interest accrues every day at a fixed rate.</span></div>'
+                    + '<div class="how-row"><span class="n">3</span><span>At maturity, collect principal and interest &mdash; or roll it over. Withdraw early and the interest is lost.</span></div>'
+                    + '</div>';
+            }
+
+            if (closed.length) {
+                html += '<div class="section-head"><span>CLOSED</span></div>';
+                html += closed.map(depositCard).join('');
+            }
+
+            pane.innerHTML = html;
+        }
+
+        let maturityNotified = false;
+        function maybeNotifyMaturity() {
+            if (maturityNotified) return;
+            const a = S.accounts.find(x => statusOf(x) === 'matured');
+            if (!a) return;
+            maturityNotified = true;
+            setTimeout(() => sms('Your ' + PARTNERS[a.partner].name + ' fixed deposit ' + a.id + ' matured on ' + fmtDate(maturityOf(a)) + '. Open M-PESA Savings to withdraw or roll over.'), 500);
+        }
+
+        /* ---------- Opt in ---------- */
+        let slide = 0;
+        let slideTimer;
+
+        function openOptin() {
+            goSlide(0);
+            go('stepOptin');
+            clearInterval(slideTimer);
+            slideTimer = setInterval(() => {
+                if (!document.getElementById('stepOptin').classList.contains('active')) { clearInterval(slideTimer); return; }
+                goSlide((slide + 1) % 4);
+            }, 3800);
+        }
+
+        function goSlide(n) {
+            slide = n;
+            document.getElementById('slidesTrack').style.transform = 'translateX(' + (-100 * n) + '%)';
+            document.querySelectorAll('#dots button').forEach((d, i) => d.classList.toggle('on', i === n));
+        }
+
+        /* swipe between slides */
+        (function () {
+            const el = document.getElementById('slides');
+            let x0 = null;
+            el.addEventListener('pointerdown', e => { x0 = e.clientX; });
+            el.addEventListener('pointerup', e => {
+                if (x0 === null) return;
+                const dx = e.clientX - x0;
+                x0 = null;
+                if (Math.abs(dx) < 30) return;
+                clearInterval(slideTimer);
+                goSlide(Math.min(3, Math.max(0, slide + (dx < 0 ? 1 : -1))));
+            });
+        })();
+
+        function optIn() {
+            clearInterval(slideTimer);
+            askPin({
+                title: 'M-PESA SAVINGS',
+                sub: 'ACTIVATE TO ACHIEVE MORE GOAL',
+                ok: activateSavings
+            });
+        }
+
+        function activateSavings() {
+            S.optedIn = true;
+            save();
+            stack = ['stepHome'];
+            show('stepHome');
+            setTab('fixed');
+            showToast('YOU HAVE OPTED IN');
+        }
+
+        /* ---------- Flow context ---------- */
+        /* kind: open | rollover | mature | early | balance | statement */
+        let flow = {};
+        let current = null;   // the account being looked at
+
+        function findAccount(id) { return S.accounts.find(a => a.id === id); }
+
+        /* ---------- Plans ---------- */
+
+        /* One partner, so a new deposit starts at the plans */
+        function startNewDeposit() {
+            flow = { kind: 'open', partner: PARTNER };
+            renderPlans();
+            go('stepPlans');
+        }
+
+        /* a deposit is named after its period */
+        function planName(p) { return p.months + ' Months Lock'; }
+
+        function renderPlans() {
+            const roll = flow.kind === 'rollover';
+            const partner = PARTNERS[flow.partner];
+            document.getElementById('plansTitle').textContent = roll ? 'ROLL OVER' : 'CHOOSE A PLAN';
+            document.getElementById('plansLead').innerHTML = roll
+                ? 'Pick a new term for <b>' + money(flow.amount) + ' Birr</b> with <b>' + partner.name + '</b>.'
+                : 'Saving with <b>' + partner.name + '</b>. Pick how long to lock your money.';
+
+            document.getElementById('planList').innerHTML = PLANS.map(p => {
+                const off = roll && flow.amount < p.min;
+                const go = off ? 'showToast(\'BELOW THIS PLAN\\\'S MINIMUM\')' : 'choosePlan(\'' + p.id + '\')';
+                return '<div class="pkg' + (off ? ' off' : '') + '" onclick="' + go + '">'
+                    + '<div class="pkg-top">'
+                    + '<span class="pkg-ic"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>'
+                    + '<span class="pkg-head"><b>' + p.months + ' Months Lock + ' + p.rate + '% Interest</b></span>'
+                    + '</div>'
+                    + '<div class="pkg-bot">'
+                    + '<div class="earn-item"><small>MINIMUM DEPOSIT</small><b>' + whole(p.min) + ' BIRR</b></div>'
+                    + '<div class="earn-item"><small>MATURITY DATE</small><b>' + ddmmyyyy(addMonths(TODAY, p.months)) + '</b></div>'
+                    + '<button class="pkg-go" tabindex="-1">' + (off ? 'TOO LOW' : 'SELECT') + '</button>'
+                    + '</div></div>';
+            }).join('')
+                + '<div class="note warn" style="margin-top:4px"><svg viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>'
+                + '<span>Withdraw before the maturity date and you lose all the interest &mdash; only your deposit is returned.</span></div>'
+                + '<div style="height:12px"></div>';
+        }
+
+        function planById(id) { return PLANS.find(p => p.id === id); }
+
+        function choosePlan(id) {
+            flow.plan = planById(id);
+            flow.name = planName(flow.plan);
+            if (flow.kind === 'rollover') { openReview(); return; }
+            amount = '';
+            paintAmount();
+            go('stepAmount');
+        }
+
+        /* A facts card that folds under a header */
+        function accFacts(title, rows, open) {
+            return '<div class="facts acc' + (open ? ' open' : '') + '">'
+                + '<button class="acc-head" onclick="toggleAcc(this)"><span>' + title + '</span>'
+                + '<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>'
+                + '<div class="acc-body">' + rows.map(r => fact(r[0], r[1], r[2])).join('') + '</div></div>';
+        }
+
+        function toggleAcc(btn) { btn.parentNode.classList.toggle('open'); }
+
+        function fact(k, v, cls) {
+            return '<div class="fact' + (cls && cls.row ? ' ' + cls.row : '') + '"><span class="k">' + k + '</span><span class="v' + (cls && cls.v ? ' ' + cls.v : '') + '">' + v + '</span></div>';
+        }
+
+        /* ---------- Amount ---------- */
+        let amount = '';
+
+        function amountPress(d) {
+            if (amount === '' && d === '0') return;
+            if (amount.length >= 7) return;
+            amount += d;
+            paintAmount();
+        }
+
+        function amountDelete() {
+            amount = amount.slice(0, -1);
+            paintAmount();
+        }
+
+        function paintAmount() {
+            const p = flow.plan;
+            const n = Number(amount || 0);
+            document.getElementById('amountDigits').textContent = amount === '' ? '0' : whole(n);
+            document.getElementById('amountSub').textContent = PARTNERS[flow.partner].name + ' · ' + p.months + ' MONTHS · ' + p.rate + '%';
+            document.getElementById('walletLine').textContent = 'BALANCE: ' + money(S.wallet) + ' Birr';
+
+            const msg = document.getElementById('amountMsg');
+            const num = document.getElementById('amountNum');
+            let ok = false;
+            num.className = 'num' + (amount ? ' has' : '');
+            if (!amount) {
+                /* the minimum is shown below, so the line carries the rule */
+                msg.className = 'amount-msg hint';
+                msg.textContent = 'Withdraw before maturity and the interest is lost.';
+            } else if (n > S.wallet) {
+                /* P1-11 */
+                num.className = 'num has err';
+                msg.className = 'amount-msg err';
+                msg.textContent = 'Insufficient M-PESA balance. You can deposit up to ' + money(S.wallet) + ' Birr.';
+            } else if (n < p.min) {
+                /* P1-06 */
+                num.className = 'num has err';
+                msg.className = 'amount-msg err';
+                msg.textContent = 'This plan needs at least ' + whole(p.min) + ' Birr. Please enter a higher amount.';
+            } else {
+                msg.className = 'amount-msg hint';
+                msg.textContent = 'Withdraw before maturity and the interest is lost.';
+                ok = true;
+            }
+            document.getElementById('amountBtn').disabled = !ok;
+
+            /* "You will earn": plan terms always, amounts once valid */
+            const est = projected(p, ok ? n : 0);
+            const dd = ddmmyyyy(est.maturity);
+            const items = [
+                ['MINIMUM DEPOSIT', whole(p.min) + ' BIRR', ''],
+                ['MATURITY DATE', dd, '']
+            ];
+            const grid = document.getElementById('earnGrid');
+            grid.classList.toggle('idle', !ok);
+            grid.innerHTML = items.map(i => '<div class="earn-item ' + i[2] + '"><small>' + i[0] + '</small><b>' + i[1] + '</b></div>').join('');
+        }
+
+        function amountContinue() {
+            flow.amount = Number(amount);
+            openReview();
+        }
+
+        /* ---------- Review (P1-07, P3R-03) ---------- */
+        function openReview() {
+            const p = flow.plan;
+            const est = projected(p, flow.amount);
+            const roll = flow.kind === 'rollover';
+            document.getElementById('confirmTitle').textContent = roll ? 'CONFIRM ROLLOVER' : 'CONFIRM DEPOSIT';
+            document.getElementById('confirmBody').innerHTML = receiptHtml({
+                chip: roll ? 'REVIEW YOUR ROLLOVER' : 'REVIEW YOUR DEPOSIT',
+                logo: PARTNERS[flow.partner].logo,
+                pct: 0,
+                main: [
+                    ['DEPOSIT NAME', flow.name],
+                    [roll ? 'ROLLOVER AMOUNT' : 'DEPOSIT AMOUNT', money(flow.amount) + ' BIRR']
+                ],
+                rows: [
+                    ['SAVING PARTNER', PARTNERS[flow.partner].name],
+                    ['INTEREST RATE', p.rate + '% P.A.'],
+                    ['MATURES ON', fmtDate(est.maturity).toUpperCase()],
+                    ['AT MATURITY', money(flow.amount + est.interest) + ' BIRR', 'good']
+                ]
+            });
+            document.getElementById('confirmBody').scrollTop = 0;
+            go('stepConfirm');
+        }
+
+        function reviewConfirm() {
+            const p = flow.plan;
+            const roll = flow.kind === 'rollover';
+            askPin({
+                title: roll ? 'ROLL OVER FIXED DEPOSIT' : 'FIXED DEPOSIT',
+                sub: money(flow.amount) + ' BIRR TO ' + PARTNERS[flow.partner].name + ' FOR ' + p.months + ' MONTHS',
+                ok: roll ? runRollover : runOpen
+            });
+        }
+
+        /* ---------- PIN ---------- */
+        let pin = '';
+        let pinCtx = null;
+        let pinTries = 3;
+
+        function askPin(ctx) {
+            pinCtx = ctx;
+            pin = '';
+            pinTries = 3;
+            paintPin();
+            document.getElementById('pinTitle').textContent = ctx.title;
+            document.getElementById('pinSub').textContent = ctx.sub;
+            go('stepPin');
+        }
+
+        function paintPin() {
+            document.querySelectorAll('#pinDots .pin-dot').forEach((d, i) => d.classList.toggle('filled', i < pin.length));
+        }
+
+        function pinPress(d) {
+            if (pin.length >= 4) return;
+            pin += d;
+            paintPin();
+            if (pin.length === 4) setTimeout(checkPin, 320);
+        }
+
+        function pinFill() {
+            pin = '1234';
+            paintPin();
+            setTimeout(checkPin, 320);
+        }
+
+        /* Demo rule: 0000 is the wrong PIN, anything else passes */
+        function checkPin() {
+            if (pin === '0000') {
+                pinTries--;
+                const dots = document.getElementById('pinDots');
+                dots.classList.remove('shake');
+                void dots.offsetWidth;
+                dots.classList.add('shake');
+                pin = '';
+                paintPin();
+                openSheet({
+                    label: 'M-PESA PIN',
+                    icon: ['red', '<path d="M12 7.5v6M12 16.6v.1"/><circle cx="12" cy="12" r="9"/>'],
+                    title: 'INCORRECT PIN',
+                    text: pinTries > 0
+                        ? 'The PIN you entered is incorrect. You have ' + pinTries + ' attempt' + (pinTries === 1 ? '' : 's') + ' left before your M-PESA is locked.'
+                        : 'Too many incorrect attempts. Please try again later.',
+                    actions: pinTries > 0
+                        ? [['CANCEL', 'ghost', 'pinCancel()'], ['TRY AGAIN', 'primary', 'closeSheet()']]
+                        : [['OK', 'primary', 'pinCancel()']],
+                    row: true
+                });
+                return;
+            }
+            pinCtx.ok();
+        }
+
+        function pinCancel() {
+            closeSheet();
+            back();
+        }
+
+        /* ---------- Processing ---------- */
+        let processingNow = false;
+
+        function processing(title, steps, then) {
+            const overlay = document.getElementById('procOverlay');
+            const line = document.getElementById('procLine');
+            const text = document.getElementById('procText');
+            document.getElementById('procOverlayTitle').textContent = title;
+            closeSheet();
+            processingNow = true;
+            overlay.classList.add('show');
+
+            const STEP = 700;
+            steps.forEach((label, i) => {
+                /* bring the step in, then tick it */
+                setTimeout(() => {
+                    line.classList.add('swap');
+                    setTimeout(() => {
+                        text.textContent = label;
+                        line.classList.remove('done', 'swap');
+                    }, 180);
+                }, STEP * i);
+                setTimeout(() => line.classList.add('done'), STEP * i + 480);
+            });
+            setTimeout(() => {
+                then();
+                overlay.classList.remove('show');
+                processingNow = false;
+            }, STEP * steps.length + 200);
+        }
+
+        /* ---------- Result screen ---------- */
+        let doneExit = ['stepHome'];
+
+        /* Result receipt: a titled bar, then one card -- status chip, the
+           partner mark in its progress ring, the headline figures, and a
+           strip of details under a divider. */
+        let doneTxn = '';
+
+        function stamp(d) {
+            const M = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            let h = d.getHours();
+            const ap = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return M[d.getMonth()] + ' ' + d.getDate() + ',' + d.getFullYear() + ' - '
+                + h + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + ap;
+        }
+
+        function newTxnId() {
+            const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            return 'FD' + String(Math.floor(100000 + Math.random() * 900000))
+                + L[Math.floor(Math.random() * L.length)] + L[Math.floor(Math.random() * L.length)];
+        }
+
+        /* The receipt card: chip, partner mark in its progress ring, the
+           headline figures (plus a copyable transaction ID once there is
+           one), then a strip of details under a divider. */
+        /* M-PESA and the partner as two overlapping marks, any size */
+        function duo(logo, size) {
+            return '<span class="duo" style="--s:' + size + 'px">'
+                + '<span><img src="assets/M-PESA-money-icon.svg" alt="M-PESA"></span>'
+                + '<span><img src="' + logo + '" alt=""></span></span>';
+        }
+
+        function receiptHtml(o) {
+            const pct = Math.max(0.04, Math.min(o.pct, 1));
+            const r = 40, c = 2 * Math.PI * r;
+            const rows = o.stampLabel ? o.rows.concat([[o.stampLabel, stamp(new Date())]]) : o.rows;
+            return '<div class="rcpt">'
+                + '<div class="rcpt-top"><span class="rcpt-chip">' + o.chip + '</span>'
+                /* M-PESA and the partner, two overlapping marks */
+                + '<div class="rcpt-pair">'
+                + '<span class="rcpt-mark mpesa"><img src="assets/M-PESA-money-icon.svg" alt="M-PESA"></span>'
+                + '<div class="rcpt-ring"><svg viewBox="0 0 86 86">'
+                + '<circle cx="43" cy="43" r="' + r + '" fill="none" stroke="#E6F5EA" stroke-width="5"/>'
+                + '<circle cx="43" cy="43" r="' + r + '" fill="none" stroke="#2FC56D" stroke-width="5" stroke-linecap="round"'
+                + ' stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 43 43)"/>'
+                + '</svg><img src="' + o.logo + '" alt=""></div></div></div>'
+                + '<div class="rcpt-main">'
+                + o.main.map(m => '<div class="rcpt-item"><span><small>' + m[0] + '</small><b class="' + (m[2] || '') + '">' + m[1] + '</b></span></div>').join('')
+                + (o.txn ? '<div class="rcpt-item"><span><small>TRANSACTION ID</small><b>' + o.txn + '</b></span>'
+                    + '<button class="copy-btn" onclick="copyTxn()" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="12" rx="2"/><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/></svg></button></div>' : '')
+                + '</div>'
+                + '<div class="rcpt-rows">'
+                + rows.map(x => '<div class="rcpt-row"><span class="k">' + x[0] + '</span><span class="v ' + (x[2] || '') + '">' + x[1] + '</span></div>').join('')
+                + '</div></div>'
+                + '<div style="height:12px"></div>';
+        }
+
+        /* Same receipt page for results that don't end the journey; the
+           X and DONE go back to where the customer came from. */
+        function showInfo(opts) {
+            document.getElementById('infoTitle').textContent = opts.title;
+            document.getElementById('infoBody').innerHTML = receiptHtml(opts);
+            document.getElementById('infoBody').scrollTop = 0;
+            document.getElementById('infoActions').innerHTML = opts.actions.map(a =>
+                '<button class="flow-btn ' + (a[1] || '') + '" onclick="' + a[2] + '">' + a[0] + '</button>').join('');
+            go('stepInfo');
+        }
+
+        function showDone(opts) {
+            doneExit = opts.exit;
+            doneTxn = newTxnId();
+            document.getElementById('doneTitle').textContent = opts.title;
+            document.getElementById('doneBody').innerHTML = receiptHtml(Object.assign({ txn: doneTxn }, opts));
+            document.getElementById('doneActions').innerHTML = opts.actions.map(a =>
+                '<button class="flow-btn ' + (a[1] || '') + '" onclick="' + a[2] + '">' + a[0] + '</button>').join('');
+            stack = ['stepHome', 'stepDone'];
+            show('stepDone');
+            if (opts.sms) setTimeout(() => sms(opts.sms), 700);
+        }
+
+        function copyTxn() {
+            try { navigator.clipboard.writeText(doneTxn); } catch (e) {}
+            showToast('TRANSACTION ID COPIED');
+        }
+
+        function doneClose() {
+            if (doneExit[doneExit.length - 1] === 'stepHome') {
+                resetTo([]);
+                setTab('fixed');
+            } else {
+                resetTo(doneExit.filter(x => x !== 'stepHome'));
+            }
+        }
+
+        /* ---------- Phase 1: open ---------- */
+        function runOpen() {
+            const p = flow.plan;
+            processing('OPENING YOUR DEPOSIT', [
+                'Verifying your identity',
+                'Checking eligibility',
+                'Checking M-PESA balance',
+                'Creating your fixed deposit',
+                'Sending funds to ' + PARTNERS[flow.partner].name
+            ], () => {
+                const a = account(newId('FD', 8), flow.name, p, flow.amount, TODAY, flow.partner);
+                S.accounts.unshift(a);
+                S.wallet -= flow.amount;
+                save();
+                current = a;
+                showDone({
+                    title: 'DEPOSIT CREATED',
+                    chip: 'FIXED DEPOSIT CREATED SUCCESSFULLY',
+                    logo: PARTNERS[a.partner].logo,
+                    pct: 0,
+                    main: [
+                        ['DEPOSIT NAME', a.name],
+                        ['LOCKED AMOUNT', whole(a.principal) + ' BIRR']
+                    ],
+                    rows: [
+                        ['SAVING PARTNER', PARTNERS[a.partner].name],
+                        ['INTEREST RATE', a.rate + '% P.A.'],
+                        ['MATURES ON', fmtDate(maturityOf(a)).toUpperCase()]
+                    ],
+                    stampLabel: 'CREATED ON',
+                    actions: [['VIEW DEPOSIT', 'ghost', 'viewCurrent()'], ['DONE', '', 'doneClose()']],
+                    exit: ['stepHome'],
+                    sms: 'You have deposited ' + money(a.principal) + ' Birr to fixed deposit ' + a.id + ' with ' + PARTNERS[a.partner].name + '. Matures ' + fmtDate(maturityOf(a)) + '. M-PESA balance ' + money(S.wallet) + ' Birr.'
+                });
+            });
+        }
+
+        function viewCurrent() {
+            resetTo(['stepAccount']);
+        }
+
+        /* ---------- Phase 2: account ---------- */
+        function openAccount(id) {
+            current = findAccount(id);
+            renderAccount();
+            go('stepAccount');
+        }
+
+        const IC = {
+            eye: '<path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/>',
+            doc: '<path d="M6.5 3.5h11v17l-2.2-1.6-2.2 1.6-2.2-1.6-2.2 1.6-2.2-1.6V3.5Z"/><path d="M9.2 8h5.6M9.2 11.5h5.6"/>',
+            out: '<path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19.5h14"/>',
+            roll: '<path d="M4.5 12a7.5 7.5 0 0 1 13-5.1L19.5 9"/><path d="M19.5 4.5V9H15"/><path d="M19.5 12a7.5 7.5 0 0 1-13 5.1L4.5 15"/><path d="M4.5 19.5V15H9"/>',
+            plus: '<path d="M12 5v14M5 12h14"/>'
+        };
+
+        function actionBtn(label, color, icon, fn, disabled) {
+            return '<button class="action" onclick="' + fn + '"' + (disabled ? ' disabled' : '') + '>'
+                + '<span class="ic ' + color + '"><svg viewBox="0 0 24 24">' + icon + '</svg></span>' + label + '</button>';
+        }
+
+        /* Stored movements plus one interest-accrued line per month the
+           deposit has run (to maturity, or to closure if sooner). */
+        function history(a) {
+            const opened = new Date(a.opened);
+            const until = a.closed ? new Date(a.closed.on) : TODAY;
+            const cap = until < maturityOf(a) ? until : maturityOf(a);
+            const rows = [];
+            let prev = opened;
+            for (let k = 1; ; k++) {
+                const d = addMonths(opened, k);
+                if (d > cap) break;
+                rows.push({ type: 'INTEREST ACCRUED', amount: a.principal * a.rate / 100 * daysBetween(prev, d) / 365, on: d.toISOString(), accrual: true });
+                prev = d;
+            }
+            /* by date; on the same day the accrual comes before a payout */
+            return a.txns.concat(rows).sort((x, y) => new Date(x.on) - new Date(y.on) || (y.accrual ? 1 : 0) - (x.accrual ? 1 : 0));
+        }
+
+        function txnRow(t) {
+            const kinds = {
+                'DEPOSIT':        ['in', '<path d="M12 5v14M5 12h14"/>', '+'],
+                'INTEREST POSTED':['gold', '<path d="M4 18 9.5 12.5l3.5 3.5L20 9"/>', '+'],
+                'INTEREST ACCRUED':['in', '<path d="M4 18 9.5 12.5l3.5 3.5L20 9"/><path d="M15 9h5v5"/>', '+'],
+                'BONUS':          ['gold', '<path d="m12 3.8 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.9l5.8-.8L12 3.8Z"/>', '+'],
+                'WITHDRAW':       ['out', '<path d="M12 5v11"/><path d="m7.5 11.5 4.5 4.5 4.5-4.5"/>', '-'],
+                'ROLLED OVER':    ['out', IC.roll, '-']
+            };
+            const k = kinds[t.type] || kinds['DEPOSIT'];
+            return '<div class="txn"><span class="ic ' + k[0] + '"><svg viewBox="0 0 24 24">' + k[1] + '</svg></span>'
+                + '<span class="t">' + t.type + '</span>'
+                + '<span class="a"><b>' + k[2] + money(t.amount) + ' Birr</b><small>' + fmtDate(t.on) + '</small></span></div>';
+        }
+
+        function renderAccount() {
+            const a = current;
+            if (!a) return;
+            const s = statusOf(a);
+            const partner = PARTNERS[a.partner];
+            const pct = elapsed(a) / termDays(a) * 100;
+            const left = daysBetween(TODAY, maturityOf(a));
+            document.getElementById('acctHead').classList.toggle('muted', s === 'closed');
+
+            let big, barCls, footL, footR;
+            if (s === 'closed') {
+                big = '0.00 Birr';
+                barCls = 'grey';
+                footL = 'Closed ' + fmtDate(a.closed.on);
+                footR = money(a.closed.paid) + ' Birr paid';
+            } else if (s === 'matured') {
+                big = money(maturedTotal(a)) + ' Birr';
+                barCls = '';
+                footL = 'Opened ' + fmtDate(a.opened);
+                footR = 'Matured ' + fmtDate(maturityOf(a));
+            } else {
+                big = money(a.principal) + ' Birr';
+                barCls = 'blue';
+                footL = 'Opened ' + fmtDate(a.opened);
+                footR = left + ' days to ' + fmtShort(maturityOf(a));
+            }
+
+            let html = '<div class="acct-card">'
+                + '<div class="who">' + duo(partner.logo, 26) + partner.name + ' &nbsp;' + maskId(a.id) + '</div>'
+                + '<p class="nm">' + a.name + '</p>'
+                + '<p class="big">' + big + '</p>'
+                + statusChip(a)
+                + '<div class="bar term-bar ' + barCls + '"><i style="width:' + (s === 'active' ? pct : 100).toFixed(1) + '%"></i></div>'
+                + '<div class="term-foot"><span>' + footL + '</span><span>' + footR + '</span></div>'
+                + '</div>';
+
+            if (s === 'active') {
+                html += '<div class="actions">'
+                    + actionBtn('CHECK<br>BALANCE', 'green', IC.eye, 'checkBalance()')
+                    + actionBtn('MINI<br>STATEMENT', 'purple', IC.doc, 'miniStatement()')
+                    + actionBtn('EARLY<br>WITHDRAW', 'red', IC.out, 'startEarly()')
+                    + '</div>';
+            } else if (s === 'matured') {
+                html += '<div class="actions">'
+                    + actionBtn('WITHDRAW', 'green', IC.out, 'maturityChoice()')
+                    + actionBtn('ROLL<br>OVER', 'blue', IC.roll, 'startRollover()')
+                    + actionBtn('MINI<br>STATEMENT', 'purple', IC.doc, 'miniStatement()')
+                    + '</div>';
+            } else {
+                html += '<div class="actions">'
+                    + actionBtn('CHECK<br>BALANCE', 'green', IC.eye, '', true)
+                    + actionBtn('MINI<br>STATEMENT', 'purple', IC.doc, '', true)
+                    + actionBtn('NEW<br>DEPOSIT', 'blue', IC.plus, 'startNewDeposit()')
+                    + '</div>'
+                    + '<div class="closed-note">This fixed deposit is closed and its account ID retired. No further deposits, withdrawals, balance or statement requests can be made on it.</div>';
+            }
+
+            /* Overview hierarchy from the brief */
+            const rows = [
+                ['Saving partner', partner.name],
+                ['Account ID', a.id],
+                ['Principal', money(a.principal) + ' Birr']
+            ];
+            if (s === 'active') {
+                rows.push(['Accrued interest', '+' + money(accrued(a)) + ' Birr<small>Lost if withdrawn early</small>', { v: 'good' }]);
+            } else if (s === 'matured') {
+                rows.push(['Interest earned', '+' + money(accrued(a)) + ' Birr', { v: 'good' }]);
+            } else {
+                rows.push(['Total disbursed', money(a.closed.paid) + ' Birr']);
+                rows.push(['Closed by', a.closed.how]);
+            }
+            rows.push(['Interest rate', a.rate + '% p.a.']);
+            rows.push(['Lock period', a.months + ' months']);
+            rows.push(['Maturity date', fmtDate(maturityOf(a))]);
+            html += accFacts('ACCOUNT DETAILS', rows, false);
+
+            html += '<p class="txns-label">TRANSACTIONS</p>'
+                + history(a).reverse().map(txnRow).join('')
+                + '<div style="height:16px"></div>';
+
+            document.getElementById('acctBody').innerHTML = html;
+            document.getElementById('acctScroll').scrollTop = 0;
+        }
+
+        /* P2-04 / P2-05 */
+        function checkBalance() {
+            const a = current;
+            askPin({
+                title: 'CHECK BALANCE',
+                sub: PARTNERS[a.partner].name + ' FIXED DEPOSIT ' + maskId(a.id),
+                ok: () => {
+                    back();
+                    showInfo({
+                        title: 'BALANCE',
+                        chip: 'BALANCE AS OF ' + fmtDate(TODAY).toUpperCase(),
+                        logo: PARTNERS[a.partner].logo,
+                        pct: elapsed(a) / termDays(a),
+                        main: [
+                            ['DEPOSIT NAME', a.name],
+                            ['CURRENT BALANCE', money(a.principal + accrued(a)) + ' BIRR']
+                        ],
+                        rows: [
+                            ['ACCOUNT ID', a.id],
+                            ['PRINCIPAL', money(a.principal) + ' BIRR'],
+                            ['ACCRUED INTEREST', '+' + money(accrued(a)) + ' BIRR', 'good'],
+                            ['MATURITY DATE', fmtDate(maturityOf(a)).toUpperCase()]
+                        ],
+                        actions: [['MINI STATEMENT', 'ghost', 'back(); miniStatement()'], ['DONE', '', 'back()']]
+                    });
+                }
+            });
+        }
+
+        /* P2-06 / P2-07 */
+        function miniStatement() {
+            const a = current;
+            askPin({
+                title: 'MINI STATEMENT',
+                sub: PARTNERS[a.partner].name + ' FIXED DEPOSIT ' + maskId(a.id),
+                ok: () => {
+                    back();
+                    const last = history(a).slice(-5).reverse();
+                    showInfo({
+                        title: 'MINI STATEMENT',
+                        chip: 'SENT TO YOUR PHONE BY SMS',
+                        logo: PARTNERS[a.partner].logo,
+                        pct: elapsed(a) / termDays(a),
+                        main: [
+                            ['DEPOSIT NAME', a.name],
+                            ['ACCOUNT ID', a.id]
+                        ],
+                        rows: last.map(t => {
+                            const out = t.type === 'WITHDRAW' || t.type === 'ROLLED OVER';
+                            return [t.type + ' &middot; ' + fmtShort(t.on).toUpperCase(), (out ? '-' : '+') + money(t.amount) + ' BIRR', out ? 'bad' : ''];
+                        }),
+                        actions: [['DONE', '', 'back()']]
+                    });
+                    setTimeout(() => sms('Mini statement ' + a.id + ': ' + last.map(t => t.type + ' ' + whole(t.amount) + ' ' + fmtShort(t.on)).join(', ') + '.'), 600);
+                }
+            });
+        }
+
+        /* ---------- Phase 3A: maturity ---------- */
+        function maturedTotal(a) { return a.principal + accrued(a); }
+
+        /* P3A-03 */
+        function maturityChoice() {
+            const a = current;
+            openSheet({
+                label: 'YOUR TERM HAS ENDED',
+                logo: PARTNERS[a.partner].logo,
+                title: money(maturedTotal(a)) + ' Birr',
+                text: 'What would you like to do with your matured balance?',
+                actions: [
+                    ['WITHDRAW', 'primary', 'startMatureWithdraw()'],
+                    ['ROLL OVER TO A NEW TERM', 'blue', 'startRollover()'],
+                    ['NOT NOW', 'ghost', 'closeSheet()']
+                ]
+            });
+        }
+
+        function startMatureWithdraw() {
+            flow = { kind: 'mature', dest: 'wallet' };
+            renderPayout();
+            go('stepPayout');
+        }
+
+        function destinations() {
+            return [{ id: 'wallet', name: 'M-PESA Wallet', sub: 'Balance ' + money(S.wallet) + ' Birr', logo: LOGOS + 'M-PESA-logo-icon.png' }]
+                .concat(POCKETS.map((p, i) => ({ id: 'pocket' + i, fd: p.fd, name: p.name, sub: PARTNERS[p.partner].name + ' savings pocket', logo: PARTNERS[p.partner].logo }))
+                    /* a locked deposit can't take payouts */
+                    .filter(d => !d.fd));
+        }
+
+        function renderPayout() {
+            const a = current;
+            const early = flow.kind === 'early';
+            document.getElementById('payoutTitle').textContent = early ? 'EARLY WITHDRAWAL' : 'WITHDRAW';
+            const cta = document.getElementById('payoutCta');
+            cta.classList.toggle('danger', early);
+            cta.firstChild.textContent = early ? 'WITHDRAW AND CLOSE' : 'CONFIRM';
+
+            let html = '<div class="detail-top" style="margin-top:6px">'
+                + duo(PARTNERS[a.partner].logo, 76)
+                + '<small>' + a.name.toUpperCase() + ' &middot; ' + maskId(a.id) + '</small>'
+                + '<h3>' + money(early ? a.principal : maturedTotal(a)) + ' Birr</h3></div>';
+
+            const rows = early ? [
+                ['Principal', money(a.principal) + ' Birr', { v: 'good' }],
+                ['Accrued interest', money(accrued(a)) + ' Birr', { v: 'lost' }],
+                ['You lose', '-' + money(accrued(a)) + ' Birr', { v: 'bad' }],
+                ['You receive', money(a.principal) + ' Birr', { row: 'total' }]
+            ] : [
+                ['Principal', money(a.principal) + ' Birr'],
+                ['Interest', '+' + money(accrued(a)) + ' Birr', { v: 'good' }],
+                ['You receive', money(maturedTotal(a)) + ' Birr', { row: 'total' }]
+            ];
+            html += accFacts('WITHDRAWAL SUMMARY', rows, true);
+
+            if (early) {
+                html += '<div class="dest-label">SEND TO</div>'
+                    + destinations().map(d => destRow(d, d.id === flow.dest, 'pickDest(\'' + d.id + '\')')).join('')
+                    + '<div class="note warn" style="margin-top:4px"><svg viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>'
+                    + '<span>This account will be closed. No further deposits or interest will be added.</span></div>';
+            } else {
+                html += '<div class="dest-label">SEND TO</div>'
+                    + destinations().map(d => destRow(d, d.id === flow.dest, 'pickDest(\'' + d.id + '\')')).join('')
+                    + '<div class="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.9v.1"/></svg>'
+                    + '<span>The full balance is paid out and this fixed deposit is closed.</span></div>';
+            }
+            html += '<div style="height:12px"></div>';
+            document.getElementById('payoutBody').innerHTML = html;
+        }
+
+        function destRow(d, on, fn) {
+            return '<div class="dest' + (on ? ' on' : '') + '"' + (fn ? ' onclick="' + fn + '"' : '') + '>'
+                + '<img src="' + d.logo + '" alt="">'
+                + '<span class="t"><b>' + d.name + '</b><small>' + d.sub + '</small></span>'
+                + '<span class="radio"></span></div>';
+        }
+
+        function pickDest(id) {
+            flow.dest = id;
+            renderPayout();
+        }
+
+        function payoutContinue() {
+            const a = current;
+            const early = flow.kind === 'early';
+            const dest = destinations().find(d => d.id === flow.dest);
+            askPin({
+                title: early ? 'EARLY WITHDRAWAL' : 'MATURITY WITHDRAWAL',
+                sub: money(early ? a.principal : maturedTotal(a)) + ' BIRR TO ' + dest.name.toUpperCase(),
+                ok: early ? () => runEarly(dest) : () => runMature(dest)
+            });
+        }
+
+        function closeAccount(a, paid, how) {
+            a.closed = { on: TODAY.toISOString(), paid: paid, how: how };
+        }
+
+        function runMature(dest) {
+            const a = current;
+            processing('PROCESSING WITHDRAWAL', [
+                'Verifying your identity',
+                'Confirming maturity',
+                'Calculating interest',
+                'Paying out from ' + PARTNERS[a.partner].name,
+                'Closing the account'
+            ], () => {
+                const interest = accrued(a), total = maturedTotal(a);
+                a.txns.push({ type: 'INTEREST POSTED', amount: interest, on: TODAY.toISOString() });
+                a.txns.push({ type: 'WITHDRAW', amount: total, on: TODAY.toISOString() });
+                closeAccount(a, total, 'Maturity withdrawal');
+                if (dest.id === 'wallet') S.wallet += total;
+                save();
+                showDone({
+                    title: 'DEPOSIT CLOSED',
+                    chip: 'DEPOSIT CLOSED SUCCESSFULLY',
+                    logo: PARTNERS[a.partner].logo,
+                    pct: 1,
+                    main: [
+                        ['DEPOSIT NAME', a.name],
+                        [dest.id === 'wallet' ? 'RETURNED TO WALLET' : 'SENT TO ' + dest.name.toUpperCase(), money(total) + ' BIRR']
+                    ],
+                    rows: [
+                        ['DEPOSIT', money(a.principal) + ' BIRR'],
+                        ['INTEREST EARNED', '+' + money(interest) + ' BIRR', 'good']
+                    ],
+                    stampLabel: 'CLOSED ON',
+                    actions: [['VIEW WALLET', 'ghost', "window.location.href='index.html'"], ['DONE', '', 'doneClose()']],
+                    exit: ['stepHome'],
+                    sms: 'Fixed deposit ' + a.id + ' is closed. ' + money(total) + ' Birr has been paid to your ' + dest.name + '. Thank you for saving with M-PESA.'
+                });
+            });
+        }
+
+        /* ---------- Phase 3R: rollover ---------- */
+        function startRollover() {
+            flow = { kind: 'rollover', amount: Math.floor(maturedTotal(current) * 100) / 100, partner: current.partner };
+            renderPlans();
+            go('stepPlans');
+        }
+
+        function runRollover() {
+            const old = current;
+            const p = flow.plan;
+            processing('ROLLING OVER', [
+                'Confirming maturity',
+                'Posting interest',
+                'Creating your new term',
+                'Moving funds to ' + PARTNERS[flow.partner].name
+            ], () => {
+                const interest = accrued(old);
+                old.txns.push({ type: 'INTEREST POSTED', amount: interest, on: TODAY.toISOString() });
+                old.txns.push({ type: 'ROLLED OVER', amount: flow.amount, on: TODAY.toISOString() });
+                closeAccount(old, flow.amount, 'Rollover to a new term');
+                const a = account(newId('FD', 8), planName(p), p, flow.amount, TODAY, flow.partner);
+                S.accounts.unshift(a);
+                save();
+                current = a;
+                showDone({
+                    title: 'DEPOSIT ROLLED OVER',
+                    chip: 'NEW TERM STARTED SUCCESSFULLY',
+                    logo: PARTNERS[a.partner].logo,
+                    pct: 0,
+                    main: [
+                        ['DEPOSIT NAME', a.name],
+                        ['LOCKED AMOUNT', money(a.principal) + ' BIRR']
+                    ],
+                    rows: [
+                        ['LOCK PERIOD', a.months + ' MONTHS'],
+                        ['INTEREST RATE', a.rate + '% P.A.'],
+                        ['MATURES ON', fmtDate(maturityOf(a)).toUpperCase()]
+                    ],
+                    stampLabel: 'STARTED ON',
+                    actions: [['VIEW DEPOSIT', 'ghost', 'viewCurrent()'], ['DONE', '', 'doneClose()']],
+                    exit: ['stepHome'],
+                    sms: money(a.principal) + ' Birr has been rolled over into fixed deposit ' + a.id + ' with ' + PARTNERS[a.partner].name + ' at ' + a.rate + '%. Matures ' + fmtDate(maturityOf(a)) + '.'
+                });
+            });
+        }
+
+        /* ---------- Phase 3B: early withdrawal ---------- */
+        let consented = false;
+
+        function startEarly() {
+            flow = { kind: 'early', dest: 'wallet' };
+            consented = false;
+            const a = current;
+            const lost = accrued(a);
+            document.getElementById('earlyBody').innerHTML =
+                '<span class="warn-ring" style="display:flex"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 6.6-1.6"/><path d="M12 14.5v2"/></svg></span>'
+                + '<p class="early-title">BREAK YOUR DEPOSIT BEFORE ' + fmtDate(maturityOf(a)).toUpperCase() + '?</p>'
+                + '<p class="early-copy">You are ' + daysBetween(TODAY, maturityOf(a)) + ' days from maturity. Withdrawing now closes the account and returns your principal only.</p>'
+                + accFacts('WHAT HAPPENS', [
+                    ['Principal returned', money(a.principal) + ' Birr', { v: 'good' }],
+                    ['Accrued interest', 'Lost<small>' + money(accrued(a)) + ' Birr</small>', { v: 'bad' }],
+                    ['Account', 'Closed']
+                ], true)
+                + '<div class="consent" id="consent" onclick="toggleConsent()">'
+                + '<span class="box"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>'
+                + '<span>I understand that I will lose <b>' + money(lost) + ' Birr</b> in interest, and that this fixed deposit will be closed.</span>'
+                + '</div><div style="height:10px"></div>';
+            document.getElementById('earlyGo').disabled = true;
+            go('stepEarly');
+        }
+
+        function toggleConsent() {
+            consented = !consented;
+            document.getElementById('consent').classList.toggle('on', consented);
+            document.getElementById('earlyGo').disabled = !consented;
+        }
+
+        /* P3B-05: declining cancels and leaves the account open */
+        function declineEarly() {
+            const a = current;
+            showInfo({
+                title: 'WITHDRAWAL CANCELLED',
+                chip: 'YOUR DEPOSIT STAYS LOCKED',
+                logo: PARTNERS[a.partner].logo,
+                pct: elapsed(a) / termDays(a),
+                main: [
+                    ['DEPOSIT NAME', a.name],
+                    ['LOCKED AMOUNT', money(a.principal) + ' BIRR']
+                ],
+                rows: [
+                    ['INTEREST RATE', a.rate + '% P.A.'],
+                    ['INTEREST SO FAR', '+' + money(accrued(a)) + ' BIRR', 'good'],
+                    ['MATURES ON', fmtDate(maturityOf(a)).toUpperCase()]
+                ],
+                actions: [['BACK TO MY DEPOSIT', '', "resetTo(['stepAccount'])"]]
+            });
+        }
+
+        function acceptEarly() {
+            renderPayout();
+            go('stepPayout');
+        }
+
+        function runEarly(dest) {
+            dest = dest || destinations()[0];
+            const a = current;
+            /* P3B-09: a deposit that has reached maturity is paid in full instead */
+            if (statusOf(a) !== 'active') { startMatureWithdraw(); return; }
+            processing('PROCESSING WITHDRAWAL', [
+                'Verifying your identity',
+                'Checking maturity date',
+                'Calculating principal',
+                'Paying out from ' + PARTNERS[a.partner].name,
+                'Closing the account'
+            ], () => {
+                const lost = accrued(a);
+                a.txns.push({ type: 'WITHDRAW', amount: a.principal, on: TODAY.toISOString() });
+                closeAccount(a, a.principal, 'Early withdrawal');
+                if (dest.id === 'wallet') S.wallet += a.principal;
+                save();
+                showDone({
+                    title: 'DEPOSIT CLOSED',
+                    chip: 'DEPOSIT CLOSED SUCCESSFULLY',
+                    logo: PARTNERS[a.partner].logo,
+                    pct: elapsed(a) / termDays(a),
+                    main: [
+                        ['DEPOSIT NAME', a.name],
+                        [dest.id === 'wallet' ? 'RETURNED TO WALLET' : 'SENT TO ' + dest.name.toUpperCase(), whole(a.principal) + ' BIRR']
+                    ],
+                    rows: [
+                        ['INTEREST', 'LOST ' + money(lost) + ' BIRR', 'bad'],
+                        ['CLOSED', 'BEFORE MATURITY']
+                    ],
+                    stampLabel: 'CLOSED ON',
+                    actions: [['VIEW WALLET', 'ghost', "window.location.href='index.html'"], ['DONE', '', 'doneClose()']],
+                    exit: ['stepHome'],
+                    sms: 'Fixed deposit ' + a.id + ' is closed. ' + money(a.principal) + ' Birr principal paid to your ' + dest.name + '; interest lost for early withdrawal.'
+                });
+            });
+        }
+
+        /* ---------- ⋮ menu ---------- */
+        const MENU_IC = {
+            faq: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6"/><path d="M12 16.8v.1"/>',
+            close: '<path d="M14 4.5H6.5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1H14"/><path d="M10.5 12h10"/><path d="m17 8.5 3.5 3.5-3.5 3.5"/>'
+        };
+
+        function openMenu(where) {
+            const items = [['FAQS', 'faq', 'openFaq()', false]];
+            if (where === 'account' && current) {
+                items.push(['CLOSE ACCOUNT', 'close', 'askClose()', statusOf(current) === 'closed']);
+            } else if (where === 'fixed') {
+                items.push(['CLOSE ACCOUNT', 'close', 'pickToClose()', !S.accounts.some(a => !a.closed)]);
+            }
+            const pop = document.getElementById('menuPop');
+            pop.style.top = where === 'account' ? '70px' : '74px';
+            pop.innerHTML = items.map(i =>
+                '<button class="menu-item" onclick="closeMenu(); ' + i[2] + '"' + (i[3] ? ' disabled' : '') + '>'
+                + '<svg viewBox="0 0 24 24">' + MENU_IC[i[1]] + '</svg>' + i[0] + '</button>').join('');
+            document.getElementById('menu').classList.add('show');
+        }
+
+        function closeMenu() { document.getElementById('menu').classList.remove('show'); }
+
+        /* ---------- Confirm dialog ---------- */
+        function openDialog(title, html, onConfirm) {
+            document.getElementById('dialogTitle').textContent = title;
+            document.getElementById('dialogText').innerHTML = html;
+            document.getElementById('dialogGo').onclick = () => { closeDialog(); onConfirm(); };
+            document.getElementById('dialog').classList.add('show');
+        }
+
+        function closeDialog() { document.getElementById('dialog').classList.remove('show'); }
+
+        /* ---------- Close account (from the ⋮ menu) ---------- */
+        /* From the list: with more than one open deposit, pick which one
+           first (P3B-02); with one, go straight to its confirmation. */
+        function pickToClose() {
+            const open = S.accounts.filter(a => !a.closed);
+            if (!open.length) return;
+            if (open.length === 1) { current = open[0]; askClose(); return; }
+            openSheet({
+                label: 'CLOSE ACCOUNT',
+                title: 'WHICH DEPOSIT?',
+                text: 'Choose the fixed deposit you want to close.',
+                html: open.map(a => {
+                    const early = statusOf(a) === 'active';
+                    return '<div class="dest" onclick="closeSheet(); current = findAccount(\'' + a.id + '\'); askClose()">'
+                        + duo(PARTNERS[a.partner].logo, 34)
+                        + '<span class="t"><b>' + a.name + '</b><small>' + money(a.principal) + ' Birr &middot; '
+                        + (early ? 'matures ' + fmtDate(maturityOf(a)) : 'matured') + '</small></span>'
+                        + statusChip(a) + '</div>';
+                }).join(''),
+                actions: [['CANCEL', 'ghost', 'closeSheet()']]
+            });
+        }
+
+        /* Closing pays everything out to M-PESA and needs the PIN. Before
+           maturity it is an early withdrawal, so the interest is lost. */
+        function askClose() {
+            const a = current;
+            const s = statusOf(a);
+            if (s === 'closed') return;
+            const early = s === 'active';
+            const pay = early ? a.principal : maturedTotal(a);
+            const terms = early
+                ? 'You will receive <b>' + money(pay) + ' Birr</b> and lose <b>' + money(accrued(a)) + ' Birr</b> interest, because it is before the maturity date.'
+                : 'You will receive <b>' + money(pay) + ' Birr</b>, your deposit plus interest.';
+            openDialog('CONFIRM CLOSURE',
+                'Please review the details below and confirm that you want to close this fixed deposit. ' + terms
+                + ' After closing, this deposit cannot be reopened &mdash; you can create a new one anytime.',
+                () => {
+                    flow = { kind: early ? 'early' : 'mature', dest: 'wallet' };
+                    const wallet = destinations()[0];
+                    askPin({
+                        title: 'CLOSE ACCOUNT',
+                        sub: money(pay) + ' BIRR TO M-PESA WALLET',
+                        ok: early ? () => runEarly(wallet) : () => runMature(wallet)
+                    });
+                });
+        }
+
+        /* ---------- FAQs ---------- */
+        let faqTab = 'info';
+
+        function openFaq() {
+            faqTab = 'info';
+            renderFaq();
+            go('stepFaq');
+        }
+
+        function setFaqTab(t) {
+            faqTab = t;
+            renderFaq();
+        }
+
+        const QUESTIONS = [
+            ['What is a fixed deposit?', 'A fixed deposit locks your money with a partner bank for a set period of 3, 6, 9 or 12 months. In return you earn a fixed interest rate that does not change during the term.'],
+            ['How much interest will I earn?', 'The rate depends on the period: 8% for 3 months, 9% for 6 months, 9.5% for 9 months and 10% for 12 months, per year. Interest builds up every day and is paid on the maturity date.'],
+            ['What is the minimum deposit?', 'Each period has its own minimum: 10,000 Birr for 3 months, 20,000 Birr for 6 months, 30,000 Birr for 9 months and 50,000 Birr for 12 months.'],
+            ['Can I withdraw before the maturity date?', 'Yes, but you will lose all the interest. Only your deposit is returned, to your M-PESA wallet or another savings pocket, and the fixed deposit is closed.'],
+            ['What happens at maturity?', 'You get a notification. You can then withdraw your deposit plus interest to M-PESA or a savings pocket, or roll it over into a new term.'],
+            ['Can I add money to an existing fixed deposit?', 'No. The amount is fixed for the whole term. You can open another fixed deposit at any time.'],
+            ['How do I close my fixed deposit?', 'Open the deposit, tap the menu at the top right and choose Close account. Confirm, then enter your M-PESA PIN. A closed deposit cannot be reopened.'],
+            ['Which bank holds my fixed deposit?', 'Your fixed deposit is held with Awash Bank, our saving partner.']
+        ];
+
+        function renderFaq() {
+            document.getElementById('faqTabInfo').classList.toggle('on', faqTab === 'info');
+            document.getElementById('faqTabQs').classList.toggle('on', faqTab === 'qs');
+            const body = document.getElementById('faqBody');
+
+            if (faqTab === 'qs') {
+                body.innerHTML = QUESTIONS.map((q, i) =>
+                    '<div class="qa" id="qa' + i + '">'
+                    + '<button class="qa-q" onclick="document.getElementById(\'qa' + i + '\').classList.toggle(\'open\')"><span>' + q[0] + '</span>'
+                    + '<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>'
+                    + '<div class="qa-a">' + q[1] + '</div></div>').join('')
+                    + '<div style="height:16px"></div>';
+                body.scrollTop = 0;
+                return;
+            }
+
+            const live = S.accounts.filter(a => !a.closed);
+            const locked = live.reduce((t, a) => t + a.principal, 0);
+            const interest = live.reduce((t, a) => t + accrued(a), 0);
+            const next = live.filter(a => statusOf(a) === 'active').map(maturityOf).sort((x, y) => x - y)[0];
+            const blk = t => '<span class="blk">' + t + '</span>';
+            const rows = [
+                ['LOCK PERIOD', 'How long your money stays locked. You can choose 3, 6, 9 or 12 months.', blk('3 &ndash; 12') + '<br>Months'],
+                ['MINIMUM DEPOSIT', 'The smallest amount you can lock. It depends on the period you choose.', blk('From') + '<br>10,000 Birr'],
+                ['INTEREST RATE', 'A fixed yearly rate that does not change during your term. Longer periods earn more.', blk('8% &ndash; 10%') + '<br>per year'],
+                ['TOTAL LOCKED', 'The sum of all your active fixed deposits.', whole(locked) + ' Birr'],
+                ['ACCRUED INTEREST', 'Interest built up so far. It grows daily and is paid on the maturity date.', money(interest) + ' Birr'],
+                ['NEXT MATURITY', 'The date your next fixed deposit ends and can be withdrawn or rolled over.', next ? fmtDate(next) : '&mdash;'],
+                ['EARLY WITHDRAWAL', 'Closing a deposit before its maturity date returns only the deposit. All interest is lost.', blk('Interest') + '<br>lost'],
+                ['SAVING PARTNER', 'The bank that holds your fixed deposit.', 'Awash Bank']
+            ];
+            body.innerHTML = '<div class="faq-head"><span>FIXED DEPOSIT TERMS</span><span>MY SAVINGS</span></div>'
+                + rows.map(r => '<div class="faq-row"><div class="l"><b>' + r[0] + '</b><p>' + r[1] + '</p></div><div class="r">' + r[2] + '</div></div>').join('')
+                + '<div style="height:16px"></div>';
+            body.scrollTop = 0;
+        }
+
+        /* ---------- Sheet ---------- */
+        function openSheet(o) {
+            let html = '<p class="sheet-label">' + o.label + '</p><div class="sheet-hero">';
+            if (o.logo) html += duo(o.logo, 58);
+            if (o.icon) html += '<span class="round ic ' + o.icon[0] + '"><svg viewBox="0 0 24 24">' + o.icon[1] + '</svg></span>';
+            if (o.title) html += '<h3>' + o.title + '</h3>';
+            if (o.text) html += '<p>' + o.text + '</p>';
+            html += '</div>';
+            if (o.facts) html += accFacts(o.factsTitle || 'DETAILS', o.facts, true);
+            if (o.html) html += o.html;
+            if (o.note) html += '<p class="sheet-hero" style="margin:12px 0 0 0"><span style="font-size:12.5px;color:#9a9a9a">' + o.note + '</span></p>';
+            html += '<div class="sheet-actions' + (o.row ? ' row' : '') + '">'
+                + o.actions.map(a => '<button class="sheet-btn ' + a[1] + '" onclick="' + a[2] + '">' + a[0] + '</button>').join('')
+                + '</div>';
+            document.getElementById('sheetBody').innerHTML = html;
+            document.getElementById('sheet').classList.add('show');
+        }
+
+        function closeSheet() {
+            document.getElementById('sheet').classList.remove('show');
+        }
+
+        /* ---------- SMS heads-up ---------- */
+        let smsTimer;
+        function sms(text) {
+            document.getElementById('smsText').textContent = text;
+            document.getElementById('sms').classList.add('show');
+            clearTimeout(smsTimer);
+            smsTimer = setTimeout(hideSms, 5200);
+        }
+
+        function hideSms() { document.getElementById('sms').classList.remove('show'); }
+
+        /* ---------- Toast ---------- */
+        let toastTimer;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+        }
+
+        /* ---------- Physical keyboard ---------- */
+        /* The on-screen keypads also take a real keyboard: digits type,
+           Backspace deletes, Enter continues, Esc goes back. */
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey || e.metaKey || e.altKey || processingNow) return;
+            const tag = (e.target.tagName || '').toLowerCase();
+            if (tag === 'input' || tag === 'textarea') return;
+
+            const step = (document.querySelector('.step.active') || {}).id;
+            const digit = /^[0-9]$/.test(e.key) ? e.key : null;
+            const sheetOpen = document.getElementById('sheet').classList.contains('show');
+            const dialogOpen = document.getElementById('dialog').classList.contains('show');
+
+            if (e.key === 'Escape') { e.preventDefault(); back(); return; }
+            if (sheetOpen || dialogOpen) return;
+
+            if (step === 'stepAmount') {
+                if (digit) { e.preventDefault(); amountPress(digit); }
+                else if (e.key === 'Backspace') { e.preventDefault(); amountDelete(); }
+                else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!document.getElementById('amountBtn').disabled) amountContinue();
+                }
+            } else if (step === 'stepPin') {
+                if (digit) { e.preventDefault(); pinPress(digit); }
+                else if (e.key === 'Backspace') { e.preventDefault(); pin = pin.slice(0, -1); paintPin(); }
+            }
+        });
+
+        /* ---------- Start ---------- */
+        renderHome();
+        if (new URLSearchParams(location.search).get('tab') === 'fixed') setTab('fixed');
+    </script>
+
+</body>
+</html>
