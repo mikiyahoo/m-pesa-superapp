@@ -160,6 +160,10 @@
             '@media (min-width: 720px) { body { padding-left: 196px; } }',
             '@media (max-width: 719px) { .proto-rail { display: none; } }',
 
+            /* ----- no step-progress marks in flow headers ----- */
+            /* hidden rather than removed, so each header keeps its balance */
+            '.progress { visibility: hidden !important; }',
+
             /* ----- on a real phone, the screen is the whole page ----- */
             /* No frame around it, and no fake clock/battery bar: the
                phone already shows its own. */

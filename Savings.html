@@ -1144,7 +1144,8 @@
             align-items: flex-start;
         }
 
-        .green-head.tall { height: 128px; }
+        .green-head.tall { height: 100px; }
+        .green-head.short { height: 52px; }
         .green-head.muted { background: linear-gradient(110deg, #8E9A93 0%, #A9B3AD 100%); }
 
         .green-head .pat {
@@ -1943,6 +1944,28 @@
             text-transform: uppercase;
         }
 
+        .acct-card .nm .eye {
+            display: inline-flex;
+            vertical-align: middle;
+            margin-left: 6px;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        .acct-card .nm .eye svg {
+            width: 17px;
+            height: 17px;
+            stroke: #8a8a8a;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .acct-card .big.masked { letter-spacing: 3px; }
+
         .acct-card .big {
             font-size: 32px;
             font-weight: 400;
@@ -2090,6 +2113,11 @@
             color: #9a9a9a;
             margin-top: 4px;
         }
+
+        /* wallet balance on the left, the field's hint on the right */
+        .field-foot { display: flex; justify-content: space-between; gap: 10px; }
+        .field-foot .wallet { text-align: left; white-space: nowrap; }
+        .field-foot .wallet.short { color: #F0335F; }
 
         .field .chev {
             position: absolute;
@@ -2735,6 +2763,56 @@
             stroke-linejoin: round;
         }
 
+        /* alert on top of a confirmation (early withdrawal) */
+        .alert-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin: 10px 16px 0 16px;
+            padding: 14px;
+            border-radius: 10px;
+            background: #FDEDEF;
+            box-shadow: 0 4px 14px rgba(240, 51, 95, 0.1);
+        }
+
+        .alert-banner .ic {
+            width: 36px;
+            height: 44px;
+            flex-shrink: 0;
+            border-radius: 6px;
+            background: #E0213F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-banner .ic svg {
+            width: 22px;
+            height: 22px;
+            stroke: #ffffff;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .alert-banner b {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #E0213F;
+            letter-spacing: 0.4px;
+            line-height: 1.3;
+        }
+
+        .alert-banner small {
+            display: block;
+            margin-top: 3px;
+            font-size: 12.5px;
+            color: #6a6a6a;
+            line-height: 1.4;
+        }
+
         .early-title {
             text-align: center;
             font-size: 22px;
@@ -3362,7 +3440,7 @@
         }
     </style>
 
-    <script src="assets/prototype-mode.js?v=33"></script>
+    <script src="assets/prototype-mode.js?v=34"></script>
 </head>
 <body>
 
@@ -3662,10 +3740,6 @@
                 <span></span>
             </div>
             <div class="flow-scroll" id="earlyBody"></div>
-            <div class="btn-pair">
-                <button class="flow-btn ghost" onclick="declineEarly()">KEEP SAVING</button>
-                <button class="flow-btn danger" id="earlyGo" onclick="acceptEarly()" disabled>CONTINUE</button>
-            </div>
         </section>
 
         <!-- ============ Withdrawal summary (P3A-04, P3B-06) ============ -->
@@ -3708,7 +3782,7 @@
 
         <!-- ============ Individual saving: create ============ -->
         <section class="step" id="stepIndCreate" data-green>
-            <div class="green-head">
+            <div class="green-head short">
                 <img class="pat" src="assets/M-PESA-pattern.svg" alt="">
                 <button class="icon-btn" onclick="back()" aria-label="Back">
                     <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
@@ -3749,7 +3823,7 @@
                     <label class="field">
                         <span>AMOUNT</span>
                         <input id="indAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); indAmountTouched = true; paintIndForm()">
-                        <small id="indAmountHint"></small>
+                        <div class="field-foot"><small class="wallet" id="indWallet"></small><small id="indAmountHint"></small></div>
                     </label>
                 </div>
                 <div style="height:16px"></div>
@@ -3771,7 +3845,7 @@
                     <button class="icon-btn" onclick="back()" aria-label="Back">
                         <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
                     </button>
-                    <button class="icon-btn" onclick="openFaq()" aria-label="More">
+                    <button class="icon-btn" onclick="openMenu('ind')" aria-label="More">
                         <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg>
                     </button>
                 </div>
@@ -3846,7 +3920,7 @@
                 <label class="field">
                     <span>AMOUNT</span>
                     <input id="recAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); paintRecurring()">
-                    <small id="recHint"></small>
+                    <div class="field-foot"><small class="wallet" id="recWallet"></small><small id="recHint"></small></div>
                 </label>
             </div>
             <div class="btn-pair" id="recActions"></div>
@@ -5002,6 +5076,14 @@
                 + '<span class="a"><b>' + k[2] + money(t.amount) + ' Birr</b><small>' + fmtDate(t.on) + '</small></span></div>';
         }
 
+        /* one show/hide for the balance on every account card */
+        let acctHidden = false;
+        function acctEye(rerender) {
+            return '<button class="eye" onclick="acctHidden = !acctHidden; ' + rerender + '" aria-label="' + (acctHidden ? 'Show' : 'Hide') + ' balance">'
+                + '<svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/>'
+                + (acctHidden ? '' : '<path d="M4 20 20 4"/>') + '</svg></button>';
+        }
+
         function renderAccount() {
             const a = current;
             if (!a) return;
@@ -5031,8 +5113,8 @@
 
             let html = '<div class="acct-card">'
                 + '<div class="who">' + duo(partner.logo, 26) + maskId(a.id) + '</div>'
-                + '<p class="nm">' + a.name + '</p>'
-                + '<p class="big">' + big + '</p>'
+                + '<p class="nm">' + a.name + acctEye('renderAccount()') + '</p>'
+                + '<p class="big' + (acctHidden ? ' masked' : '') + '">' + (acctHidden ? '*****' : big) + '</p>'
                 + statusChip(a)
                 + '<div class="bar term-bar ' + barCls + '"><i style="width:' + (s === 'active' ? pct : 100).toFixed(1) + '%"></i></div>'
                 + '<div class="term-foot"><span>' + footL + '</span><span>' + footR + '</span></div>'
@@ -5376,19 +5458,34 @@
             consented = false;
             const a = current;
             const lost = accrued(a);
+            /* the receipt layout, with an alert on top and a lock in place of a photo */
             document.getElementById('earlyBody').innerHTML =
-                '<span class="warn-ring" style="display:flex"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 6.6-1.6"/><path d="M12 14.5v2"/></svg></span>'
-                + '<p class="early-title">ARE YOU SURE YOU WANT TO WITHDRAW EARLY?</p>'
-                + '<p class="early-copy">Your deposit matures on ' + fmtDate(maturityOf(a)) + ', ' + daysBetween(TODAY, maturityOf(a)) + ' days from now. Withdrawing now closes the account and returns your principal only.</p>'
-                + accFacts('WHAT HAPPENS', [
-                    ['Principal returned', money(a.principal) + ' Birr', { v: 'good' }],
-                    ['Accrued interest', 'Lost<small>' + money(accrued(a)) + ' Birr</small>', { v: 'bad' }],
-                    ['Account', 'Closed']
-                ], true)
-                + '<div class="consent" id="consent" onclick="toggleConsent()">'
+                '<div class="alert-banner">'
+                + '<span class="ic"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2"/><path d="M12 8.5v4M12 15.6v.1"/></svg></span>'
+                + '<span class="t"><b>ARE YOU SURE YOU WANT TO WITHDRAW EARLY?</b>'
+                + '<small>Your deposit matures on ' + fmtDate(maturityOf(a)) + ', ' + daysBetween(TODAY, maturityOf(a)) + ' days from now. Withdrawing now returns your principal only.</small></span>'
+                + '</div>'
+                + '<div class="rcpt" style="margin-top:18px">'
+                + '<div class="rcpt-top"><span class="rcpt-chip">EARLY WITHDRAWAL</span>'
+                + '<span class="warn-ring" style="display:flex;margin:14px auto 0 auto"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 6.6-1.6"/><path d="M12 14.5v2"/></svg></span></div>'
+                + '<div class="rcpt-main">'
+                + [
+                    ['ACCOUNT', a.name.toUpperCase()],
+                    ['PRINCIPAL RETURNED', money(a.principal) + ' BIRR', 'good'],
+                    ['ACCRUED INTEREST', 'LOST &middot; ' + money(lost) + ' BIRR', 'bad'],
+                    ['MATURITY DATE', fmtDate(maturityOf(a)).toUpperCase()],
+                    ['ACCOUNT STATUS', 'CLOSED AFTER WITHDRAWAL']
+                ].map(r => '<div class="rcpt-item"><span><small>' + r[0] + '</small><b class="' + (r[2] || '') + '">' + r[1] + '</b></span></div>').join('')
+                + '</div></div>'
+                + '<div class="consent" id="consent" onclick="toggleConsent()" style="margin-top:16px">'
                 + '<span class="box"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>'
                 + '<span>I understand that I will lose <b>' + money(lost) + ' Birr</b> in interest, and that this fixed deposit will be closed.</span>'
-                + '</div><div style="height:10px"></div>';
+                + '</div>'
+                /* the buttons follow the content instead of floating over it */
+                + '<div class="btn-pair" style="padding-top:18px">'
+                + '<button class="flow-btn ghost" onclick="declineEarly()">KEEP SAVING</button>'
+                + '<button class="flow-btn danger" id="earlyGo" onclick="acceptEarly()" disabled>CONTINUE</button>'
+                + '</div>';
             document.getElementById('earlyGo').disabled = true;
             go('stepEarly');
         }
@@ -5475,9 +5572,11 @@
                 items.push(['CLOSE ACCOUNT', 'close', 'askClose()', statusOf(current) === 'closed']);
             } else if (where === 'fixed') {
                 items.push(['CLOSE ACCOUNT', 'close', 'pickToClose()', !S.accounts.some(a => !a.closed)]);
+            } else if (where === 'ind' && ind) {
+                items.push(['CLOSE ACCOUNT', 'close', 'askCloseInd()', false]);
             }
             const pop = document.getElementById('menuPop');
-            pop.style.top = where === 'account' ? '70px' : '74px';
+            pop.style.top = where === 'account' || where === 'ind' ? '70px' : '74px';
             pop.innerHTML = items.map(i =>
                 '<button class="menu-item" onclick="closeMenu(); ' + i[2] + '"' + (i[3] ? ' disabled' : '') + '>'
                 + '<svg viewBox="0 0 24 24">' + MENU_IC[i[1]] + '</svg>' + i[0] + '</button>').join('');
@@ -5779,7 +5878,7 @@
                 ['INDIVIDUAL SAVINGS', '<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.6-3.8 3.4-6 7-6s6.4 2.2 7 6"/>', 'openIndCreate()'],
                 ['TARGET SAVINGS', '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m12 12 6-6M15.5 5.5H18v2.5"/>', 'openIndCreate(\'target\')'],
                 ['GROUP SAVINGS', '<circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.5-3.2 2.8-5 5.5-5s5 1.8 5.5 5"/><path d="M14.5 14.3c.6-.2 1.3-.3 2-.3 2.3 0 4 1.5 4.4 4.5"/>', 'openType(\'group\')'],
-                ['FIXED-TIME SAVINGS', '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/>', 'openType(\'fixed\')']
+                ['FIXED-TIME SAVINGS', '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/>', 'startNewDeposit()']
             ];
             document.getElementById('sheetBody').innerHTML = '<div class="sheet-grab"></div>'
                 + '<p class="sheet-title">CHOOSE SAVINGS TYPE</p><div style="margin-top:14px">'
@@ -5847,7 +5946,11 @@
                     ? (n >= suggested(goal, by, freq) ? 'Reaches your target on time' : 'Save ' + whole(suggested(goal, by, freq)) + ' Birr ' + freq.toLowerCase() + ' to reach it on time')
                     : 'Taken from your M-PESA wallet';
             hint.style.color = low ? '#F0335F' : '';
-            document.getElementById('indCreateBtn').disabled = (tgt && !name.trim()) || (indAuto && n < IND_MIN_AUTO) || (tgt && (goal < TARGET_MIN || !by));
+            /* the first deduction is taken today, so it has to fit the wallet */
+            const short = indAuto && n > S.wallet;
+            walletLine('indWallet', short);
+            if (short) { hint.textContent = 'Not enough balance'; hint.style.color = '#F0335F'; }
+            document.getElementById('indCreateBtn').disabled = (tgt && !name.trim()) || (indAuto && (n < IND_MIN_AUTO || short)) || (tgt && (goal < TARGET_MIN || !by));
         }
 
         function indCreate() {
@@ -5948,12 +6051,12 @@
         function renderIndPocket() {
             const p = ind;
             let html = '<div class="acct-card">'
-                + '<p class="nm" style="margin-top:4px">' + p.name + '</p>'
-                + '<p class="big" style="margin-bottom:2px">' + money(p.balance) + ' Birr</p>';
+                + '<p class="nm" style="margin-top:4px">' + p.name + acctEye('renderIndPocket()') + '</p>'
+                + '<p class="big' + (acctHidden ? ' masked' : '') + '" style="margin-bottom:2px">' + (acctHidden ? '*****' : money(p.balance) + ' Birr') + '</p>';
             if (p.target) {
                 const c = targetChip(p);
                 const pct = targetPct(p);
-                html += '<p class="tgt-of">of ' + money(p.target.amount) + ' Birr target</p>'
+                html += '<p class="tgt-of">of ' + (acctHidden ? '*****' : money(p.target.amount) + ' Birr') + ' target</p>'
                     + '<span class="chip ' + c[1] + '" style="display:inline-block;margin-top:10px">' + c[0] + '</span>'
                     + '<div class="bar term-bar ' + c[2] + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>'
                     + '<div class="term-foot"><span>' + targetDaysLeft(p) + ' days to ' + fmtShort(p.target.by) + '</span><span>' + pct.toFixed(1) + '%</span></div>';
@@ -6117,6 +6220,44 @@
             });
         }
 
+        /* ---- close a saving account: everything goes back to the wallet ---- */
+        function askCloseInd() {
+            const p = ind;
+            const interest = Math.max(pocketInterest(p), 0);
+            const total = p.balance + interest;
+            openDialog('CLOSE ACCOUNT',
+                (total > 0
+                    ? money(total) + ' Birr (' + money(p.balance) + ' saved + ' + money(interest) + ' interest) will be sent to your M-PESA wallet. '
+                    : '')
+                + (p.auto ? 'Automatic deduction stops. ' : '')
+                + p.name + ' will be closed and cannot be reopened.',
+                () => {
+                    closeDialog();
+                    askPin({
+                        title: 'CLOSE ACCOUNT',
+                        rows: [['ACCOUNT', p.name], ['AMOUNT', money(total) + ' Birr'], ['SEND TO', 'M-PESA Wallet']],
+                        ok: () => runCloseInd(p, total)
+                    });
+                });
+        }
+
+        function runCloseInd(p, total) {
+            processing('CLOSING ACCOUNT', [
+                'Verifying your identity',
+                p.auto ? 'Stopping automatic deduction' : 'Calculating interest',
+                'Paying out to your M-PESA wallet',
+                'Closing the account'
+            ], () => {
+                S.wallet += total;
+                S.individual = S.individual.filter(x => x.id !== p.id);
+                save();
+                resetTo([]);
+                setTab('mine');
+                showToast('ACCOUNT CLOSED');
+                sms(p.name + ' is closed. ' + money(total) + ' Birr has been sent to your M-PESA wallet. M-PESA balance ' + money(S.wallet) + ' Birr.');
+            });
+        }
+
         /* Recurring transfer: the automatic deduction, set or changed later */
         function openRecurring() {
             const a = ind.auto;
@@ -6127,13 +6268,23 @@
             go('stepIndRecurring');
         }
 
+        function walletLine(id, short) {
+            const el = document.getElementById(id);
+            el.textContent = 'Wallet: ' + money(S.wallet) + ' Birr';
+            el.classList.toggle('short', short);
+        }
+
         function paintRecurring() {
             const n = Number(document.getElementById('recAmount').value || 0);
             const low = n && n < IND_MIN_AUTO;
             const hint = document.getElementById('recHint');
             hint.textContent = low ? 'Minimum ' + IND_MIN_AUTO + ' Birr' : 'Taken from your M-PESA wallet';
             hint.style.color = low ? '#F0335F' : '';
-            const btn = '<button class="flow-btn blue" onclick="saveRecurring()"' + (n < IND_MIN_AUTO ? ' disabled' : '') + '>' + (ind.auto ? 'UPDATE' : 'START') + '</button>';
+            /* a new one takes its first deduction now; a change waits for the next date */
+            const short = !ind.auto && n > S.wallet;
+            walletLine('recWallet', short);
+            if (short) { hint.textContent = 'Not enough balance'; hint.style.color = '#F0335F'; }
+            const btn = '<button class="flow-btn blue" onclick="saveRecurring()"' + (n < IND_MIN_AUTO || short ? ' disabled' : '') + '>' + (ind.auto ? 'UPDATE' : 'START') + '</button>';
             document.getElementById('recActions').innerHTML = (ind.auto ? '<button class="flow-btn ghost" onclick="stopRecurring()">STOP</button>' : '') + btn;
         }
 
