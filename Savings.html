@@ -3988,8 +3988,7 @@
 
             /* Overview hierarchy from the brief */
             const rows = [
-                ['Account ID', a.id],
-                ['Principal', money(a.principal) + ' Birr']
+                ['Account ID', a.id]
             ];
             if (s === 'active') {
                 rows.push(['Accrued interest', '+' + money(accrued(a)) + ' Birr<small>Lost if withdrawn early</small>', { v: 'good' }]);
