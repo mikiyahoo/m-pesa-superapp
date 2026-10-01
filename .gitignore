@@ -11,3 +11,8 @@ desktop.ini
 # Logs / temp
 *.log
 *.tmp
+
+# Screen exports (DOWNLOAD PNG / FIGMA JSON buttons)
+# Root-level only, so the PNGs under assets/ stay tracked.
+/*.png
+*.figma.json
