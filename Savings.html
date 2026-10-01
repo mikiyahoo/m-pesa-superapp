@@ -343,6 +343,16 @@
             stroke-linejoin: round;
         }
 
+        .total-card .lbl .eye {
+            display: flex;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        .total-card .amt.masked { letter-spacing: 3px; }
+
         .total-card .amt {
             font-size: 30px;
             font-weight: 500;
@@ -3341,6 +3351,13 @@
                 + '</div>';
         }
 
+        /* the locked total can be hidden, like the M-PESA balance at home */
+        let lockedHidden = false;
+        function toggleLocked() {
+            lockedHidden = !lockedHidden;
+            renderFixedPane();
+        }
+
         function renderFixedPane() {
             const pane = document.getElementById('paneFixed');
             const live = S.accounts.filter(a => !a.closed);
@@ -3360,9 +3377,12 @@
                 const interest = live.reduce((t, a) => t + accrued(a), 0);
                 html += '<div class="total-card locked">'
                     + '<img class="pat" src="assets/M-PESA-pattern.svg" alt="">'
-                    + '<div class="lbl">TOTAL LOCKED SAVINGS <svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/></svg></div>'
-                    + '<p class="amt">' + money(locked) + ' Birr</p>'
-                    + '<div class="split"><div><small>Accrued Interest</small><b>+' + money(interest) + '</b></div>'
+                    + '<div class="lbl"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/></svg>TOTAL LOCKED SAVINGS'
+                    + '<button class="eye" onclick="toggleLocked()" aria-label="' + (lockedHidden ? 'Show' : 'Hide') + ' balance">'
+                    + '<svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/>'
+                    + (lockedHidden ? '' : '<path d="M4 20 20 4"/>') + '</svg></button></div>'
+                    + '<p class="amt' + (lockedHidden ? ' masked' : '') + '">' + (lockedHidden ? '*****' : money(locked) + ' Birr') + '</p>'
+                    + '<div class="split"><div><small>Accrued Interest</small><b>' + (lockedHidden ? '*****' : '+' + money(interest)) + '</b></div>'
                     + '<div><small>Deposits</small><b>' + live.length + ' ACTIVE</b></div></div>'
                     + '</div>';
             }
