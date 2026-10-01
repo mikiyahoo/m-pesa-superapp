@@ -2543,6 +2543,133 @@
             cursor: pointer;
         }
 
+        /* first page of a saving type */
+        .promo {
+            position: relative;
+            height: 150px;
+            margin: 18px 16px 0 16px;
+            border-radius: 16px;
+            overflow: hidden;
+            color: #ffffff;
+            background: #1c1c1c;
+        }
+
+        .promo img {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 62%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%;
+        }
+
+        .promo::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(10, 30, 20, 0.92) 0%, rgba(10, 30, 20, 0.75) 45%, rgba(10, 30, 20, 0.1) 100%);
+        }
+
+        .promo .t {
+            position: relative;
+            z-index: 1;
+            padding: 16px 18px;
+            max-width: 72%;
+        }
+
+        .promo small { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+
+        .promo h3 {
+            font-size: 21px;
+            font-weight: 700;
+            line-height: 1.15;
+            margin-top: 4px;
+        }
+
+        .promo p {
+            font-size: 12.5px;
+            line-height: 1.35;
+            margin-top: 6px;
+            opacity: 0.92;
+        }
+
+        .promo button {
+            position: absolute;
+            right: 14px;
+            bottom: 14px;
+            z-index: 1;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 18px;
+            background: #2FC56D;
+            color: #ffffff;
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            cursor: pointer;
+        }
+
+        .tp-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 0 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #EDEDED;
+            cursor: pointer;
+        }
+
+        .tp-row:last-child { border-bottom: none; }
+
+        .tp-ring {
+            width: 54px;
+            height: 54px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: 5px solid #E4F7EB;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tp-ring img { width: 34px; height: 34px; object-fit: contain; }
+
+        .tp-row .t { flex: 1; min-width: 0; }
+
+        .tp-row .t small {
+            display: block;
+            font-size: 12.5px;
+            color: #6a6a6a;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tp-row .t small b { font-weight: 700; color: #4a4a4a; }
+        .tp-row .t small b.behind { color: #F08A12; }
+
+        .tp-row .t p {
+            margin-top: 4px;
+            font-size: 22px;
+            font-weight: 300;
+            color: #1c1c1c;
+        }
+
+        .tp-row .t p span { font-size: 12px; color: #4a4a4a; margin-right: 6px; letter-spacing: 0.4px; }
+
+        .tp-row .chev {
+            width: 20px;
+            height: 20px;
+            stroke: #6a6a6a;
+            stroke-width: 1.8;
+            fill: none;
+            flex-shrink: 0;
+        }
+
         .sheet-grab {
             width: 36px;
             height: 4px;
@@ -3297,17 +3424,17 @@
                     </div>
 
                     <div class="tiles">
-                        <button class="tile t-green" onclick="openIndCreate()">INDIVIDUAL
+                        <button class="tile t-green" onclick="openType('individual')">INDIVIDUAL
                             <span class="ic"><svg viewBox="0 0 24 24"><path d="M5 19 12 5"/><path d="m8.5 5.6 3.5-.6.6 3.5"/><path d="M13 12l6 7"/><path d="m19.6 15.5-.6 3.5-3.5-.6"/></svg></span>
                         </button>
-                        <button class="tile t-blue" onclick="showToast('GROUP SAVINGS')">GROUP
+                        <button class="tile t-blue" onclick="openType('group')">GROUP
                             <span class="ic"><svg viewBox="0 0 24 24"><path d="M3.5 14.5h3l3.5 2h4.5a1.5 1.5 0 0 0 0-3H11"/><path d="m14.5 13.5 4.2-2.2a1.5 1.5 0 0 1 1.6 2.5L15 18.5H9.5l-3-1.5"/><circle cx="15" cy="6.5" r="2.5"/></svg></span>
                         </button>
                         <button class="tile t-teal" onclick="setTab('fixed')">FIXED
                             <span class="new" id="tileNew">NEW</span>
                             <span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>
                         </button>
-                        <button class="tile t-red" onclick="openIndCreate('target')">TARGET
+                        <button class="tile t-red" onclick="openType('target')">TARGET
                             <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.6"/></svg></span>
                         </button>
                     </div>
@@ -3563,6 +3690,26 @@
             <button class="flow-btn" id="payoutCta" onclick="payoutContinue()">CONFIRM
                 <span class="arrow"><svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></span>
             </button>
+        </section>
+
+        <!-- ============ First page of a saving type (target, individual, group) ============ -->
+        <section class="step" id="stepType">
+            <div class="home-title">
+                <button class="icon-btn home-back" style="display:flex" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <span id="typeTitle"></span>
+            </div>
+            <div class="flow-scroll" id="typeScroll">
+                <div id="typeBody"></div>
+                <div style="height:16px"></div>
+            </div>
+            <div class="home-foot">
+                <button class="flow-btn" id="typeCta">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    <span id="typeCtaLabel"></span>
+                </button>
+            </div>
         </section>
 
         <!-- ============ Individual saving: create ============ -->
@@ -3979,6 +4126,7 @@
             if (prev === 'stepHome') renderHome();
             if (prev === 'stepAccount') renderAccount();
             if (prev === 'stepIndPocket') renderIndPocket();
+            if (prev === 'stepType') renderType();
             show(prev);
         }
 
@@ -4063,6 +4211,96 @@
                 ? groups.filter(g => g.items.length).map(g =>
                     '<p class="list-label"><span>' + g.label + '</span><span>' + g.items.length + '</span></p>' + g.items.join('')).join('')
                 : groups.filter(g => g.key === listFilter).map(g => g.items.length ? g.items.join('') : empty(g)).join('');
+        }
+
+        /* ---------- First page of a saving type ---------- */
+        let typeKind = 'target';
+        let typeHidden = false;
+
+        const EYE = '<path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/>';
+        const CHEV = '<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
+
+        function openType(kind) {
+            typeKind = kind;
+            renderType();
+            go('stepType');
+            document.getElementById('typeScroll').scrollTop = 0;
+        }
+
+        function toggleTypeHidden() {
+            typeHidden = !typeHidden;
+            renderType();
+        }
+
+        function typeRow(p) {
+            let line;
+            if (typeKind === 'target') {
+                const c = targetChip(p);
+                line = p.name.toUpperCase() + ' - <b' + (c[0] === 'BEHIND' ? ' class="behind"' : '') + '>' + targetPct(p).toFixed(0) + '% SAVED</b>';
+            } else {
+                line = p.name.toUpperCase() + ' - <b>' + (p.auto ? 'AUTO-SAVE' : IND_RATE + '% INTEREST') + '</b>';
+            }
+            return '<div class="tp-row" onclick="openIndPocket(\'' + p.id + '\')">'
+                + '<span class="tp-ring"><img src="' + PARTNERS[PARTNER].logo + '" alt=""></span>'
+                + '<span class="t"><small>' + line + '</small><p><span>SAVED</span>' + (typeHidden ? '*****' : whole(p.balance) + ' BIRR') + '</p></span>'
+                + CHEV + '</div>';
+        }
+
+        function renderType() {
+            const T = {
+                target: {
+                    title: 'TARGET SAVINGS', label: 'TOTAL TARGET SAVINGS', cta: 'NEW TARGET SAVING', go: 'openIndCreate(\'target\')',
+                    promo: ['M-PESA Challenge', '30-day Goal Sprint', 'Hit your pocket target in 30 days.<br>2,341 joined'],
+                    empty: 'Give your saving a goal and track how close you are.'
+                },
+                individual: {
+                    title: 'INDIVIDUAL SAVINGS', label: 'TOTAL INDIVIDUAL SAVINGS', cta: 'NEW INDIVIDUAL SAVING', go: 'openIndCreate()',
+                    promo: ['Lehulum Saving', 'Save a little, every day', 'Turn on automatic deduction and earn ' + IND_RATE + '% a year.'],
+                    empty: 'Save any amount, any time, and withdraw when you need it.'
+                },
+                group: {
+                    title: 'GROUP SAVINGS', label: 'TOTAL GROUP SAVINGS', cta: 'NEW GROUP', go: 'showToast(\'NEW GROUP\')',
+                    promo: ['Save together', 'Reach it as a group', 'Pool money with family and friends toward one goal.'],
+                    empty: 'You are not in any saving group yet. Start one and invite family and friends.'
+                }
+            }[typeKind];
+
+            const list = typeKind === 'target' ? S.individual.filter(p => p.target)
+                : typeKind === 'individual' ? S.individual.filter(p => !p.target) : [];
+            const total = list.reduce((t, p) => t + p.balance, 0);
+            const hide = v => typeHidden ? '*****' : v;
+
+            let left, right;
+            if (typeKind === 'target') {
+                left = ['Target Amount', hide('ETB ' + whole(list.reduce((t, p) => t + p.target.amount, 0)))];
+                right = ['On Track', list.filter(p => targetChip(p)[0] !== 'BEHIND').length + ' OF ' + list.length];
+            } else if (typeKind === 'individual') {
+                left = ['Pockets', String(list.length)];
+                right = ['Auto-save', list.filter(p => p.auto).length + ' ON'];
+            } else {
+                left = ['Groups', '0'];
+                right = ['Members', '0'];
+            }
+
+            document.getElementById('typeTitle').textContent = T.title;
+            document.getElementById('typeCtaLabel').textContent = T.cta;
+            document.getElementById('typeCta').setAttribute('onclick', T.go);
+
+            document.getElementById('typeBody').innerHTML = '<div class="total-card">'
+                + '<img class="pat" src="assets/M-PESA-pattern.svg" alt="">'
+                + '<div class="lbl">' + T.label
+                + '<button class="eye" onclick="toggleTypeHidden()" aria-label="' + (typeHidden ? 'Show' : 'Hide') + ' balance">'
+                + '<svg viewBox="0 0 24 24">' + EYE + (typeHidden ? '' : '<path d="M4 20 20 4"/>') + '</svg></button></div>'
+                + '<p class="amt' + (typeHidden ? ' masked' : '') + '">' + hide(money(total) + ' Birr') + '</p>'
+                + '<div class="split"><div><small>' + left[0] + '</small><b>' + left[1] + '</b></div>'
+                + '<div><small>' + right[0] + '</small><b>' + right[1] + '</b></div></div>'
+                + '</div>'
+                + '<div class="promo"><img src="assets/savings-optin.jpg" alt="">'
+                + '<div class="t"><small>' + T.promo[0] + '</small><h3>' + T.promo[1] + '</h3><p>' + T.promo[2] + '</p></div>'
+                + '<button onclick="showToast(\'' + T.promo[1].toUpperCase() + '\')">VIEW DETAILS</button></div>'
+                + '<div class="section-head"><span>ACTIVE POCKETS</span></div>'
+                + (list.length ? list.map(typeRow).join('')
+                    : '<div class="list-empty">' + T.empty + '<button onclick="' + T.go + '">' + T.cta + '</button></div>');
         }
 
         function statusChip(a) {
