@@ -172,6 +172,25 @@
             '        box-shadow: none !important;',
             '    }',
             '    .status-bar { display: none !important; }',
+            /* nor the fake back / home / recents bar, and nothing keeps
+               room for it any more */
+            '    .system-nav { display: none !important; }',
+            '    .sheet-overlay { padding-bottom: 0 !important; }',
+            '    .proc-overlay { bottom: 0 !important; }',
+            '    #faydaModal.fayda-screen { padding-bottom: 0 !important; }',
+            '    .bottom-nav { bottom: 0 !important; }',
+            '    .fab { bottom: 80px !important; }',
+            '}',
+            /* short phones: the full-screen linking prompt tightens up,
+               and can scroll if it still doesn't fit (!important: the
+               prompt's own rules come later in this sheet) */
+            '@media (max-width: 719px) and (max-height: 720px) {',
+            '    #faydaModal.fayda-screen .modal-card { padding-top: 46px !important; overflow-y: auto !important; }',
+            '    #faydaModal.fayda-screen .fayda-bridge { margin-top: 18px !important; }',
+            '    #faydaModal.fayda-screen .fayda-cta { margin-top: 12px !important; }',
+            '    #faydaModal.fayda-screen .fayda-benefits { margin-top: 14px !important; }',
+            '    #faydaModal.fayda-screen .fayda-benefit { padding: 9px 0 !important; }',
+            '    #faydaModal.fayda-screen p:not(.fayda-cta) { padding-top: 12px; }',
             '}',
 
             /* ----- export ----- */

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=360, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M-PESA App Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,6 +71,7 @@
             overflow-y: auto;
             overflow-x: hidden;
             position: relative;
+            padding-bottom: 76px; /* the last card can scroll clear of the QR button */
         }
 
         .scroll::-webkit-scrollbar { display: none; }
@@ -149,7 +150,13 @@
             display: flex;
             gap: 6px;
             margin-bottom: 24px;
+            /* narrow phones: the chips scroll sideways instead of spilling */
+            overflow-x: auto;
+            scrollbar-width: none;
         }
+
+        .tabs::-webkit-scrollbar { display: none; }
+        .tabs .tab { flex-shrink: 0; }
 
         .tab {
             height: 33px;
@@ -439,7 +446,7 @@
 
         .masked { letter-spacing: 3px; }
     </style>
-    <script src="assets/prototype-mode.js?v=30"></script>
+    <script src="assets/prototype-mode.js?v=33"></script>
 </head>
 <body>
 
