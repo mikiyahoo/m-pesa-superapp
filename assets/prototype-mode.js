@@ -133,6 +133,46 @@
             '@media (min-width: 720px) { body { padding-left: 196px; } }',
             '@media (max-width: 719px) { .proto-rail { display: none; } }',
 
+            /* ----- export ----- */
+            '.proto-export {',
+            '    position: fixed;',
+            '    top: 16px;',
+            '    right: 16px;',
+            '    display: flex;',
+            '    gap: 8px;',
+            '    font-family: Barlow, sans-serif;',
+            '    z-index: 2000;',
+            '}',
+            '.proto-export button {',
+            '    display: flex;',
+            '    align-items: center;',
+            '    gap: 7px;',
+            '    padding: 9px 14px;',
+            '    border: 1px solid #DDE3E0;',
+            '    border-radius: 8px;',
+            '    background: #ffffff;',
+            '    color: #12492C;',
+            '    font: inherit;',
+            '    font-size: 12px;',
+            '    font-weight: 700;',
+            '    letter-spacing: 0.8px;',
+            '    cursor: pointer;',
+            '    box-shadow: 0 2px 6px rgba(0,0,0,0.06);',
+            '}',
+            '.proto-export button:hover { background: #F2FAF5; border-color: #2FC56D; }',
+            '.proto-export button:disabled { opacity: 0.55; cursor: progress; }',
+            '.proto-export svg {',
+            '    width: 15px;',
+            '    height: 15px;',
+            '    stroke: currentColor;',
+            '    stroke-width: 2;',
+            '    fill: none;',
+            '    stroke-linecap: round;',
+            '    stroke-linejoin: round;',
+            '    display: block;',
+            '}',
+            '@media (max-width: 719px) { .proto-export { display: none; } }',
+
             /* ----- the phone's own navigation ----- */
             /* Back/home/recents is device chrome, not app surface. No
                overlay may dim or cover it: someone always has to be able
@@ -384,6 +424,268 @@
         document.body.appendChild(rail);
     }
 
+    /* ----------------------------------------------------------- export */
+    /* Saves the phone frame as it stands: a PNG for decks and reviews,
+       and a node tree shaped like Figma's plugin API (frames, text, SVG
+       and image nodes with absolute sizes and 0-1 colours) so a plugin
+       can rebuild the screen as editable layers. */
+    var HTML_TO_IMAGE = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
+    var EXPORT_SCALE = 3;
+
+    function phoneFrame() {
+        return document.querySelector('.mobile-container');
+    }
+
+    function exportName() {
+        var page = decodeURIComponent(location.pathname.split('/').pop() || 'index.html');
+        return page.replace(/\.html$/i, '').replace(/\s+/g, '-').toLowerCase() || 'screen';
+    }
+
+    function saveBlob(blob, filename) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    }
+
+    var libLoading = null;
+    function loadHtmlToImage() {
+        if (window.htmlToImage) return Promise.resolve(window.htmlToImage);
+        if (libLoading) return libLoading;
+        libLoading = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = HTML_TO_IMAGE;
+            s.onload = function () { resolve(window.htmlToImage); };
+            s.onerror = function () { libLoading = null; reject(new Error('Could not load html-to-image')); };
+            document.head.appendChild(s);
+        });
+        return libLoading;
+    }
+
+    /* The Google Fonts sheet is cross-origin, so its rules can't be read
+       off the page; fetch it and inline the font files instead. */
+    var fontCss = null;
+    function embeddedFontCss() {
+        if (fontCss) return fontCss;
+        var link = document.querySelector('link[href*="fonts.googleapis.com/css"]');
+        if (!link) return (fontCss = Promise.resolve(''));
+        fontCss = fetch(link.href).then(function (r) { return r.text(); }).then(function (css) {
+            var urls = css.match(/url\([^)]+\)/g) || [];
+            return Promise.all(urls.map(function (u) {
+                var src = u.slice(4, -1).replace(/['"]/g, '');
+                return fetch(src).then(function (r) { return r.blob(); }).then(function (b) {
+                    return new Promise(function (done) {
+                        var fr = new FileReader();
+                        fr.onload = function () { css = css.split(src).join(fr.result); done(); };
+                        fr.readAsDataURL(b);
+                    });
+                });
+            })).then(function () { return css; });
+        }).catch(function () { return ''; });
+        return fontCss;
+    }
+
+    function downloadPng(btn) {
+        var frame = phoneFrame();
+        if (!frame) return;
+        btn.disabled = true;
+        Promise.all([loadHtmlToImage(), embeddedFontCss()]).then(function (r) {
+            return r[0].toBlob(frame, {
+                pixelRatio: EXPORT_SCALE,
+                fontEmbedCSS: r[1],
+                backgroundColor: '#ffffff'
+            });
+        }).then(function (blob) {
+            saveBlob(blob, exportName() + '.png');
+        }).catch(function (e) {
+            console.error(e);
+            alert('PNG export failed: ' + e.message);
+        }).then(function () { btn.disabled = false; });
+    }
+
+    /* ---- Figma node tree ---- */
+    function parseColor(str) {
+        var m = str && str.match(/rgba?\(([^)]+)\)/);
+        if (!m) return null;
+        var p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
+        var a = p.length > 3 ? p[3] : 1;
+        if (a === 0) return null;
+        return { r: p[0] / 255, g: p[1] / 255, b: p[2] / 255, a: a };
+    }
+
+    function solid(c) {
+        return { type: 'SOLID', color: { r: c.r, g: c.g, b: c.b }, opacity: c.a };
+    }
+
+    function round(n) { return Math.round(n * 100) / 100; }
+
+    function isVisible(el, cs) {
+        if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+        var r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+    }
+
+    function box(rect, origin) {
+        return {
+            x: round(rect.left - origin.left),
+            y: round(rect.top - origin.top),
+            width: round(rect.width),
+            height: round(rect.height)
+        };
+    }
+
+    function intersects(rect, clip) {
+        return rect.right > clip.left && rect.left < clip.right
+            && rect.bottom > clip.top && rect.top < clip.bottom;
+    }
+
+    function textNode(textEl, parentCs, origin) {
+        var text = textEl.textContent.replace(/\s+/g, ' ');
+        if (!text.trim()) return null;
+        var range = document.createRange();
+        range.selectNodeContents(textEl);
+        var rect = range.getBoundingClientRect();
+        if (!rect.width || !rect.height) return null;
+        var color = parseColor(parentCs.color);
+        var weight = parseInt(parentCs.fontWeight, 10) || 400;
+        var t = parentCs.textTransform;
+        if (t === 'uppercase') text = text.toUpperCase();
+        else if (t === 'lowercase') text = text.toLowerCase();
+        var node = box(rect, origin);
+        node.type = 'TEXT';
+        node.name = text.trim().slice(0, 40);
+        node.characters = text.trim();
+        node.fontName = {
+            family: parentCs.fontFamily.split(',')[0].replace(/['"]/g, '').trim(),
+            weight: weight,
+            style: parentCs.fontStyle === 'italic' ? 'Italic' : 'Regular'
+        };
+        node.fontSize = parseFloat(parentCs.fontSize);
+        var ls = parseFloat(parentCs.letterSpacing);
+        if (ls) node.letterSpacing = { value: ls, unit: 'PIXELS' };
+        var lh = parseFloat(parentCs.lineHeight);
+        if (lh) node.lineHeight = { value: lh, unit: 'PIXELS' };
+        node.textAlignHorizontal = { center: 'CENTER', right: 'RIGHT', end: 'RIGHT', justify: 'JUSTIFIED' }[parentCs.textAlign] || 'LEFT';
+        node.fills = color ? [solid(color)] : [];
+        return node;
+    }
+
+    function elementNode(el, origin, clip) {
+        var cs = getComputedStyle(el);
+        if (!isVisible(el, cs)) return null;
+        var rect = el.getBoundingClientRect();
+        if (!intersects(rect, clip)) return null;
+
+        var node = box(rect, origin);
+        node.name = el.getAttribute('aria-label') || el.id
+            || (typeof el.className === 'string' && el.className.split(' ')[0]) || el.tagName.toLowerCase();
+        var opacity = parseFloat(cs.opacity);
+        if (opacity < 1) node.opacity = opacity;
+
+        if (el.tagName.toLowerCase() === 'svg') {
+            node.type = 'SVG';
+            /* Bake currentColor so the markup stands on its own. */
+            node.svg = el.outerHTML.replace(/currentColor/g, cs.color);
+            return node;
+        }
+
+        if (el.tagName === 'IMG') {
+            node.type = 'RECTANGLE';
+            node.fills = [{ type: 'IMAGE', scaleMode: cs.objectFit === 'contain' ? 'FIT' : 'FILL', src: el.currentSrc || el.src }];
+            node.cornerRadius = parseFloat(cs.borderTopLeftRadius) || 0;
+            return node;
+        }
+
+        node.type = 'FRAME';
+        node.fills = [];
+        var bg = parseColor(cs.backgroundColor);
+        if (bg) node.fills.push(solid(bg));
+        var bgImage = cs.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
+        if (bgImage) node.fills.push({ type: 'IMAGE', scaleMode: 'FILL', src: bgImage[1] });
+        if (cs.backgroundImage.indexOf('gradient') !== -1) node.cssBackground = cs.backgroundImage;
+
+        var radii = ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(function (k) {
+            return parseFloat(cs['border' + k + 'Radius']) || 0;
+        });
+        if (radii[0] === radii[1] && radii[1] === radii[2] && radii[2] === radii[3]) {
+            if (radii[0]) node.cornerRadius = Math.min(radii[0], node.width / 2, node.height / 2);
+        } else {
+            node.topLeftRadius = radii[0];
+            node.topRightRadius = radii[1];
+            node.bottomRightRadius = radii[2];
+            node.bottomLeftRadius = radii[3];
+        }
+
+        var bw = parseFloat(cs.borderTopWidth);
+        var bc = parseColor(cs.borderTopColor);
+        if (bw && bc && cs.borderTopStyle !== 'none') {
+            node.strokes = [solid(bc)];
+            node.strokeWeight = bw;
+            node.strokeAlign = 'INSIDE';
+            if (cs.borderTopStyle === 'dashed') node.dashPattern = [bw * 3, bw * 2];
+        }
+
+        if (cs.boxShadow && cs.boxShadow !== 'none') node.cssBoxShadow = cs.boxShadow;
+        node.clipsContent = cs.overflow !== 'visible';
+
+        /* Children are clipped to this box when it clips. */
+        var childClip = node.clipsContent ? {
+            left: Math.max(clip.left, rect.left), top: Math.max(clip.top, rect.top),
+            right: Math.min(clip.right, rect.right), bottom: Math.min(clip.bottom, rect.bottom)
+        } : clip;
+
+        node.children = [];
+        Array.prototype.forEach.call(el.childNodes, function (child) {
+            var c = null;
+            if (child.nodeType === 3) c = textNode(child, cs, rect);
+            else if (child.nodeType === 1) c = elementNode(child, rect, childClip);
+            if (c) node.children.push(c);
+        });
+
+        return node;
+    }
+
+    function downloadFigmaJson() {
+        var frame = phoneFrame();
+        if (!frame) return;
+        var rect = frame.getBoundingClientRect();
+        var root = elementNode(frame, rect, rect);
+        root.x = 0;
+        root.y = 0;
+        root.name = document.title || exportName();
+        var doc = {
+            format: 'figma-node-tree',
+            version: 1,
+            source: location.href,
+            exportedAt: new Date().toISOString(),
+            note: 'Node properties follow the Figma Plugin API. Child x/y are relative to their parent. '
+                + 'SVG nodes map to figma.createNodeFromSvg; IMAGE fills carry a src URL to fetch.',
+            document: root
+        };
+        saveBlob(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }),
+            exportName() + '.figma.json');
+    }
+
+    function injectExport() {
+        if (!phoneFrame()) return;
+        var bar = document.createElement('div');
+        bar.className = 'proto-export';
+        bar.innerHTML = '<button type="button" data-export="png">'
+            + '<svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10.5 5 5 5-5"/><path d="M4.5 19.5h15"/></svg>'
+            + '<span>DOWNLOAD PNG</span></button>'
+            + '<button type="button" data-export="figma">'
+            + '<svg viewBox="0 0 24 24"><path d="M9 3.5h3v6H9a3 3 0 0 1 0-6Z"/><path d="M12 3.5h3a3 3 0 0 1 0 6h-3Z"/>'
+            + '<path d="M9 9.5h3v6H9a3 3 0 0 1 0-6Z"/><circle cx="15" cy="12.5" r="3"/>'
+            + '<path d="M9 15.5h3v3a3 3 0 1 1-3-3Z"/></svg>'
+            + '<span>FIGMA JSON</span></button>';
+        bar.querySelector('[data-export="png"]').addEventListener('click', function () { downloadPng(this); });
+        bar.querySelector('[data-export="figma"]').addEventListener('click', downloadFigmaJson);
+        document.body.appendChild(bar);
+    }
+
     /* ------------------------------------------------------- prompt */
 
     function applyScreenStyle(modal) {
@@ -483,6 +785,7 @@
     function init() {
         injectStyles();
         injectRail();
+        injectExport();
 
         var modal = document.getElementById('faydaModal');
         if (!modal) return;
