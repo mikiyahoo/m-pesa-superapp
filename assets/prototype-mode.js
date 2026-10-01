@@ -47,6 +47,7 @@
             sessionStorage.removeItem('pendingWithdraw');
             sessionStorage.removeItem('pendingPurchase');
             sessionStorage.removeItem('fdState');
+            sessionStorage.removeItem('railHomeOpen');
             sessionStorage.removeItem('savingsReturn');
             sessionStorage.setItem(RUN_KEY, '1');
         } catch (e) {}
@@ -122,6 +123,32 @@
             '    flex-shrink: 0;',
             '    display: block;',
             '}',
+            '.proto-row { display: flex; align-items: center; }',
+            '.proto-row .proto-home { flex: 1; margin-bottom: 0; }',
+            '.proto-group { margin-bottom: 16px; }',
+            '.proto-toggle {',
+            '    background: none;',
+            '    border: 0;',
+            '    padding: 8px 14px;',
+            '    color: rgba(255,255,255,0.85);',
+            '    cursor: pointer;',
+            '    display: flex;',
+            '}',
+            '.proto-toggle:hover { color: #ffffff; }',
+            '.proto-toggle svg {',
+            '    width: 16px;',
+            '    height: 16px;',
+            '    fill: none;',
+            '    stroke: currentColor;',
+            '    stroke-width: 2.2;',
+            '    stroke-linecap: round;',
+            '    stroke-linejoin: round;',
+            '    transition: transform 0.18s ease;',
+            '}',
+            '.proto-group.open .proto-toggle svg { transform: rotate(180deg); }',
+            '.proto-sub { display: none; padding: 6px 0 0 14px; }',
+            '.proto-group.open .proto-sub { display: block; }',
+            '.proto-sub .proto-home { margin-bottom: 6px; font-size: 12px; }',
             '.proto-rail h4 {',
             '    font-size: 10px;',
             '    font-weight: 700;',
@@ -387,11 +414,15 @@
         rail.className = 'proto-rail';
 
         /* Quick navigation between the prototype's screens. */
-        rail.innerHTML = '<a class="proto-home" href="index.html">'
+        /* Home opens a closed-by-default group holding the bank flows. */
+        rail.innerHTML = '<div class="proto-group">'
+            + '<div class="proto-row"><a class="proto-home" href="index.html">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<path d="M3.4 10.4 12 3.6l8.6 6.8V20a1 1 0 0 1-1 1h-5v-6h-5.2v6h-5a1 1 0 0 1-1-1v-9.6Z"/>'
             + '</svg><span>HOME</span></a>'
-            + '<h4>FLOWS</h4>'
+            + '<button class="proto-toggle" type="button" aria-label="Show home flows" aria-expanded="false">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
+            + '<div class="proto-sub">'
             + '<a class="proto-home" href="Home Screen.html?withdraw=1">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<path d="M4 6.5h16a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 17.5H4A1.5 1.5 0 0 1 2.5 16V8A1.5 1.5 0 0 1 4 6.5Z"/>'
@@ -409,6 +440,8 @@
             + '<path d="M12 3.4 20 7.4v9.2l-8 4-8-4V7.4l8-4Z"/>'
             + '<path d="M4 7.6l8 4 8-4M12 11.6v8.8"/>'
             + '</svg><span>BUY PACKAGE</span></a>'
+            + '</div></div>'
+            + '<h4>FLOWS</h4>'
             + '<a class="proto-home" href="Mini Apps.html">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<rect x="2.9" y="3.1" width="7.6" height="7.6" rx="1.5"/>'
@@ -420,6 +453,22 @@
             + '<rect x="5" y="10.5" width="14" height="10" rx="2"/>'
             + '<path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7h-2V7.8a1.5 1.5 0 0 0-3 0v2.7Z"/>'
             + '</svg><span>NOT ACTIVE SAVING</span></a>';
+
+        var group = rail.querySelector('.proto-group');
+        var toggle = rail.querySelector('.proto-toggle');
+        function setOpen(open) {
+            group.classList.toggle('open', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        /* stays as left while moving between screens; closed on a new run */
+        var open = false;
+        try { open = sessionStorage.getItem('railHomeOpen') === '1'; } catch (e) {}
+        setOpen(open);
+        toggle.addEventListener('click', function () {
+            open = !open;
+            setOpen(open);
+            try { sessionStorage.setItem('railHomeOpen', open ? '1' : '0'); } catch (e) {}
+        });
 
         document.body.appendChild(rail);
     }
