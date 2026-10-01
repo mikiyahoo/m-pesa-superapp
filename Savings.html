@@ -3419,7 +3419,7 @@
                         <p class="amt" id="mineTotal">0.00 Birr</p>
                         <div class="split">
                             <div><small>Pockets</small><b id="minePockets">ETB 0</b></div>
-                            <div onclick="setTab('fixed')" style="cursor:pointer"><small>Fixed Deposit</small><b id="mineFixedTotal">ETB 0</b></div>
+                            <div onclick="openType('fixed')" style="cursor:pointer"><small>Fixed Deposit</small><b id="mineFixedTotal">ETB 0</b></div>
                         </div>
                     </div>
 
@@ -3430,7 +3430,7 @@
                         <button class="tile t-blue" onclick="openType('group')">GROUP
                             <span class="ic"><svg viewBox="0 0 24 24"><path d="M3.5 14.5h3l3.5 2h4.5a1.5 1.5 0 0 0 0-3H11"/><path d="m14.5 13.5 4.2-2.2a1.5 1.5 0 0 1 1.6 2.5L15 18.5H9.5l-3-1.5"/><circle cx="15" cy="6.5" r="2.5"/></svg></span>
                         </button>
-                        <button class="tile t-teal" onclick="setTab('fixed')">FIXED
+                        <button class="tile t-teal" onclick="openType('fixed')">FIXED
                             <span class="new" id="tileNew">NEW</span>
                             <span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>
                         </button>
@@ -4140,8 +4140,9 @@
         /* ---------- Home ---------- */
         let tab = 'mine';
 
-        function setTab(name) {
-            if (name === 'fixed' && !S.optedIn) { openOptin(); return; }
+        /* gate: ask for activation first (only the sidebar's Fixed Deposit link does) */
+        function setTab(name, gate) {
+            if (name === 'fixed' && gate && !S.optedIn) { openOptin(); return; }
             tab = name;
             document.getElementById('homeTitle').textContent = name === 'fixed' ? 'FIXED DEPOSIT' : 'SAVINGS';
             document.getElementById('homeBack').style.display = name === 'fixed' ? 'flex' : 'none';
@@ -4166,7 +4167,7 @@
             document.getElementById('mineFixedTotal').textContent = 'ETB ' + whole(live.reduce((t, a) => t + a.principal, 0));
 
             const pocketsTotal = S.individual.reduce((t, p) => t + p.balance, 0);
-            const fixedTotal = S.optedIn ? live.reduce((t, a) => t + a.principal, 0) : 0;
+            const fixedTotal = live.reduce((t, a) => t + a.principal, 0);
             document.getElementById('minePockets').textContent = 'ETB ' + whole(pocketsTotal);
             document.getElementById('mineTotal').textContent = money(pocketsTotal + fixedTotal) + ' Birr';
             renderSavingsList();
@@ -4183,7 +4184,7 @@
         }
 
         function renderSavingsList() {
-            const fixedOk = S.optedIn;
+            const fixedOk = true;
             const groups = [
                 { key: 'target', chip: 'TARGET', label: 'TARGET SAVINGS',
                   items: S.individual.filter(p => p.target).map(indCard),
@@ -4240,6 +4241,15 @@
             } else {
                 line = p.name.toUpperCase() + ' - <b>' + (p.auto ? 'AUTO-SAVE' : IND_RATE + '% INTEREST') + '</b>';
             }
+            if (typeKind === 'fixed') {
+                const s = statusOf(p);
+                const tag = s === 'matured' ? '<b>MATURED</b>' : '<b>' + p.rate + '% &middot; ' + daysBetween(TODAY, maturityOf(p)) + ' DAYS LEFT</b>';
+                return '<div class="tp-row" onclick="openAccount(\'' + p.id + '\')">'
+                    + '<span class="tp-ring"><img src="' + PARTNERS[PARTNER].logo + '" alt=""></span>'
+                    + '<span class="t"><small>' + p.name.toUpperCase() + ' - ' + tag + '</small><p><span>SAVED</span>'
+                    + (typeHidden ? '*****' : whole(s === 'matured' ? maturedTotal(p) : p.principal) + ' BIRR') + '</p></span>'
+                    + CHEV + '</div>';
+            }
             return '<div class="tp-row" onclick="openIndPocket(\'' + p.id + '\')">'
                 + '<span class="tp-ring"><img src="' + PARTNERS[PARTNER].logo + '" alt=""></span>'
                 + '<span class="t"><small>' + line + '</small><p><span>SAVED</span>' + (typeHidden ? '*****' : whole(p.balance) + ' BIRR') + '</p></span>'
@@ -4258,6 +4268,11 @@
                     promo: ['Lehulum Saving', 'Save a little, every day', 'Turn on automatic deduction and earn ' + IND_RATE + '% a year.'],
                     empty: 'Save any amount, any time, and withdraw when you need it.'
                 },
+                fixed: {
+                    title: 'FIXED DEPOSIT', label: 'TOTAL LOCKED SAVINGS', cta: 'NEW FIXED DEPOSIT', go: 'startNewDeposit()',
+                    promo: ['Fixed Deposit', 'Lock in up to 10%', 'Choose 3 to 12 months at a rate that never changes.'],
+                    empty: 'Lock your money for a fixed term and earn more than a regular saving.'
+                },
                 group: {
                     title: 'GROUP SAVINGS', label: 'TOTAL GROUP SAVINGS', cta: 'NEW GROUP', go: 'showToast(\'NEW GROUP\')',
                     promo: ['Save together', 'Reach it as a group', 'Pool money with family and friends toward one goal.'],
@@ -4266,14 +4281,18 @@
             }[typeKind];
 
             const list = typeKind === 'target' ? S.individual.filter(p => p.target)
-                : typeKind === 'individual' ? S.individual.filter(p => !p.target) : [];
-            const total = list.reduce((t, p) => t + p.balance, 0);
+                : typeKind === 'individual' ? S.individual.filter(p => !p.target)
+                : typeKind === 'fixed' ? S.accounts.filter(a => !a.closed) : [];
+            const total = typeKind === 'fixed' ? list.reduce((t, a) => t + a.principal, 0) : list.reduce((t, p) => t + p.balance, 0);
             const hide = v => typeHidden ? '*****' : v;
 
             let left, right;
             if (typeKind === 'target') {
                 left = ['Target Amount', hide('ETB ' + whole(list.reduce((t, p) => t + p.target.amount, 0)))];
                 right = ['On Track', list.filter(p => targetChip(p)[0] !== 'BEHIND').length + ' OF ' + list.length];
+            } else if (typeKind === 'fixed') {
+                left = ['Accrued Interest', hide('+' + money(list.reduce((t, a) => t + accrued(a), 0)))];
+                right = ['Deposits', list.filter(a => statusOf(a) === 'active').length + ' ACTIVE'];
             } else if (typeKind === 'individual') {
                 left = ['Pockets', String(list.length)];
                 right = ['Auto-save', list.filter(p => p.auto).length + ' ON'];
@@ -5635,7 +5654,7 @@
                 ['INDIVIDUAL SAVINGS', '<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.6-3.8 3.4-6 7-6s6.4 2.2 7 6"/>', 'openIndCreate()'],
                 ['TARGET SAVINGS', '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m12 12 6-6M15.5 5.5H18v2.5"/>', 'openIndCreate(\'target\')'],
                 ['GROUP SAVINGS', '<circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.5-3.2 2.8-5 5.5-5s5 1.8 5.5 5"/><path d="M14.5 14.3c.6-.2 1.3-.3 2-.3 2.3 0 4 1.5 4.4 4.5"/>', 'closeSheet(); showToast(\'GROUP SAVINGS\')'],
-                ['FIXED-TIME SAVINGS', '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/>', 'closeSheet(); setTab(\'fixed\')']
+                ['FIXED-TIME SAVINGS', '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/>', 'openType(\'fixed\')']
             ];
             document.getElementById('sheetBody').innerHTML = '<div class="sheet-grab"></div>'
                 + '<p class="sheet-title">CHOOSE SAVINGS TYPE</p><div style="margin-top:14px">'
@@ -6051,7 +6070,7 @@
 
         /* ---------- Start ---------- */
         renderHome();
-        if (new URLSearchParams(location.search).get('tab') === 'fixed') setTab('fixed');
+        if (new URLSearchParams(location.search).get('tab') === 'fixed') setTab('fixed', true);
     </script>
 
 </body>
