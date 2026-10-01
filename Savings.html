@@ -1465,14 +1465,28 @@
         }
 
         .pin-head h3 {
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 700;
             color: #1c1c1c;
             letter-spacing: 0.5px;
-            line-height: 18px;
+            line-height: 22px;
         }
 
-        .pin-head p {
+        /* label / value pairs under the title, one per line */
+        .pin-head .pin-row {
+            font-size: 13px;
+            line-height: 20px;
+            color: #1c1c1c;
+            margin-top: 4px;
+        }
+
+        .pin-head .pin-row b {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-right: 10px;
+        }
+
+        .pin-head .pin-sub {
             font-size: 11.5px;
             font-weight: 600;
             color: #1c1c1c;
@@ -1991,6 +2005,551 @@
         .ic.purple { background: #6A3DE8; }
         .ic.blue { background: #1E6FF0; }
         .ic.amber { background: #F7931E; }
+
+        /* ---------- Individual saving ---------- */
+        .flow-btn.blue {
+            background: #1E6FF0;
+            box-shadow: 0 4px 12px rgba(30, 111, 240, 0.28);
+        }
+
+        .flow-btn.blue:disabled {
+            background: #F2F2F2;
+            color: #c2c2c2;
+            box-shadow: none;
+        }
+
+        .ind-hero {
+            text-align: center;
+            margin: 24px 16px 6px 16px;
+        }
+
+        .ind-ring {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px auto;
+            border-radius: 50%;
+            border: 4px solid #DDF5E6;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ind-ring img { width: 38px; height: 38px; object-fit: contain; display: block; }
+
+        .ind-hero small {
+            display: block;
+            font-size: 13px;
+            color: #6a6a6a;
+            letter-spacing: 0.6px;
+        }
+
+        .ind-hero small b { font-weight: 700; color: #4a4a4a; }
+
+        .ind-hero h3 {
+            font-size: 22px;
+            font-weight: 300;
+            color: #1c1c1c;
+            letter-spacing: 0.4px;
+            margin-top: 4px;
+        }
+
+        .field {
+            display: block;
+            position: relative;
+            margin: 26px 18px 0 18px;
+        }
+
+        .field > span {
+            display: block;
+            font-size: 12px;
+            color: #6a6a6a;
+            letter-spacing: 0.8px;
+        }
+
+        .field input,
+        .field select {
+            display: block;
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #BDBDBD;
+            border-radius: 0;
+            background: transparent;
+            padding: 6px 0 8px 0;
+            font: inherit;
+            font-size: 17px;
+            font-weight: 600;
+            color: #1c1c1c;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .field input:focus,
+        .field select:focus { border-bottom-color: #1E9BD7; }
+
+        .field small {
+            display: block;
+            text-align: right;
+            font-size: 11.5px;
+            color: #9a9a9a;
+            margin-top: 4px;
+        }
+
+        .field .chev {
+            position: absolute;
+            right: 2px;
+            bottom: 14px;
+            width: 18px;
+            height: 18px;
+            stroke: #6a6a6a;
+            stroke-width: 1.8;
+            fill: none;
+            pointer-events: none;
+        }
+
+        .auto-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 12px 16px 0 16px;
+            padding: 16px 18px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .auto-card b {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1c1c;
+        }
+
+        .auto-card .chip { display: inline-block; margin-top: 8px; }
+
+        .switch {
+            position: relative;
+            width: 38px;
+            height: 16px;
+            border-radius: 8px;
+            background: #DADADA;
+            flex-shrink: 0;
+            transition: background 0.18s ease;
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -2px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50%);
+            transition: left 0.18s ease, background 0.18s ease;
+        }
+
+        .switch.on { background: #A8E6C1; }
+        .switch.on::after { left: 18px; background: #2FC56D; }
+
+        .target-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 24px 16px 0 16px;
+            padding: 16px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .target-card .ic {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .target-card .ic svg {
+            width: 24px;
+            height: 24px;
+            stroke: #ffffff;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .target-card .t { flex: 1; }
+
+        .target-card b {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #4a4a4a;
+            letter-spacing: 0.6px;
+        }
+
+        .target-card small {
+            display: block;
+            font-size: 13px;
+            color: #9a9a9a;
+            line-height: 1.35;
+            margin-top: 3px;
+        }
+
+        .target-card .chev {
+            width: 18px;
+            height: 18px;
+            stroke: #9a9a9a;
+            stroke-width: 1.8;
+            fill: none;
+            flex-shrink: 0;
+        }
+
+        .auto-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #6A3DE8;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .auto-line svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .empty-txn {
+            text-align: center;
+            padding: 36px 0 24px 0;
+            color: #9a9a9a;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .empty-txn svg {
+            display: block;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px auto;
+            stroke: #8a8a8a;
+            stroke-width: 1.4;
+            fill: none;
+            stroke-linejoin: round;
+        }
+
+        .type-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            width: 100%;
+            padding: 10px 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a4a4a;
+            letter-spacing: 0.8px;
+            text-align: left;
+        }
+
+        .type-row .ic {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #E4EEFD;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .type-row .ic svg {
+            width: 22px;
+            height: 22px;
+            stroke: #1E6FF0;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .sheet-title {
+            font-size: 19px;
+            font-weight: 300;
+            color: #2f2f2f;
+            letter-spacing: 0.6px;
+        }
+
+        .sheet-text {
+            font-size: 14px;
+            color: #6a6a6a;
+            margin-top: 14px;
+        }
+
+        /* deposit / withdraw result, the PIN screen's header over a tick */
+        .pin-head .res-ring {
+            position: relative;
+            width: 66px;
+            height: 66px;
+            margin: -20px auto 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pin-head .res-ring svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .pin-head .res-ring img {
+            width: 44px;
+            height: 44px;
+            margin: 0;
+            border-radius: 50%;
+            object-fit: contain;
+            background: #ffffff;
+        }
+
+        .res-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+            text-align: center;
+        }
+
+        .res-body svg {
+            width: 60px;
+            height: 60px;
+            stroke: #2FC56D;
+            stroke-width: 1.6;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .res-body p {
+            margin-top: 18px;
+            font-size: 15.5px;
+            font-weight: 500;
+            color: #2FC56D;
+            line-height: 1.3;
+        }
+
+        .acct-card .tgt-of { font-size: 13px; color: #8a8a8a; margin-top: -4px; }
+
+        /* target date: a field that opens the calendar sheet */
+        .date-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #BDBDBD;
+            background: transparent;
+            padding: 6px 0 8px 0;
+            font: inherit;
+            font-size: 17px;
+            font-weight: 600;
+            color: #1c1c1c;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .date-field.empty span { color: #b5b5b5; font-weight: 500; }
+
+        .date-field svg {
+            width: 20px;
+            height: 20px;
+            stroke: #6a6a6a;
+            stroke-width: 1.7;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .dp-chips {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .dp-chips button {
+            flex: 1;
+            padding: 8px 0;
+            border: 1px solid #DCDCDC;
+            border-radius: 18px;
+            background: #ffffff;
+            font: inherit;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #4a4a4a;
+            cursor: pointer;
+        }
+
+        .dp-chips button.on { border-color: #2FC56D; background: #E4F7EB; color: #22A75A; }
+
+        .dp-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+        }
+
+        .dp-head b {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1c1c1c;
+            letter-spacing: 0.6px;
+        }
+
+        .dp-head .icon-btn:disabled { opacity: 0.25; cursor: default; }
+
+        .dp-week,
+        .dp-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+        }
+
+        .dp-week {
+            margin-top: 10px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #9a9a9a;
+            letter-spacing: 0.6px;
+        }
+
+        .dp-grid { margin-top: 6px; row-gap: 4px; }
+
+        .dp-day {
+            width: 38px;
+            height: 38px;
+            margin: 0 auto;
+            border: none;
+            border-radius: 50%;
+            background: none;
+            font: inherit;
+            font-size: 14px;
+            color: #1c1c1c;
+            cursor: pointer;
+        }
+
+        .dp-day:hover:not(:disabled):not(.on) { background: #F2F2F2; }
+        .dp-day.today { box-shadow: inset 0 0 0 1px #2FC56D; color: #22A75A; }
+        .dp-day.on { background: #2FC56D; color: #ffffff; font-weight: 600; box-shadow: none; }
+        .dp-day:disabled { color: #D2D2D2; cursor: default; }
+
+        .dp-picked {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 13px;
+            color: #6a6a6a;
+        }
+
+        .dp-picked b { color: #1c1c1c; font-weight: 600; }
+
+        /* savings list: one filter per kind of saving */
+        .list-chips {
+            display: flex;
+            gap: 8px;
+            margin: -2px 0 14px 0;
+            padding: 0 16px;
+            overflow-x: auto;
+        }
+
+        .list-chips::-webkit-scrollbar { display: none; }
+
+        .list-chips button {
+            flex-shrink: 0;
+            padding: 7px 12px;
+            border: 1px solid #DCDCDC;
+            border-radius: 16px;
+            background: #ffffff;
+            font: inherit;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.7px;
+            color: #6a6a6a;
+            cursor: pointer;
+        }
+
+        .list-chips button span { margin-left: 4px; color: #a0a0a0; font-weight: 600; }
+        .list-chips button.on { border-color: #2FC56D; background: #E4F7EB; color: #22A75A; }
+        .list-chips button.on span { color: #22A75A; }
+
+        .list-label {
+            display: flex;
+            justify-content: space-between;
+            margin: 18px 16px 8px 16px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #8a8a8a;
+            letter-spacing: 1px;
+        }
+
+        .list-label:first-child { margin-top: 0; }
+
+        .list-empty {
+            margin: 0 16px 12px 16px;
+            padding: 20px 16px;
+            border: 1px dashed #D6D6D6;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 13px;
+            color: #8a8a8a;
+            line-height: 1.45;
+        }
+
+        .list-empty button {
+            display: block;
+            margin: 10px auto 0 auto;
+            border: none;
+            background: none;
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #22A75A;
+            cursor: pointer;
+        }
+
+        .sheet-grab {
+            width: 36px;
+            height: 4px;
+            border-radius: 2px;
+            background: #E0E0E0;
+            margin: -10px auto 16px auto;
+        }
 
         .closed-note {
             margin: 18px 16px 0 16px;
@@ -2730,15 +3289,15 @@
                         <div class="lbl">TOTAL SAVINGS BALANCE
                             <svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/><path d="M4 20 20 4"/></svg>
                         </div>
-                        <p class="amt">2,410.00 Birr</p>
+                        <p class="amt" id="mineTotal">0.00 Birr</p>
                         <div class="split">
-                            <div><small>Goal Savings</small><b>ETB 31,000</b></div>
+                            <div><small>Pockets</small><b id="minePockets">ETB 0</b></div>
                             <div onclick="setTab('fixed')" style="cursor:pointer"><small>Fixed Deposit</small><b id="mineFixedTotal">ETB 0</b></div>
                         </div>
                     </div>
 
                     <div class="tiles">
-                        <button class="tile t-green" onclick="showToast('INDIVIDUAL SAVINGS')">INDIVIDUAL
+                        <button class="tile t-green" onclick="openIndCreate()">INDIVIDUAL
                             <span class="ic"><svg viewBox="0 0 24 24"><path d="M5 19 12 5"/><path d="m8.5 5.6 3.5-.6.6 3.5"/><path d="M13 12l6 7"/><path d="m19.6 15.5-.6 3.5-3.5-.6"/></svg></span>
                         </button>
                         <button class="tile t-blue" onclick="showToast('GROUP SAVINGS')">GROUP
@@ -2748,15 +3307,15 @@
                             <span class="new" id="tileNew">NEW</span>
                             <span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>
                         </button>
-                        <button class="tile t-red" onclick="showToast('TARGET SAVINGS')">TARGET
+                        <button class="tile t-red" onclick="openIndCreate('target')">TARGET
                             <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.6"/></svg></span>
                         </button>
                     </div>
 
                     <div class="section-head">
-                        <span>ACTIVE POCKETS</span>
-                        <button onclick="showToast('ALL POCKETS')">SEE ALL</button>
+                        <span>MY SAVINGS</span>
                     </div>
+                    <div class="list-chips" id="listChips"></div>
                     <div id="pocketList"></div>
                 </div>
 
@@ -2840,7 +3399,7 @@
                 </button>
                 <span class="progress"><span class="dot"></span><span class="track"></span></span>
             </div>
-            <p class="amount-title">DEPOSIT</p>
+            <p class="amount-title" id="amountTitle">DEPOSIT</p>
 
             <div class="entry">
                 <span class="num" id="amountNum"><span class="caret"></span><span id="amountDigits">0</span></span>
@@ -2883,7 +3442,7 @@
             <div class="pin-head">
                 <img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA">
                 <h3 id="pinTitle"></h3>
-                <p id="pinSub"></p>
+                <div class="pin-sub" id="pinSub"></div>
             </div>
             <p class="pin-label">ENTER M-PESA PIN:</p>
             <div class="pin-dots" id="pinDots">
@@ -3006,6 +3565,152 @@
             </button>
         </section>
 
+        <!-- ============ Individual saving: create ============ -->
+        <section class="step" id="stepIndCreate" data-green>
+            <div class="green-head">
+                <img class="pat" src="assets/M-PESA-pattern.svg" alt="">
+                <button class="icon-btn" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <button class="icon-btn" onclick="openFaq()" aria-label="More">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg>
+                </button>
+            </div>
+            <div class="flow-scroll">
+                <div class="ind-hero">
+                    <span class="ind-ring"><img id="indLogo" alt=""></span>
+                    <small><span id="indKindLabel">INDIVIDUAL SAVING</span> &middot; <b id="indRate"></b></small>
+                    <h3>LEHULUM SAVING</h3>
+                </div>
+                <label class="field">
+                    <span>SAVING NAME</span>
+                    <input id="indName" maxlength="10" autocomplete="off" oninput="paintIndForm()">
+                    <small id="indNameCount">0/10</small>
+                </label>
+                <div id="indTargetFields" hidden>
+                    <label class="field">
+                        <span>TARGET AMOUNT</span>
+                        <input id="indTarget" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); paintIndForm()">
+                        <small id="indTargetHint"></small>
+                    </label>
+                    <label class="field">
+                        <span>TARGET DATE</span>
+                        <button type="button" class="date-field" id="indBy" onclick="openDatePicker('indBy')"><span>Select a date</span><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
+                        <small id="indByHint"></small>
+                    </label>
+                </div>
+                <div id="indAutoFields" hidden>
+                    <label class="field">
+                        <span>AMOUNT</span>
+                        <input id="indAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); indAmountTouched = true; paintIndForm()">
+                        <small id="indAmountHint"></small>
+                    </label>
+                    <label class="field">
+                        <span>FREQUENCY</span>
+                        <select id="indFreq" onchange="paintIndForm()"><option>Daily</option><option>Weekly</option><option selected>Monthly</option></select>
+                        <svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </label>
+                </div>
+                <div style="height:16px"></div>
+            </div>
+            <div class="auto-card" onclick="toggleIndAuto()">
+                <div><b>Automatic Deduction</b><span class="chip green">Recommended</span></div>
+                <span class="switch" id="indAutoSwitch"></span>
+            </div>
+            <button class="flow-btn blue" id="indCreateBtn" onclick="indCreate()" disabled>CREATE
+                <span class="arrow"><svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></span>
+            </button>
+        </section>
+
+        <!-- ============ Individual saving: pocket ============ -->
+        <section class="step" id="stepIndPocket" data-green>
+            <div class="flow-scroll" id="indScroll">
+                <div class="green-head tall">
+                    <img class="pat" src="assets/M-PESA-pattern.svg" alt="">
+                    <button class="icon-btn" onclick="back()" aria-label="Back">
+                        <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                    </button>
+                    <button class="icon-btn" onclick="openFaq()" aria-label="More">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg>
+                    </button>
+                </div>
+                <div id="indBody"></div>
+            </div>
+        </section>
+
+        <!-- ============ Individual saving: deposit / withdraw result ============ -->
+        <section class="step" id="stepIndResult">
+            <button class="icon-btn pin-close" onclick="indResultDone()" aria-label="Close">
+                <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+            </button>
+            <div class="pin-head">
+                <span class="res-ring">
+                    <svg viewBox="0 0 66 66"><circle cx="33" cy="33" r="30" fill="none" stroke="#E2F6EA" stroke-width="5"/><circle cx="33" cy="33" r="30" fill="none" stroke="#2FC56D" stroke-width="5" stroke-linecap="round" stroke-dasharray="44 189"/></svg>
+                    <img id="resLogo" alt="">
+                </span>
+                <h3 id="resName"></h3>
+                <div class="pin-sub" id="resRows"></div>
+            </div>
+            <div class="res-body">
+                <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3.2-6.9"/><path d="m8.6 12.2 2.6 2.6 4.9-5"/></svg>
+                <p id="resText"></p>
+            </div>
+            <div class="btn-pair">
+                <button class="flow-btn ghost" id="resView" onclick="indResultView()"></button>
+                <button class="flow-btn" onclick="indResultDone()">DONE</button>
+            </div>
+        </section>
+
+        <!-- ============ Target: set or change on a pocket ============ -->
+        <section class="step" id="stepTgtSet">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <h2 id="tgtTitle">SET A TARGET</h2>
+                <span></span>
+            </div>
+            <div class="flow-scroll">
+                <p class="lead" id="tgtLead"></p>
+                <label class="field">
+                    <span>TARGET AMOUNT</span>
+                    <input id="tgtAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); paintTargetSet()">
+                    <small id="tgtHint"></small>
+                </label>
+                <label class="field">
+                    <span>TARGET DATE</span>
+                    <button type="button" class="date-field" id="tgtBy" onclick="openDatePicker('tgtBy')"><span>Select a date</span><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></button>
+                    <small id="tgtByHint"></small>
+                </label>
+            </div>
+            <div class="btn-pair" id="tgtActions"></div>
+        </section>
+
+        <!-- ============ Individual saving: recurring transfer ============ -->
+        <section class="step" id="stepIndRecurring">
+            <div class="flow-bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
+                </button>
+                <h2>RECURRING TRANSFER</h2>
+                <span></span>
+            </div>
+            <div class="flow-scroll">
+                <p class="lead" id="recLead"></p>
+                <label class="field">
+                    <span>AMOUNT</span>
+                    <input id="recAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); paintRecurring()">
+                    <small id="recHint"></small>
+                </label>
+                <label class="field">
+                    <span>FREQUENCY</span>
+                    <select id="recFreq"><option>Daily</option><option>Weekly</option><option selected>Monthly</option></select>
+                    <svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                </label>
+            </div>
+            <div class="btn-pair" id="recActions"></div>
+        </section>
+
         <!-- ============ FAQs ============ -->
         <section class="step" id="stepFaq">
             <div class="flow-bar">
@@ -3103,12 +3808,6 @@
         const PARTNER = 'awash';
         const PARTNER_ORDER = [PARTNER];
 
-        const POCKETS = [
-            { name: 'University Tuition', partner: 'awash',  acct: '4821',  rate: 8,   saved: 75000, goal: 200000, days: 89,  chip: ['ON TRACK', 'green'], bar: '' },
-            { name: 'Emergency Fund',     partner: 'awash',  acct: '0506',  rate: 7,   saved: 7200,  goal: 15000,  days: 45,  chip: ['BEHIND', 'amber'],   bar: 'amber' },
-            { name: 'Business Startup',   partner: 'awash',  acct: '49341', rate: 9.5, saved: 50000, goal: 150000, days: 210, chip: ['ACTIVE', 'green'],   bar: 'blue' }
-        ];
-
         const DAY = 86400000;
         const TODAY = startOfDay(new Date());
 
@@ -3143,6 +3842,26 @@
            screens; prototype-mode clears it when a new run starts. */
         const STATE_KEY = 'fdState';
 
+        /* Pockets every run starts with: three with a target, one without */
+        function seedPockets() {
+            const ago = n => addDays(TODAY, -n).toISOString();
+            const pocket = (id, name, balance, opened, auto, target, deposits) => ({
+                id: id, name: name, balance: balance, opened: ago(opened), auto: auto, target: target,
+                txns: deposits.map(d => ({ type: 'DEPOSIT', amount: d[0], on: ago(d[1]) }))
+            });
+            const goal = (amount, from, until) => ({ amount: amount, from: ago(from), by: addDays(TODAY, until).toISOString() });
+            return [
+                pocket('IS48214821', 'University Tuition', 75000, 120, { amount: 15000, freq: 'Monthly' }, goal(200000, 120, 240),
+                    [[30000, 120], [15000, 90], [15000, 60], [15000, 30]]),
+                pocket('IS27050506', 'Emergency Fund', 7200, 150, null, goal(15000, 150, 45),
+                    [[4000, 150], [3200, 70]]),
+                pocket('IS61349341', 'Business Startup', 50000, 100, { amount: 3500, freq: 'Weekly' }, goal(150000, 100, 210),
+                    [[22000, 100], [14000, 50], [14000, 20]]),
+                pocket('IS90212410', 'Rainy Day', 2410, 40, null, null,
+                    [[1500, 40], [910, 12]])
+            ];
+        }
+
         function seedState() {
             /* Two deposits so every lifecycle state is reachable: one
                still locked, one whose term ended a week ago. */
@@ -3152,6 +3871,7 @@
             return {
                 optedIn: false,
                 wallet: 75000,
+                individual: seedPockets(),
                 accounts: [
                     account('FD20417731', planName(planById('m12')), planById('m12'), 50000, openedActive, PARTNER),
                     account('FD20398165', planName(planById('m3')), planById('m3'), 10000, openedMatured, PARTNER)
@@ -3182,6 +3902,7 @@
         }
 
         let S = loadState();
+        S.individual = S.individual || seedPockets();
 
         function save() {
             try { sessionStorage.setItem(STATE_KEY, JSON.stringify(S)); } catch (e) {}
@@ -3246,6 +3967,7 @@
             const top = stack[stack.length - 1];
             if (processingNow || top === 'stepProcessing') return;
             if (top === 'stepDone') { doneClose(); return; }
+            if (top === 'stepIndResult') { indResultDone(); return; }
             if (stack.length <= 1) {
                 /* Fixed deposit sits on the savings screen; back leaves it first */
                 if (tab === 'fixed') { setTab('mine'); return; }
@@ -3256,6 +3978,7 @@
             const prev = stack[stack.length - 1];
             if (prev === 'stepHome') renderHome();
             if (prev === 'stepAccount') renderAccount();
+            if (prev === 'stepIndPocket') renderIndPocket();
             show(prev);
         }
 
@@ -3284,7 +4007,7 @@
 
         function homeCta() {
             if (tab === 'fixed') startNewDeposit();
-            else showToast('NEW SAVING');
+            else chooseSavingType();
         }
 
         function renderHome() {
@@ -3294,27 +4017,52 @@
             const live = S.accounts.filter(a => !a.closed);
             document.getElementById('mineFixedTotal').textContent = 'ETB ' + whole(live.reduce((t, a) => t + a.principal, 0));
 
-            /* A locked pocket is a fixed deposit: it opens that account,
-               and leaves the list once the deposit is closed. */
-            document.getElementById('pocketList').innerHTML = POCKETS.filter(p => {
-                const fd = p.fd && findAccount(p.fd);
-                return !(fd && fd.closed);
-            }).map(p => {
-                const fd = p.fd && findAccount(p.fd);
-                const pct = p.saved / p.goal * 100;
-                const days = fd ? Math.max(daysBetween(TODAY, maturityOf(fd)), 0) : p.days;
-                const rate = fd ? fd.rate : p.rate;
-                const open = fd ? 'openAccount(\'' + fd.id + '\')' : 'showToast(\'' + p.name.toUpperCase() + '\')';
-                return '<div class="pocket" onclick="' + open + '">'
-                    + '<div class="bank"><img src="' + PARTNERS[p.partner].logo + '" alt="">' + '<span class="acct">.....' + p.acct + '</span><span class="rate">' + rate + '% p.a.</span></div>'
-                    + '<div class="head"><span class="name">' + p.name + '</span><span class="chip ' + p.chip[1] + '">' + p.chip[0] + '</span></div>'
-                    + '<div class="money"><span><small>SAVED</small><b>' + whole(p.saved) + ' BIRR</b></span><span><small>OF</small><span class="of">' + whole(p.goal) + ' BIRR</span></span></div>'
-                    + '<div class="bar ' + p.bar + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>'
-                    + '<div class="foot"><span>' + days + ' Days Left</span><span class="pct">' + pct.toFixed(1) + '%</span></div>'
-                    + '</div>';
-            }).join('');
+            const pocketsTotal = S.individual.reduce((t, p) => t + p.balance, 0);
+            const fixedTotal = S.optedIn ? live.reduce((t, a) => t + a.principal, 0) : 0;
+            document.getElementById('minePockets').textContent = 'ETB ' + whole(pocketsTotal);
+            document.getElementById('mineTotal').textContent = money(pocketsTotal + fixedTotal) + ' Birr';
+            renderSavingsList();
 
             renderFixedPane();
+        }
+
+        /* ---------- Savings list: target, individual, fixed, matured ---------- */
+        let listFilter = 'all';
+
+        function setListFilter(f) {
+            listFilter = f;
+            renderSavingsList();
+        }
+
+        function renderSavingsList() {
+            const fixedOk = S.optedIn;
+            const groups = [
+                { key: 'target', chip: 'TARGET', label: 'TARGET SAVINGS',
+                  items: S.individual.filter(p => p.target).map(indCard),
+                  empty: 'Give your saving a goal and track how close you are.', cta: ['NEW TARGET SAVING', 'openIndCreate(\'target\')'] },
+                { key: 'individual', chip: 'INDIVIDUAL', label: 'INDIVIDUAL SAVINGS',
+                  items: S.individual.filter(p => !p.target).map(indCard),
+                  empty: 'Save any amount, any time, and withdraw when you need it.', cta: ['NEW INDIVIDUAL SAVING', 'openIndCreate()'] },
+                { key: 'fixed', chip: 'FIXED', label: 'FIXED DEPOSITS',
+                  items: fixedOk ? S.accounts.filter(a => statusOf(a) === 'active').map(depositCard) : [],
+                  empty: fixedOk ? 'No locked deposits right now.' : 'Lock your money for a fixed term at up to 10% a year.',
+                  cta: fixedOk ? ['NEW FIXED DEPOSIT', 'startNewDeposit()'] : ['OPEN FIXED DEPOSIT', 'openOptin()'] },
+                { key: 'matured', chip: 'MATURED', label: 'MATURED FIXED DEPOSITS',
+                  items: fixedOk ? S.accounts.filter(a => statusOf(a) === 'matured').map(depositCard) : [],
+                  empty: 'Deposits that have reached their maturity date show here, ready to withdraw or roll over.', cta: null }
+            ];
+            const total = groups.reduce((t, g) => t + g.items.length, 0);
+
+            document.getElementById('listChips').innerHTML = [{ key: 'all', chip: 'ALL', items: { length: total } }].concat(groups).map(g =>
+                '<button class="' + (listFilter === g.key ? 'on' : '') + '" onclick="setListFilter(\'' + g.key + '\')">' + g.chip + '<span>' + g.items.length + '</span></button>').join('');
+
+            const empty = g => '<div class="list-empty">' + g.empty
+                + (g.cta ? '<button onclick="' + g.cta[1] + '">' + g.cta[0] + '</button>' : '') + '</div>';
+
+            document.getElementById('pocketList').innerHTML = listFilter === 'all'
+                ? groups.filter(g => g.items.length).map(g =>
+                    '<p class="list-label"><span>' + g.label + '</span><span>' + g.items.length + '</span></p>' + g.items.join('')).join('')
+                : groups.filter(g => g.key === listFilter).map(g => g.items.length ? g.items.join('') : empty(g)).join('');
         }
 
         function statusChip(a) {
@@ -3531,6 +4279,8 @@
             flow.plan = planById(id);
             flow.name = planName(flow.plan);
             if (flow.kind === 'rollover') { openReview(); return; }
+            amountMode = 'fd';
+            document.getElementById('amountTitle').textContent = 'DEPOSIT';
             amount = '';
             paintAmount();
             go('stepAmount');
@@ -3566,6 +4316,7 @@
         }
 
         function paintAmount() {
+            if (amountMode === 'ind') { paintIndAmount(); return; }
             const p = flow.plan;
             const n = Number(amount || 0);
             document.getElementById('amountDigits').textContent = amount === '' ? '0' : whole(n);
@@ -3609,6 +4360,7 @@
         }
 
         function amountContinue() {
+            if (amountMode === 'ind') { indAmountContinue(); return; }
             flow.amount = Number(amount);
             openReview();
         }
@@ -3642,7 +4394,11 @@
             const roll = flow.kind === 'rollover';
             askPin({
                 title: roll ? 'ROLL OVER FIXED DEPOSIT' : 'FIXED DEPOSIT',
-                sub: money(flow.amount) + ' BIRR FOR ' + p.months + ' MONTHS',
+                rows: [
+                    ['AMOUNT', money(flow.amount) + ' Birr'],
+                    ['LOCK PERIOD', p.months + ' months'],
+                    ['INTEREST RATE', p.rate + '% p.a.']
+                ],
                 ok: roll ? runRollover : runOpen
             });
         }
@@ -3658,7 +4414,9 @@
             pinTries = 3;
             paintPin();
             document.getElementById('pinTitle').textContent = ctx.title;
-            document.getElementById('pinSub').textContent = ctx.sub;
+            const sub = document.getElementById('pinSub');
+            if (ctx.rows) sub.innerHTML = ctx.rows.map(r => '<div class="pin-row"><b>' + r[0] + '</b>' + r[1] + '</div>').join('');
+            else sub.textContent = ctx.sub;
             go('stepPin');
         }
 
@@ -3853,7 +4611,7 @@
                 current = a;
                 showDone({
                     title: 'DEPOSIT CREATED',
-                    chip: 'FIXED DEPOSIT CREATED SUCCESSFULLY',
+                    chip: 'SUCCESSFULLY CREATED',
                     logo: PARTNERS[a.partner].logo,
                     pct: 0,
                     main: [
@@ -4016,7 +4774,7 @@
             const a = current;
             askPin({
                 title: 'CHECK BALANCE',
-                sub: 'FIXED DEPOSIT ' + maskId(a.id),
+                rows: [['ACCOUNT ID', a.id]],
                 ok: () => {
                     back();
                     showInfo({
@@ -4045,7 +4803,7 @@
             const a = current;
             askPin({
                 title: 'MINI STATEMENT',
-                sub: 'FIXED DEPOSIT ' + maskId(a.id),
+                rows: [['ACCOUNT ID', a.id]],
                 ok: () => {
                     back();
                     const last = history(a).slice(-5).reverse();
@@ -4096,9 +4854,7 @@
 
         function destinations() {
             return [{ id: 'wallet', name: 'M-PESA Wallet', sub: 'Balance ' + money(S.wallet) + ' Birr', logo: LOGOS + 'M-PESA-logo-icon.png' }]
-                .concat(POCKETS.map((p, i) => ({ id: 'pocket' + i, fd: p.fd, name: p.name, sub: 'Savings pocket', logo: PARTNERS[p.partner].logo }))
-                    /* a locked deposit can't take payouts */
-                    .filter(d => !d.fd));
+                .concat(S.individual.map(p => ({ id: p.id, name: p.name, sub: 'Savings pocket', logo: PARTNERS[PARTNER].logo })));
         }
 
         function renderPayout() {
@@ -4141,6 +4897,14 @@
             document.getElementById('payoutBody').innerHTML = html;
         }
 
+        function payInto(dest, amount) {
+            if (dest.id === 'wallet') { S.wallet += amount; return; }
+            const p = findInd(dest.id);
+            if (!p) return;
+            p.balance += amount;
+            p.txns.push({ type: 'DEPOSIT', amount: amount, on: new Date().toISOString() });
+        }
+
         function destRow(d, on, fn) {
             return '<div class="dest' + (on ? ' on' : '') + '"' + (fn ? ' onclick="' + fn + '"' : '') + '>'
                 + '<img src="' + d.logo + '" alt="">'
@@ -4159,7 +4923,10 @@
             const dest = destinations().find(d => d.id === flow.dest);
             askPin({
                 title: early ? 'EARLY WITHDRAWAL' : 'MATURITY WITHDRAWAL',
-                sub: money(early ? a.principal : maturedTotal(a)) + ' BIRR TO ' + dest.name.toUpperCase(),
+                rows: [
+                    ['AMOUNT', money(early ? a.principal : maturedTotal(a)) + ' Birr'],
+                    ['SEND TO', dest.name]
+                ],
                 ok: early ? () => runEarly(dest) : () => runMature(dest)
             });
         }
@@ -4181,7 +4948,7 @@
                 a.txns.push({ type: 'INTEREST POSTED', amount: interest, on: TODAY.toISOString() });
                 a.txns.push({ type: 'WITHDRAW', amount: total, on: TODAY.toISOString() });
                 closeAccount(a, total, 'Maturity withdrawal');
-                if (dest.id === 'wallet') S.wallet += total;
+                payInto(dest, total);
                 save();
                 showDone({
                     title: 'DEPOSIT CLOSED',
@@ -4322,7 +5089,7 @@
                 const lost = accrued(a);
                 a.txns.push({ type: 'WITHDRAW', amount: a.principal, on: TODAY.toISOString() });
                 closeAccount(a, a.principal, 'Early withdrawal');
-                if (dest.id === 'wallet') S.wallet += a.principal;
+                payInto(dest, a.principal);
                 save();
                 showDone({
                     title: 'DEPOSIT CLOSED',
@@ -4420,7 +5187,10 @@
                     const wallet = destinations()[0];
                     askPin({
                         title: 'CLOSE ACCOUNT',
-                        sub: money(pay) + ' BIRR TO M-PESA WALLET',
+                        rows: [
+                            ['AMOUNT', money(pay) + ' Birr'],
+                            ['SEND TO', 'M-PESA Wallet']
+                        ],
                         ok: early ? () => runEarly(wallet) : () => runMature(wallet)
                     });
                 });
@@ -4484,6 +5254,489 @@
                 + rows.map(r => '<div class="faq-row"><div class="l"><b>' + r[0] + '</b><p>' + r[1] + '</p></div><div class="r">' + r[2] + '</div></div>').join('')
                 + '<div style="height:16px"></div>';
             body.scrollTop = 0;
+        }
+
+        /* ---------- Individual saving ---------- */
+        /* A flexible pocket: no lock, money in and out at any time, with
+           an optional automatic deduction from the wallet. */
+        const IND_RATE = 7;
+        const IND_MIN_AUTO = 50;
+        let amountMode = 'fd';      // which journey the shared keypad serves
+        let ind = null;             // the pocket on screen
+        let indAuto = false;
+        let indKind = 'deposit';
+        let indMode = 'individual';  // or 'target': same pocket, with a goal
+        let indAmountTouched = false;
+        const TARGET_MIN = 500;
+
+        /* ---- target maths ---- */
+        /* the customer picks any day from tomorrow, up to five years out */
+        const BY_MIN = () => addDays(TODAY, 1);
+        const BY_MAX = () => addMonths(TODAY, 60);
+
+        function setupBy(field, picked) {
+            field.dataset.value = picked ? startOfDay(picked).toISOString() : '';
+            field.classList.toggle('empty', !picked);
+            field.querySelector('span').textContent = picked ? fmtDate(picked) : 'Select a date';
+        }
+
+        /* the picked day as an ISO date, or '' while none is picked */
+        function byValue(id) { return document.getElementById(id).dataset.value || ''; }
+
+        function byHint(id, by) {
+            document.getElementById(id).textContent = by ? daysBetween(TODAY, new Date(by)) + ' days from today' : 'When you want to reach it';
+        }
+
+        /* ---- calendar sheet ---- */
+        const DP_MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+        let dp = null;   // { field, month, picked }
+
+        function openDatePicker(id) {
+            const v = byValue(id);
+            const picked = v ? new Date(v) : null;
+            const base = picked || BY_MIN();
+            dp = { field: id, month: new Date(base.getFullYear(), base.getMonth(), 1), picked: picked };
+            renderDatePicker();
+            document.getElementById('sheet').classList.add('show');
+        }
+
+        function dpMove(step) {
+            dp.month = new Date(dp.month.getFullYear(), dp.month.getMonth() + step, 1);
+            renderDatePicker();
+        }
+
+        function dpPick(t) {
+            dp.picked = new Date(t);
+            renderDatePicker();
+        }
+
+        function dpQuick(months) {
+            const d = addMonths(TODAY, months);
+            dp.picked = d;
+            dp.month = new Date(d.getFullYear(), d.getMonth(), 1);
+            renderDatePicker();
+        }
+
+        function renderDatePicker() {
+            const min = BY_MIN(), max = BY_MAX();
+            const y = dp.month.getFullYear(), m = dp.month.getMonth();
+            const first = new Date(y, m, 1).getDay();
+            const days = new Date(y, m + 1, 0).getDate();
+            const same = (a, b) => a && b && a.getTime() === startOfDay(b).getTime();
+
+            let grid = '';
+            for (let i = 0; i < first; i++) grid += '<span></span>';
+            for (let d = 1; d <= days; d++) {
+                const day = new Date(y, m, d);
+                const off = day < min || day > max;
+                const cls = 'dp-day' + (same(day, TODAY) ? ' today' : '') + (same(day, dp.picked) ? ' on' : '');
+                grid += '<button class="' + cls + '"' + (off ? ' disabled' : ' onclick="dpPick(' + day.getTime() + ')"') + '>' + d + '</button>';
+            }
+
+            const quick = [[3, '3 MONTHS'], [6, '6 MONTHS'], [12, '1 YEAR']].map(q =>
+                '<button class="' + (same(addMonths(TODAY, q[0]), dp.picked) ? 'on' : '') + '" onclick="dpQuick(' + q[0] + ')">' + q[1] + '</button>').join('');
+
+            const prevOff = new Date(y, m, 0) < min;
+            const nextOff = new Date(y, m + 1, 1) > max;
+
+            document.getElementById('sheetBody').innerHTML = '<div class="sheet-grab"></div>'
+                + '<p class="sheet-title">SELECT TARGET DATE</p>'
+                + '<div class="dp-chips">' + quick + '</div>'
+                + '<div class="dp-head">'
+                + '<button class="icon-btn" onclick="dpMove(-1)" aria-label="Previous month"' + (prevOff ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>'
+                + '<b>' + DP_MONTHS[m] + ' ' + y + '</b>'
+                + '<button class="icon-btn" onclick="dpMove(1)" aria-label="Next month"' + (nextOff ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>'
+                + '</div>'
+                + '<div class="dp-week"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>'
+                + '<div class="dp-grid">' + grid + '</div>'
+                + '<p class="dp-picked">' + (dp.picked
+                    ? '<b>' + fmtDate(dp.picked) + '</b> &middot; ' + daysBetween(TODAY, dp.picked) + ' days from today'
+                    : 'Pick the day you want to reach your target') + '</p>'
+                + '<div class="sheet-actions row"><button class="sheet-btn ghost" onclick="closeSheet()">CANCEL</button>'
+                + '<button class="sheet-btn primary" onclick="dpConfirm()"' + (dp.picked ? '' : ' disabled style="opacity:.45"') + '>CONFIRM</button></div>';
+        }
+
+        function dpConfirm() {
+            if (!dp.picked) return;
+            setupBy(document.getElementById(dp.field), dp.picked);
+            closeSheet();
+            if (dp.field === 'indBy') paintIndForm();
+            else paintTargetSet();
+        }
+
+        /* how many deductions fit before the date, at a frequency */
+        function periodsUntil(by, freq) {
+            const days = Math.max(daysBetween(TODAY, new Date(by)), 1);
+            if (freq === 'Daily') return days;
+            if (freq === 'Weekly') return Math.max(Math.floor(days / 7), 1);
+            return Math.max(Math.round(days / 30.44), 1);
+        }
+
+        function suggested(amountLeft, by, freq) { return Math.ceil(Math.max(amountLeft, 0) / periodsUntil(by, freq)); }
+
+        function targetPct(p) { return Math.min(p.balance / p.target.amount * 100, 100); }
+        function targetDaysLeft(p) { return Math.max(daysBetween(TODAY, new Date(p.target.by)), 0); }
+
+        /* on track = at least the straight-line share of the goal for the time gone */
+        function targetChip(p) {
+            if (p.balance >= p.target.amount) return ['REACHED', 'green', ''];
+            const total = Math.max(daysBetween(new Date(p.target.from), new Date(p.target.by)), 1);
+            const gone = Math.min(Math.max(daysBetween(new Date(p.target.from), TODAY), 0), total);
+            const due = p.target.amount * gone / total;
+            return p.balance >= due ? ['ON TRACK', 'green', ''] : ['BEHIND', 'amber', 'amber'];
+        }
+
+        function findInd(id) { return S.individual.find(p => p.id === id); }
+
+        function digitsOnly(input) { input.value = input.value.replace(/\D/g, '').replace(/^0+/, ''); }
+
+        function freqLine(auto) { return money(auto.amount) + ' Birr ' + auto.freq.toLowerCase(); }
+
+        function chooseSavingType() {
+            const types = [
+                ['INDIVIDUAL SAVINGS', '<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.6-3.8 3.4-6 7-6s6.4 2.2 7 6"/>', 'openIndCreate()'],
+                ['TARGET SAVINGS', '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m12 12 6-6M15.5 5.5H18v2.5"/>', 'openIndCreate(\'target\')'],
+                ['GROUP SAVINGS', '<circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.5-3.2 2.8-5 5.5-5s5 1.8 5.5 5"/><path d="M14.5 14.3c.6-.2 1.3-.3 2-.3 2.3 0 4 1.5 4.4 4.5"/>', 'closeSheet(); showToast(\'GROUP SAVINGS\')'],
+                ['FIXED-TIME SAVINGS', '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/>', 'closeSheet(); setTab(\'fixed\')']
+            ];
+            document.getElementById('sheetBody').innerHTML = '<div class="sheet-grab"></div>'
+                + '<p class="sheet-title">CHOOSE SAVINGS TYPE</p><div style="margin-top:14px">'
+                + types.map(t => '<button class="type-row" onclick="' + t[2] + '"><span class="ic"><svg viewBox="0 0 24 24">' + t[1] + '</svg></span>' + t[0] + '</button>').join('')
+                + '</div>';
+            document.getElementById('sheet').classList.add('show');
+        }
+
+        function openIndCreate(mode) {
+            indMode = mode === 'target' ? 'target' : 'individual';
+            indAuto = false;
+            indAmountTouched = false;
+            document.getElementById('indKindLabel').textContent = indMode === 'target' ? 'TARGET SAVING' : 'INDIVIDUAL SAVING';
+            document.getElementById('indTargetFields').hidden = indMode !== 'target';
+            document.getElementById('indTarget').value = '';
+            setupBy(document.getElementById('indBy'));
+            document.getElementById('indLogo').src = PARTNERS[PARTNER].logo;
+            document.getElementById('indRate').textContent = IND_RATE + '% INTEREST';
+            document.getElementById('indName').value = '';
+            document.getElementById('indAmount').value = '';
+            document.getElementById('indFreq').value = 'Monthly';
+            paintIndForm();
+            go('stepIndCreate');
+        }
+
+        function toggleIndAuto() {
+            indAuto = !indAuto;
+            paintIndForm();
+        }
+
+        function paintIndForm() {
+            const name = document.getElementById('indName').value;
+            const tgt = indMode === 'target';
+            const goal = Number(document.getElementById('indTarget').value || 0);
+            const by = byValue('indBy');
+            const freq = document.getElementById('indFreq').value;
+            const goalLow = goal && goal < TARGET_MIN;
+            if (tgt) {
+                const th = document.getElementById('indTargetHint');
+                th.textContent = goalLow ? 'Minimum ' + whole(TARGET_MIN) + ' Birr' : 'How much you want to reach';
+                th.style.color = goalLow ? '#F0335F' : '';
+                byHint('indByHint', by);
+                /* propose the deduction that lands on the goal, until edited */
+                if (indAuto && !indAmountTouched && goal >= TARGET_MIN && by) {
+                    document.getElementById('indAmount').value = Math.max(suggested(goal, by, freq), IND_MIN_AUTO);
+                }
+            }
+            const n = Number(document.getElementById('indAmount').value || 0);
+            const low = n && n < IND_MIN_AUTO;
+            document.getElementById('indNameCount').textContent = name.length + '/10';
+            document.getElementById('indAutoSwitch').classList.toggle('on', indAuto);
+            document.getElementById('indAutoFields').hidden = !indAuto;
+            const hint = document.getElementById('indAmountHint');
+            hint.textContent = low ? 'Minimum ' + IND_MIN_AUTO + ' Birr'
+                : tgt && goal >= TARGET_MIN && by && n
+                    ? (n >= suggested(goal, by, freq) ? 'Reaches your target on time' : 'Save ' + whole(suggested(goal, by, freq)) + ' Birr ' + freq.toLowerCase() + ' to reach it on time')
+                    : 'Taken from your M-PESA wallet';
+            hint.style.color = low ? '#F0335F' : '';
+            document.getElementById('indCreateBtn').disabled = !name.trim() || (indAuto && n < IND_MIN_AUTO) || (tgt && (goal < TARGET_MIN || !by));
+        }
+
+        function indCreate() {
+            const name = document.getElementById('indName').value.trim();
+            const auto = indAuto ? { amount: Number(document.getElementById('indAmount').value), freq: document.getElementById('indFreq').value } : null;
+            const target = indMode === 'target'
+                ? { amount: Number(document.getElementById('indTarget').value), by: byValue('indBy'), from: TODAY.toISOString() }
+                : null;
+            const rows = [['SAVING NAME', name]];
+            if (target) rows.push(['TARGET', money(target.amount) + ' Birr'], ['BY', fmtDate(target.by)]);
+            rows.push(['INTEREST RATE', IND_RATE + '% p.a.']);
+            if (auto) rows.push(['AUTO DEDUCTION', freqLine(auto)]);
+            askPin({ title: target ? 'TARGET SAVING' : 'INDIVIDUAL SAVING', rows: rows, ok: () => runIndCreate(name, auto, target) });
+        }
+
+        function runIndCreate(name, auto, target) {
+            processing('CREATING YOUR SAVING', [
+                'Verifying your identity',
+                'Creating your saving pocket'
+            ], () => {
+                ind = { id: newId('IS', 8), name: name, balance: 0, opened: TODAY.toISOString(), auto: auto, target: target, txns: [] };
+                S.individual.unshift(ind);
+                save();
+                stack = ['stepHome', 'stepIndPocket'];
+                renderIndPocket();
+                show('stepIndPocket');
+                document.getElementById('sheetBody').innerHTML = '<p class="sheet-title">SAVING CREATED SUCCESSFULLY</p>'
+                    + '<p class="sheet-text">Do you want to add money to your pocket?</p>'
+                    + '<div class="sheet-actions row"><button class="sheet-btn ghost" onclick="closeSheet()">ADD LATER</button>'
+                    + '<button class="sheet-btn blue" onclick="openIndAmount(\'deposit\')">ADD MONEY</button></div>';
+                document.getElementById('sheet').classList.add('show');
+                sms('Your saving pocket ' + name + ' is ready'
+                    + (target ? ', with a target of ' + money(target.amount) + ' Birr by ' + fmtDate(target.by) : '')
+                    + '. Interest is ' + IND_RATE + '% a year'
+                    + (auto ? ', and ' + freqLine(auto) + ' will be saved automatically.' : '.'));
+            });
+        }
+
+        function openIndPocket(id) {
+            ind = findInd(id);
+            renderIndPocket();
+            go('stepIndPocket');
+        }
+
+        function indCard(p) {
+            const bank = '<div class="bank"><img src="' + PARTNERS[PARTNER].logo + '" alt=""><span class="acct">.....' + p.id.slice(-4) + '</span><span class="rate">' + IND_RATE + '% p.a.</span></div>';
+            if (p.target) {
+                const c = targetChip(p);
+                const pct = targetPct(p);
+                return '<div class="pocket" onclick="openIndPocket(\'' + p.id + '\')">' + bank
+                    + '<div class="head"><span class="name">' + p.name + '</span><span class="chip ' + c[1] + '">' + c[0] + '</span></div>'
+                    + '<div class="money"><span><small>SAVED</small><b>' + whole(p.balance) + ' BIRR</b></span><span><small>OF</small><span class="of">' + whole(p.target.amount) + ' BIRR</span></span></div>'
+                    + '<div class="bar ' + c[2] + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>'
+                    + '<div class="foot"><span>' + targetDaysLeft(p) + ' Days Left</span><span class="pct">' + pct.toFixed(1) + '%</span></div>'
+                    + '</div>';
+            }
+            return '<div class="pocket" onclick="openIndPocket(\'' + p.id + '\')">' + bank
+                + '<div class="head"><span class="name">' + p.name + '</span><span class="chip green">INDIVIDUAL</span></div>'
+                + '<div class="money"><span><small>SAVED</small><b>' + whole(p.balance) + ' BIRR</b></span></div>'
+                + '<div class="foot"><span>' + (p.auto ? 'Auto-save ' + freqLine(p.auto) : 'Save any amount, any time') + '</span></div>'
+                + '</div>';
+        }
+
+        function renderIndPocket() {
+            const p = ind;
+            let html = '<div class="acct-card">'
+                + '<p class="nm" style="margin-top:4px">' + p.name + '</p>'
+                + '<p class="big" style="margin-bottom:2px">' + money(p.balance) + ' Birr</p>';
+            if (p.target) {
+                const c = targetChip(p);
+                const pct = targetPct(p);
+                html += '<p class="tgt-of">of ' + money(p.target.amount) + ' Birr target</p>'
+                    + '<span class="chip ' + c[1] + '" style="display:inline-block;margin-top:10px">' + c[0] + '</span>'
+                    + '<div class="bar term-bar ' + c[2] + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>'
+                    + '<div class="term-foot"><span>' + targetDaysLeft(p) + ' days to ' + fmtShort(p.target.by) + '</span><span>' + pct.toFixed(1) + '%</span></div>';
+            }
+            if (p.auto) {
+                html += '<div class="auto-line"><svg viewBox="0 0 24 24">' + IC.roll + '</svg>' + freqLine(p.auto) + '</div>';
+            }
+            html += '</div>'
+                + '<div class="actions">'
+                + actionBtn('DEPOSIT', 'green', IC.plus, 'openIndAmount(\'deposit\')')
+                + actionBtn('WITHDRAW', 'red', IC.out, 'openIndAmount(\'withdraw\')', p.balance <= 0)
+                + actionBtn('RECURRING<br>TRANSFER', 'purple', IC.roll, 'openRecurring()')
+                + '</div>'
+                + '<div class="target-card" onclick="openTargetSet()">'
+                + '<span class="ic blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m12 12 6-6M15.5 5.5H18v2.5"/></svg></span>'
+                + (p.target
+                    ? '<span class="t"><b>TARGET &middot; ' + whole(p.target.amount) + ' BIRR</b><small>By ' + fmtDate(p.target.by) + '. Tap to change it.</small></span>'
+                    : '<span class="t"><b>IT&rsquo;S EASIER WITH A TARGET</b><small>Set up a goal and achieve your results faster</small></span>')
+                + '<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>'
+                + '<p class="txns-label">TRANSACTIONS</p>';
+            html += p.txns.length
+                ? p.txns.slice().reverse().map(txnRow).join('')
+                : '<div class="empty-txn"><svg viewBox="0 0 24 24"><path d="M4.5 6.5h13a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 18V6a1.5 1.5 0 0 1 1.5-1.5H16"/><path d="M15.5 11.5H21v3.5h-5.5a1.75 1.75 0 0 1 0-3.5Z"/></svg>No Transaction</div>';
+            html += '<div style="height:16px"></div>';
+            document.getElementById('indBody').innerHTML = html;
+            document.getElementById('indScroll').scrollTop = 0;
+        }
+
+        /* Deposit and withdraw share the fixed deposit's keypad screen */
+        function openIndAmount(kind) {
+            indKind = kind;
+            amountMode = 'ind';
+            amount = '';
+            document.getElementById('amountTitle').textContent = kind === 'deposit' ? 'DEPOSIT' : 'WITHDRAW';
+            paintAmount();
+            go('stepAmount');
+        }
+
+        function paintIndAmount() {
+            const dep = indKind === 'deposit';
+            const n = Number(amount || 0);
+            const max = dep ? S.wallet : ind.balance;
+            document.getElementById('amountDigits').textContent = amount === '' ? '0' : whole(n);
+            document.getElementById('walletLine').textContent = (dep ? 'WALLET BALANCE: ' : 'SAVING BALANCE: ') + money(max) + ' Birr';
+            const msg = document.getElementById('amountMsg');
+            const num = document.getElementById('amountNum');
+            num.className = 'num' + (amount ? ' has' : '');
+            msg.className = 'amount-msg hint';
+            msg.textContent = dep ? 'Earns ' + IND_RATE + '% interest. Withdraw any time.' : 'Paid to your M-PESA wallet.';
+            if (n > max) {
+                num.className = 'num has err';
+                msg.className = 'amount-msg err';
+                msg.textContent = 'Not enough balance. Max ' + money(max) + ' Birr.';
+            }
+            document.getElementById('amountBtn').disabled = !n || n > max;
+            document.getElementById('earnGrid').innerHTML = '';
+        }
+
+        function indAmountContinue() {
+            const dep = indKind === 'deposit';
+            const n = Number(amount);
+            askPin({
+                title: dep ? 'DEPOSIT TO SAVING' : 'WITHDRAW FROM SAVING',
+                rows: dep
+                    ? [['AMOUNT', money(n) + ' Birr'], ['TO', ind.name]]
+                    : [['AMOUNT', money(n) + ' Birr'], ['FROM', ind.name], ['SEND TO', 'M-PESA Wallet']],
+                ok: () => runIndMove(n)
+            });
+        }
+
+        function runIndMove(n) {
+            const dep = indKind === 'deposit';
+            processing(dep ? 'DEPOSITING' : 'WITHDRAWING', [
+                'Verifying your identity',
+                dep ? 'Checking M-PESA balance' : 'Checking saving balance',
+                dep ? 'Adding to your saving' : 'Sending to your M-PESA wallet'
+            ], () => {
+                ind.balance += dep ? n : -n;
+                S.wallet += dep ? -n : n;
+                ind.txns.push({ type: dep ? 'DEPOSIT' : 'WITHDRAW', amount: n, on: new Date().toISOString() });
+                save();
+                showIndResult(dep);
+                sms(dep
+                    ? 'You have saved ' + money(n) + ' Birr to ' + ind.name + '. Saving balance ' + money(ind.balance) + ' Birr. M-PESA balance ' + money(S.wallet) + ' Birr.'
+                    : money(n) + ' Birr has been withdrawn from ' + ind.name + ' to your M-PESA wallet. M-PESA balance ' + money(S.wallet) + ' Birr.');
+            });
+        }
+
+        function showIndResult(dep) {
+            document.getElementById('resLogo').src = PARTNERS[PARTNER].logo;
+            /* the ring fills toward the target; without one it's a fixed accent */
+            const arc = 2 * Math.PI * 30;
+            const fill = ind.target ? arc * targetPct(ind) / 100 : 44;
+            document.querySelector('#stepIndResult .res-ring circle + circle').setAttribute('stroke-dasharray', fill + ' ' + arc);
+            document.getElementById('resName').textContent = ind.name.toUpperCase();
+            document.getElementById('resRows').innerHTML = '<div class="pin-row"><b>POCKET BALANCE</b>' + money(ind.balance) + ' BIRR</div>'
+                + (ind.target ? '<div class="pin-row"><b>TARGET</b>' + money(ind.target.amount) + ' BIRR</div>' : '');
+            document.getElementById('resText').textContent = dep && ind.target && ind.balance >= ind.target.amount
+                ? 'You have reached your target!'
+                : dep
+                ? 'Money added to your pocket with success'
+                : 'Money withdrawn to your M-PESA wallet with success';
+            document.getElementById('resView').textContent = dep ? 'VIEW POCKET' : 'VIEW SAVING';
+            stack = ['stepHome', 'stepIndResult'];
+            show('stepIndResult');
+        }
+
+        function indResultView() {
+            stack = ['stepHome', 'stepIndPocket'];
+            renderIndPocket();
+            show('stepIndPocket');
+        }
+
+        function indResultDone() {
+            resetTo([]);
+            setTab('mine');
+        }
+
+        /* ---- set or change the target on a pocket ---- */
+        function openTargetSet() {
+            const t = ind.target;
+            document.getElementById('tgtTitle').textContent = t ? 'CHANGE TARGET' : 'SET A TARGET';
+            document.getElementById('tgtLead').innerHTML = 'Give <b>' + ind.name + '</b> a goal and see how close you are.';
+            document.getElementById('tgtAmount').value = t ? t.amount : '';
+            setupBy(document.getElementById('tgtBy'), t ? t.by : null);
+            paintTargetSet();
+            go('stepTgtSet');
+        }
+
+        function paintTargetSet() {
+            const n = Number(document.getElementById('tgtAmount').value || 0);
+            const by = byValue('tgtBy');
+            byHint('tgtByHint', by);
+            const ok = n >= TARGET_MIN && n > ind.balance && !!by;
+            const hint = document.getElementById('tgtHint');
+            hint.style.color = n && !ok ? '#F0335F' : '';
+            hint.textContent = n && n < TARGET_MIN ? 'Minimum ' + whole(TARGET_MIN) + ' Birr'
+                : n && n <= ind.balance ? 'Already saved ' + money(ind.balance) + ' Birr. Pick a higher target.'
+                : ok ? 'Save ' + whole(suggested(n - ind.balance, by, 'Monthly')) + ' Birr monthly to reach it'
+                : n && !by ? 'Now pick a target date'
+                : 'How much you want to reach';
+            document.getElementById('tgtActions').innerHTML = (ind.target ? '<button class="flow-btn ghost" onclick="removeTarget()">REMOVE</button>' : '')
+                + '<button class="flow-btn blue" onclick="saveTarget()"' + (ok ? '' : ' disabled') + '>SAVE</button>';
+        }
+
+        function saveTarget() {
+            const t = { amount: Number(document.getElementById('tgtAmount').value), by: byValue('tgtBy'), from: TODAY.toISOString() };
+            ind.target = t;
+            save();
+            back();
+            showToast('TARGET SAVED');
+        }
+
+        function removeTarget() {
+            openDialog('REMOVE TARGET', 'Your money stays in ' + ind.name + '. Only the goal is removed.', () => {
+                ind.target = null;
+                save();
+                closeDialog();
+                back();
+                showToast('TARGET REMOVED');
+            });
+        }
+
+        /* Recurring transfer: the automatic deduction, set or changed later */
+        function openRecurring() {
+            const a = ind.auto;
+            document.getElementById('recLead').innerHTML = 'Move money from your M-PESA wallet to <b>' + ind.name + '</b> automatically.';
+            document.getElementById('recAmount').value = a ? a.amount : '';
+            document.getElementById('recFreq').value = a ? a.freq : 'Monthly';
+            paintRecurring();
+            go('stepIndRecurring');
+        }
+
+        function paintRecurring() {
+            const n = Number(document.getElementById('recAmount').value || 0);
+            const low = n && n < IND_MIN_AUTO;
+            const hint = document.getElementById('recHint');
+            hint.textContent = low ? 'Minimum ' + IND_MIN_AUTO + ' Birr' : 'Taken from your M-PESA wallet';
+            hint.style.color = low ? '#F0335F' : '';
+            const btn = '<button class="flow-btn blue" onclick="saveRecurring()"' + (n < IND_MIN_AUTO ? ' disabled' : '') + '>' + (ind.auto ? 'UPDATE' : 'START') + '</button>';
+            document.getElementById('recActions').innerHTML = (ind.auto ? '<button class="flow-btn ghost" onclick="stopRecurring()">STOP</button>' : '') + btn;
+        }
+
+        function saveRecurring() {
+            const auto = { amount: Number(document.getElementById('recAmount').value), freq: document.getElementById('recFreq').value };
+            askPin({
+                title: 'RECURRING TRANSFER',
+                rows: [['AMOUNT', money(auto.amount) + ' Birr'], ['FREQUENCY', auto.freq], ['TO', ind.name]],
+                ok: () => {
+                    ind.auto = auto;
+                    save();
+                    stack = ['stepHome', 'stepIndPocket'];
+                    renderIndPocket();
+                    show('stepIndPocket');
+                    showToast('RECURRING TRANSFER SAVED');
+                    sms(freqLine(auto) + ' will now move from your M-PESA wallet to ' + ind.name + '.');
+                }
+            });
+        }
+
+        function stopRecurring() {
+            openDialog('STOP RECURRING TRANSFER', 'No more money will move to ' + ind.name + ' automatically. You can start it again at any time.', () => {
+                ind.auto = null;
+                save();
+                closeDialog();
+                back();
+                showToast('RECURRING TRANSFER STOPPED');
+            });
         }
 
         /* ---------- Sheet ---------- */
