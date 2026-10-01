@@ -3501,7 +3501,7 @@
                     + '</div></div>';
             }).join('')
                 + '<div class="note warn" style="margin-top:4px"><svg viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>'
-                + '<span>Withdraw before the maturity date and you lose all the interest &mdash; only your deposit is returned.</span></div>'
+                + '<span>If you withdraw before the maturity date, you lose all the interest &mdash; only your deposit is returned.</span></div>'
                 + '<div style="height:12px"></div>';
         }
 
@@ -3556,22 +3556,22 @@
             let ok = false;
             num.className = 'num' + (amount ? ' has' : '');
             if (!amount) {
-                /* the minimum is shown below, so the line carries the rule */
+                /* until an amount is in, the line carries the rule */
                 msg.className = 'amount-msg hint';
-                msg.textContent = 'Withdraw before maturity and the interest is lost.';
+                msg.textContent = 'If you withdraw early, you lose the interest.';
             } else if (n > S.wallet) {
                 /* P1-11 */
                 num.className = 'num has err';
                 msg.className = 'amount-msg err';
-                msg.textContent = 'Insufficient M-PESA balance. You can deposit up to ' + money(S.wallet) + ' Birr.';
+                msg.textContent = 'Not enough balance. Max ' + money(S.wallet) + ' Birr.';
             } else if (n < p.min) {
                 /* P1-06 */
                 num.className = 'num has err';
                 msg.className = 'amount-msg err';
-                msg.textContent = 'This plan needs at least ' + whole(p.min) + ' Birr. Please enter a higher amount.';
+                msg.textContent = 'Minimum deposit is ' + whole(p.min) + ' Birr.';
             } else {
                 msg.className = 'amount-msg hint';
-                msg.textContent = 'Withdraw before maturity and the interest is lost.';
+                msg.textContent = 'If you withdraw early, you lose the interest.';
                 ok = true;
             }
             document.getElementById('amountBtn').disabled = !ok;
@@ -3825,8 +3825,7 @@
                 'Verifying your identity',
                 'Checking eligibility',
                 'Checking M-PESA balance',
-                'Creating your fixed deposit',
-                'Sending funds to ' + PARTNERS[flow.partner].name
+                'Creating your fixed deposit'
             ], () => {
                 const a = account(newId('FD', 8), flow.name, p, flow.amount, TODAY, flow.partner);
                 S.accounts.unshift(a);
@@ -4115,7 +4114,7 @@
                 html += '<div class="dest-label">SEND TO</div>'
                     + destinations().map(d => destRow(d, d.id === flow.dest, 'pickDest(\'' + d.id + '\')')).join('')
                     + '<div class="note warn" style="margin-top:4px"><svg viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>'
-                    + '<span>You are withdrawing before the maturity date, so you lose all the interest &mdash; only your deposit is returned. This fixed deposit will be closed.</span></div>';
+                    + '<span>If you withdraw before the maturity date, you lose all the interest &mdash; only your deposit is returned. This fixed deposit will be closed.</span></div>';
             } else {
                 html += '<div class="dest-label">SEND TO</div>'
                     + destinations().map(d => destRow(d, d.id === flow.dest, 'pickDest(\'' + d.id + '\')')).join('')
