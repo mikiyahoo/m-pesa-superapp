@@ -160,6 +160,20 @@
             '@media (min-width: 720px) { body { padding-left: 196px; } }',
             '@media (max-width: 719px) { .proto-rail { display: none; } }',
 
+            /* ----- on a real phone, the screen is the whole page ----- */
+            /* No frame around it, and no fake clock/battery bar: the
+               phone already shows its own. */
+            '@media (max-width: 719px) {',
+            '    body { display: block; min-height: 0; background: #ffffff; }',
+            '    .mobile-container {',
+            '        width: 100% !important;',
+            '        height: 100vh !important;',
+            '        height: 100dvh !important;',
+            '        box-shadow: none !important;',
+            '    }',
+            '    .status-bar { display: none !important; }',
+            '}',
+
             /* ----- export ----- */
             '.proto-export {',
             '    position: fixed;',
