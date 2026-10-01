@@ -3643,7 +3643,7 @@
             const roll = flow.kind === 'rollover';
             askPin({
                 title: roll ? 'ROLL OVER FIXED DEPOSIT' : 'FIXED DEPOSIT',
-                sub: money(flow.amount) + ' BIRR TO ' + PARTNERS[flow.partner].name + ' FOR ' + p.months + ' MONTHS',
+                sub: money(flow.amount) + ' BIRR FOR ' + p.months + ' MONTHS',
                 ok: roll ? runRollover : runOpen
             });
         }
@@ -4020,7 +4020,7 @@
             const a = current;
             askPin({
                 title: 'CHECK BALANCE',
-                sub: PARTNERS[a.partner].name + ' FIXED DEPOSIT ' + maskId(a.id),
+                sub: 'FIXED DEPOSIT ' + maskId(a.id),
                 ok: () => {
                     back();
                     showInfo({
@@ -4049,7 +4049,7 @@
             const a = current;
             askPin({
                 title: 'MINI STATEMENT',
-                sub: PARTNERS[a.partner].name + ' FIXED DEPOSIT ' + maskId(a.id),
+                sub: 'FIXED DEPOSIT ' + maskId(a.id),
                 ok: () => {
                     back();
                     const last = history(a).slice(-5).reverse();
@@ -4100,7 +4100,7 @@
 
         function destinations() {
             return [{ id: 'wallet', name: 'M-PESA Wallet', sub: 'Balance ' + money(S.wallet) + ' Birr', logo: LOGOS + 'M-PESA-logo-icon.png' }]
-                .concat(POCKETS.map((p, i) => ({ id: 'pocket' + i, fd: p.fd, name: p.name, sub: PARTNERS[p.partner].name + ' savings pocket', logo: PARTNERS[p.partner].logo }))
+                .concat(POCKETS.map((p, i) => ({ id: 'pocket' + i, fd: p.fd, name: p.name, sub: 'Savings pocket', logo: PARTNERS[p.partner].logo }))
                     /* a locked deposit can't take payouts */
                     .filter(d => !d.fd));
         }
