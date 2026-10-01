@@ -509,7 +509,7 @@
             border-radius: 50%;
         }
 
-        .pocket .bank .acct { margin-left: 8px; color: #8a8a8a; }
+        .pocket .bank .acct { color: #8a8a8a; }
         .pocket .bank .rate { margin-left: auto; color: #22A75A; }
 
         .pocket .head {
@@ -3306,7 +3306,7 @@
                 const rate = fd ? fd.rate : p.rate;
                 const open = fd ? 'openAccount(\'' + fd.id + '\')' : 'showToast(\'' + p.name.toUpperCase() + '\')';
                 return '<div class="pocket" onclick="' + open + '">'
-                    + '<div class="bank"><img src="' + PARTNERS[p.partner].logo + '" alt="">' + PARTNERS[p.partner].name + '<span class="acct">.....' + p.acct + '</span><span class="rate">' + rate + '% p.a.</span></div>'
+                    + '<div class="bank"><img src="' + PARTNERS[p.partner].logo + '" alt="">' + '<span class="acct">.....' + p.acct + '</span><span class="rate">' + rate + '% p.a.</span></div>'
                     + '<div class="head"><span class="name">' + p.name + '</span><span class="chip ' + p.chip[1] + '">' + p.chip[0] + '</span></div>'
                     + '<div class="money"><span><small>SAVED</small><b>' + whole(p.saved) + ' BIRR</b></span><span><small>OF</small><span class="of">' + whole(p.goal) + ' BIRR</span></span></div>'
                     + '<div class="bar ' + p.bar + '"><i style="width:' + pct.toFixed(1) + '%"></i></div>'
@@ -3628,7 +3628,6 @@
                     [roll ? 'ROLLOVER AMOUNT' : 'DEPOSIT AMOUNT', money(flow.amount) + ' BIRR']
                 ],
                 rows: [
-                    ['SAVING PARTNER', PARTNERS[flow.partner].name],
                     ['INTEREST RATE', p.rate + '% P.A.'],
                     ['MATURES ON', fmtDate(est.maturity).toUpperCase()],
                     ['AT MATURITY', money(flow.amount + est.interest) + ' BIRR', 'good']
@@ -3862,7 +3861,6 @@
                         ['LOCKED AMOUNT', whole(a.principal) + ' BIRR']
                     ],
                     rows: [
-                        ['SAVING PARTNER', PARTNERS[a.partner].name],
                         ['INTEREST RATE', a.rate + '% P.A.'],
                         ['MATURES ON', fmtDate(maturityOf(a)).toUpperCase()]
                     ],
@@ -3959,7 +3957,7 @@
             }
 
             let html = '<div class="acct-card">'
-                + '<div class="who">' + duo(partner.logo, 26) + partner.name + ' &nbsp;' + maskId(a.id) + '</div>'
+                + '<div class="who">' + duo(partner.logo, 26) + maskId(a.id) + '</div>'
                 + '<p class="nm">' + a.name + '</p>'
                 + '<p class="big">' + big + '</p>'
                 + statusChip(a)
@@ -3990,7 +3988,6 @@
 
             /* Overview hierarchy from the brief */
             const rows = [
-                ['Saving partner', partner.name],
                 ['Account ID', a.id],
                 ['Principal', money(a.principal) + ' Birr']
             ];
@@ -4178,7 +4175,7 @@
                 'Verifying your identity',
                 'Confirming maturity',
                 'Calculating interest',
-                'Paying out from ' + PARTNERS[a.partner].name,
+                'Paying out your money',
                 'Closing the account'
             ], () => {
                 const interest = accrued(a), total = maturedTotal(a);
@@ -4222,7 +4219,7 @@
                 'Confirming maturity',
                 'Posting interest',
                 'Creating your new term',
-                'Moving funds to ' + PARTNERS[flow.partner].name
+                'Moving your funds'
             ], () => {
                 const interest = accrued(old);
                 old.txns.push({ type: 'INTEREST POSTED', amount: interest, on: TODAY.toISOString() });
@@ -4320,7 +4317,7 @@
                 'Verifying your identity',
                 'Checking maturity date',
                 'Calculating principal',
-                'Paying out from ' + PARTNERS[a.partner].name,
+                'Paying out your money',
                 'Closing the account'
             ], () => {
                 const lost = accrued(a);
@@ -4451,8 +4448,7 @@
             ['Can I withdraw before the maturity date?', 'Yes, but you will lose all the interest. Only your deposit is returned, to your M-PESA wallet or another savings pocket, and the fixed deposit is closed.'],
             ['What happens at maturity?', 'You get a notification. You can then withdraw your deposit plus interest to M-PESA or a savings pocket, or roll it over into a new term.'],
             ['Can I add money to an existing fixed deposit?', 'No. The amount is fixed for the whole term. You can open another fixed deposit at any time.'],
-            ['How do I close my fixed deposit?', 'Open the deposit, tap the menu at the top right and choose Close account. Confirm, then enter your M-PESA PIN. A closed deposit cannot be reopened.'],
-            ['Which bank holds my fixed deposit?', 'Your fixed deposit is held with Awash Bank, our saving partner.']
+            ['How do I close my fixed deposit?', 'Open the deposit, tap the menu at the top right and choose Close account. Confirm, then enter your M-PESA PIN. A closed deposit cannot be reopened.']
         ];
 
         function renderFaq() {
@@ -4483,8 +4479,7 @@
                 ['TOTAL LOCKED', 'The sum of all your active fixed deposits.', whole(locked) + ' Birr'],
                 ['ACCRUED INTEREST', 'Interest built up so far. It grows daily and is paid on the maturity date.', money(interest) + ' Birr'],
                 ['NEXT MATURITY', 'The date your next fixed deposit ends and can be withdrawn or rolled over.', next ? fmtDate(next) : '&mdash;'],
-                ['EARLY WITHDRAWAL', 'Closing a deposit before its maturity date returns only the deposit. All interest is lost.', blk('Interest') + '<br>lost'],
-                ['SAVING PARTNER', 'The bank that holds your fixed deposit.', 'Awash Bank']
+                ['EARLY WITHDRAWAL', 'Closing a deposit before its maturity date returns only the deposit. All interest is lost.', blk('Interest') + '<br>lost']
             ];
             body.innerHTML = '<div class="faq-head"><span>FIXED DEPOSIT TERMS</span><span>MY SAVINGS</span></div>'
                 + rows.map(r => '<div class="faq-row"><div class="l"><b>' + r[0] + '</b><p>' + r[1] + '</p></div><div class="r">' + r[2] + '</div></div>').join('')
