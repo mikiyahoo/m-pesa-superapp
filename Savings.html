@@ -3580,7 +3580,7 @@
             const est = projected(p, ok ? n : 0);
             const dd = ddmmyyyy(est.maturity);
             const items = [
-                ['MINIMUM DEPOSIT', whole(p.min) + ' BIRR', ''],
+                ['INTEREST RATE', p.rate + '% P.A.', ''],
                 ['MATURITY DATE', dd, '']
             ];
             const grid = document.getElementById('earnGrid');
