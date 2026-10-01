@@ -975,7 +975,13 @@
             cursor: pointer;
         }
 
-        .pkg.off { opacity: 0.5; cursor: not-allowed; }
+        .pkg-short {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed #EDEDED;
+            font-size: 12px;
+            color: #F08A12;
+        }
 
         .pkg-top {
             display: flex;
@@ -1048,7 +1054,6 @@
             flex-shrink: 0;
         }
 
-        .pkg.off .pkg-go { background: #C9C9C9; }
 
         /* partner choice on the plan screen */
         .partners {
@@ -2023,19 +2028,7 @@
             margin: 24px 16px 6px 16px;
         }
 
-        .ind-ring {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 14px auto;
-            border-radius: 50%;
-            border: 4px solid #DDF5E6;
-            background: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ind-ring img { width: 38px; height: 38px; object-fit: contain; display: block; }
+        .ind-hero .duo { margin-bottom: 14px; }
 
         .ind-hero small {
             display: block;
@@ -2084,6 +2077,8 @@
             -webkit-appearance: none;
             appearance: none;
         }
+
+        .field input::placeholder { color: #b5b5b5; font-weight: 500; }
 
         .field input:focus,
         .field select:focus { border-bottom-color: #1E9BD7; }
@@ -2190,6 +2185,7 @@
         }
 
         .target-card .t { flex: 1; }
+
 
         .target-card b {
             display: block;
@@ -2482,7 +2478,7 @@
         .list-chips {
             display: flex;
             gap: 8px;
-            margin: -2px 0 14px 0;
+            margin: 22px 0 14px 0;
             padding: 0 16px;
             overflow-x: auto;
         }
@@ -2530,6 +2526,15 @@
             line-height: 1.45;
         }
 
+        .list-empty b {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #22A75A;
+        }
+
         .list-empty button {
             display: block;
             margin: 10px auto 0 auto;
@@ -2544,73 +2549,6 @@
         }
 
         /* first page of a saving type */
-        .promo {
-            position: relative;
-            height: 150px;
-            margin: 18px 16px 0 16px;
-            border-radius: 16px;
-            overflow: hidden;
-            color: #ffffff;
-            background: #1c1c1c;
-        }
-
-        .promo img {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 62%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 30%;
-        }
-
-        .promo::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, rgba(10, 30, 20, 0.92) 0%, rgba(10, 30, 20, 0.75) 45%, rgba(10, 30, 20, 0.1) 100%);
-        }
-
-        .promo .t {
-            position: relative;
-            z-index: 1;
-            padding: 16px 18px;
-            max-width: 72%;
-        }
-
-        .promo small { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
-
-        .promo h3 {
-            font-size: 21px;
-            font-weight: 700;
-            line-height: 1.15;
-            margin-top: 4px;
-        }
-
-        .promo p {
-            font-size: 12.5px;
-            line-height: 1.35;
-            margin-top: 6px;
-            opacity: 0.92;
-        }
-
-        .promo button {
-            position: absolute;
-            right: 14px;
-            bottom: 14px;
-            z-index: 1;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 18px;
-            background: #2FC56D;
-            color: #ffffff;
-            font: inherit;
-            font-size: 12.5px;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            cursor: pointer;
-        }
-
         .tp-row {
             display: flex;
             align-items: center;
@@ -2637,6 +2575,27 @@
 
         .tp-ring img { width: 34px; height: 34px; object-fit: contain; }
 
+        .tp-row .duo img { width: 52%; height: 52%; }
+
+        /* progress ring: a conic track drawn where the circle's border was */
+        .duo > span.prog {
+            border: none;
+            padding: 3px;
+            background: conic-gradient(var(--c) var(--p), #E6F5EA 0);
+        }
+
+        .duo > span.prog i {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tp-row .duo > span.prog img { width: 62%; height: 62%; }
+
         .tp-row .t { flex: 1; min-width: 0; }
 
         .tp-row .t small {
@@ -2651,6 +2610,7 @@
 
         .tp-row .t small b { font-weight: 700; color: #4a4a4a; }
         .tp-row .t small b.behind { color: #F08A12; }
+        .tp-row .t small b.ready { color: #22A75A; }
 
         .tp-row .t p {
             margin-top: 4px;
@@ -2868,6 +2828,29 @@
             border-radius: 50%;
         }
 
+        .dest .duo img { width: 60%; height: 60%; border-radius: 0; }
+
+        .dest .save-ic {
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: #E4F7EB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dest .save-ic svg {
+            width: 20px;
+            height: 20px;
+            stroke: #22A75A;
+            stroke-width: 1.6;
+            fill: none;
+            stroke-linejoin: round;
+        }
+        .dest .duo > span { border-width: 2px; }
+
         .dest .t { flex: 1; min-width: 0; }
 
         .dest .t b {
@@ -2892,6 +2875,15 @@
         }
 
         .dest.on .radio { border: 6px solid #2FC56D; }
+
+        .dest .dd {
+            width: 20px;
+            height: 20px;
+            stroke: #6a6a6a;
+            stroke-width: 1.8;
+            fill: none;
+            flex-shrink: 0;
+        }
 
         .home-more {
             position: absolute;
@@ -3370,7 +3362,7 @@
         }
     </style>
 
-    <script src="assets/prototype-mode.js?v=27"></script>
+    <script src="assets/prototype-mode.js?v=28"></script>
 </head>
 <body>
 
@@ -3414,12 +3406,14 @@
                     <div class="total-card">
                         <img class="pat" src="assets/M-PESA-pattern.svg" alt="">
                         <div class="lbl">TOTAL SAVINGS BALANCE
-                            <svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/><path d="M4 20 20 4"/></svg>
+                            <button class="eye" onclick="toggleMineHidden()" aria-label="Hide balance">
+                                <svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/><path id="mineSlash" d="M4 20 20 4"/></svg>
+                            </button>
                         </div>
                         <p class="amt" id="mineTotal">0.00 Birr</p>
                         <div class="split">
-                            <div><small>Pockets</small><b id="minePockets">ETB 0</b></div>
-                            <div onclick="openType('fixed')" style="cursor:pointer"><small>Fixed Deposit</small><b id="mineFixedTotal">ETB 0</b></div>
+                            <div><small>Active Accounts</small><b id="mineAccounts">0</b></div>
+                            <div><small>Accrued Interest</small><b id="mineInterest">+0.00</b></div>
                         </div>
                     </div>
 
@@ -3439,9 +3433,6 @@
                         </button>
                     </div>
 
-                    <div class="section-head">
-                        <span>MY SAVINGS</span>
-                    </div>
                     <div class="list-chips" id="listChips"></div>
                     <div id="pocketList"></div>
                 </div>
@@ -3699,6 +3690,9 @@
                     <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>
                 </button>
                 <span id="typeTitle"></span>
+                <button class="icon-btn home-more" style="display:flex" onclick="openMenu(typeKind)" aria-label="More">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg>
+                </button>
             </div>
             <div class="flow-scroll" id="typeScroll">
                 <div id="typeBody"></div>
@@ -3725,12 +3719,12 @@
             </div>
             <div class="flow-scroll">
                 <div class="ind-hero">
-                    <span class="ind-ring"><img id="indLogo" alt=""></span>
+                    <div id="indLogos"></div>
                     <small><span id="indKindLabel">INDIVIDUAL SAVING</span> &middot; <b id="indRate"></b></small>
-                    <h3>LEHULUM SAVING</h3>
+                    <h3>M-PESA SAVING</h3>
                 </div>
                 <label class="field">
-                    <span>SAVING NAME</span>
+                    <span id="indNameLabel">SAVING NAME</span>
                     <input id="indName" maxlength="10" autocomplete="off" oninput="paintIndForm()">
                     <small id="indNameCount">0/10</small>
                 </label>
@@ -3748,14 +3742,14 @@
                 </div>
                 <div id="indAutoFields" hidden>
                     <label class="field">
-                        <span>AMOUNT</span>
-                        <input id="indAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); indAmountTouched = true; paintIndForm()">
-                        <small id="indAmountHint"></small>
-                    </label>
-                    <label class="field">
                         <span>FREQUENCY</span>
                         <select id="indFreq" onchange="paintIndForm()"><option>Daily</option><option>Weekly</option><option selected>Monthly</option></select>
                         <svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </label>
+                    <label class="field">
+                        <span>AMOUNT</span>
+                        <input id="indAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); indAmountTouched = true; paintIndForm()">
+                        <small id="indAmountHint"></small>
                     </label>
                 </div>
                 <div style="height:16px"></div>
@@ -3845,14 +3839,14 @@
             <div class="flow-scroll">
                 <p class="lead" id="recLead"></p>
                 <label class="field">
-                    <span>AMOUNT</span>
-                    <input id="recAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); paintRecurring()">
-                    <small id="recHint"></small>
-                </label>
-                <label class="field">
                     <span>FREQUENCY</span>
                     <select id="recFreq"><option>Daily</option><option>Weekly</option><option selected>Monthly</option></select>
                     <svg class="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                </label>
+                <label class="field">
+                    <span>AMOUNT</span>
+                    <input id="recAmount" inputmode="numeric" maxlength="7" autocomplete="off" oninput="digitsOnly(this); paintRecurring()">
+                    <small id="recHint"></small>
                 </label>
             </div>
             <div class="btn-pair" id="recActions"></div>
@@ -4131,7 +4125,7 @@
         }
 
         /* Where leaving the savings screen goes: the mini apps list when
-           it was opened from Pocket Money, otherwise the app home. */
+           it was opened from M-PESA Saving, otherwise the app home. */
         function savingsReturn() {
             try { return sessionStorage.getItem('savingsReturn') || 'index.html'; }
             catch (e) { return 'index.html'; }
@@ -4159,17 +4153,36 @@
             else chooseSavingType();
         }
 
+        /* interest a saving account has built so far: each movement earns
+           (or stops earning) the account rate from its day on */
+        function pocketInterest(p) {
+            return p.txns.reduce((t, x) => t + (x.type === 'WITHDRAW' ? -1 : 1) * x.amount
+                * IND_RATE / 100 * Math.max(daysBetween(new Date(x.on), TODAY), 0) / 365, 0);
+        }
+
+        /* the savings total hides like the M-PESA balance at home */
+        let mineHidden = false;
+        function toggleMineHidden() {
+            mineHidden = !mineHidden;
+            renderHome();
+        }
+
         function renderHome() {
             document.getElementById('tileNew').style.display = S.optedIn ? 'none' : '';
             document.getElementById('homeCtaLabel').textContent = tab === 'fixed' ? 'NEW FIXED DEPOSIT' : 'NEW SAVING';
 
             const live = S.accounts.filter(a => !a.closed);
-            document.getElementById('mineFixedTotal').textContent = 'ETB ' + whole(live.reduce((t, a) => t + a.principal, 0));
-
+            const hide = v => mineHidden ? '*****' : v;
             const pocketsTotal = S.individual.reduce((t, p) => t + p.balance, 0);
             const fixedTotal = live.reduce((t, a) => t + a.principal, 0);
-            document.getElementById('minePockets').textContent = 'ETB ' + whole(pocketsTotal);
-            document.getElementById('mineTotal').textContent = money(pocketsTotal + fixedTotal) + ' Birr';
+            const interest = live.reduce((t, a) => t + accrued(a), 0) + S.individual.reduce((t, p) => t + pocketInterest(p), 0);
+            document.getElementById('mineAccounts').textContent = String(S.individual.length + live.length);
+            document.getElementById('mineInterest').textContent = hide('+' + money(interest));
+            const totalEl = document.getElementById('mineTotal');
+            totalEl.textContent = hide(money(pocketsTotal + fixedTotal) + ' Birr');
+            totalEl.classList.toggle('masked', mineHidden);
+            document.getElementById('mineSlash').style.display = mineHidden ? 'none' : '';
+            totalEl.parentNode.querySelector('.eye').setAttribute('aria-label', (mineHidden ? 'Show' : 'Hide') + ' balance');
             renderSavingsList();
 
             renderFixedPane();
@@ -4177,6 +4190,7 @@
 
         /* ---------- Savings list: target, individual, fixed, matured ---------- */
         let listFilter = 'all';
+        const GROUP_SOON = '<b>COMING SOON</b>Save together with family and friends toward one goal.';
 
         function setListFilter(f) {
             listFilter = f;
@@ -4184,7 +4198,6 @@
         }
 
         function renderSavingsList() {
-            const fixedOk = true;
             const groups = [
                 { key: 'target', chip: 'TARGET', label: 'TARGET SAVINGS',
                   items: S.individual.filter(p => p.target).map(indCard),
@@ -4192,13 +4205,13 @@
                 { key: 'individual', chip: 'INDIVIDUAL', label: 'INDIVIDUAL SAVINGS',
                   items: S.individual.filter(p => !p.target).map(indCard),
                   empty: 'Save any amount, any time, and withdraw when you need it.', cta: ['NEW INDIVIDUAL SAVING', 'openIndCreate()'] },
+                /* matured deposits stay with the fixed ones, after those still locked */
                 { key: 'fixed', chip: 'FIXED', label: 'FIXED DEPOSITS',
-                  items: fixedOk ? S.accounts.filter(a => statusOf(a) === 'active').map(depositCard) : [],
-                  empty: fixedOk ? 'No locked deposits right now.' : 'Lock your money for a fixed term at up to 10% a year.',
-                  cta: fixedOk ? ['NEW FIXED DEPOSIT', 'startNewDeposit()'] : ['OPEN FIXED DEPOSIT', 'openOptin()'] },
-                { key: 'matured', chip: 'MATURED', label: 'MATURED FIXED DEPOSITS',
-                  items: fixedOk ? S.accounts.filter(a => statusOf(a) === 'matured').map(depositCard) : [],
-                  empty: 'Deposits that have reached their maturity date show here, ready to withdraw or roll over.', cta: null }
+                  items: S.accounts.filter(a => statusOf(a) === 'active').concat(S.accounts.filter(a => statusOf(a) === 'matured')).map(depositCard),
+                  empty: 'Lock your money for a fixed term at up to 10% a year.', cta: ['NEW FIXED DEPOSIT', 'startNewDeposit()'] },
+                { key: 'group', chip: 'GROUP', label: 'GROUP SAVINGS',
+                  items: [],
+                  empty: GROUP_SOON, cta: null }
             ];
             const total = groups.reduce((t, g) => t + g.items.length, 0);
 
@@ -4233,25 +4246,33 @@
             renderType();
         }
 
+        /* the pair of logos, with the bank's circle filling toward the target */
+        function duoProgress(logo, size, pct, behind) {
+            return '<span class="duo" style="--s:' + size + 'px">'
+                + '<span><img src="assets/M-PESA-money-icon.svg" alt="M-PESA"></span>'
+                + '<span class="prog" style="--p:' + pct.toFixed(1) + '%;--c:' + (behind ? '#F7931E' : '#2FC56D') + '"><i><img src="' + logo + '" alt=""></i></span></span>';
+        }
+
         function typeRow(p) {
             let line;
             if (typeKind === 'target') {
-                const c = targetChip(p);
-                line = p.name.toUpperCase() + ' - <b' + (c[0] === 'BEHIND' ? ' class="behind"' : '') + '>' + targetPct(p).toFixed(0) + '% SAVED</b>';
+                line = p.name.toUpperCase();
             } else {
                 line = p.name.toUpperCase() + ' - <b>' + (p.auto ? 'AUTO-SAVE' : IND_RATE + '% INTEREST') + '</b>';
             }
             if (typeKind === 'fixed') {
                 const s = statusOf(p);
-                const tag = s === 'matured' ? '<b>MATURED</b>' : '<b>' + p.rate + '% &middot; ' + daysBetween(TODAY, maturityOf(p)) + ' DAYS LEFT</b>';
+                const tag = s === 'matured' ? '<b class="ready">MATURED</b>' : '<b>' + daysBetween(TODAY, maturityOf(p)) + ' DAYS LEFT</b>';
                 return '<div class="tp-row" onclick="openAccount(\'' + p.id + '\')">'
-                    + '<span class="tp-ring"><img src="' + PARTNERS[PARTNER].logo + '" alt=""></span>'
+                    + duo(PARTNERS[PARTNER].logo, 38)
                     + '<span class="t"><small>' + p.name.toUpperCase() + ' - ' + tag + '</small><p><span>SAVED</span>'
                     + (typeHidden ? '*****' : whole(s === 'matured' ? maturedTotal(p) : p.principal) + ' BIRR') + '</p></span>'
                     + CHEV + '</div>';
             }
             return '<div class="tp-row" onclick="openIndPocket(\'' + p.id + '\')">'
-                + '<span class="tp-ring"><img src="' + PARTNERS[PARTNER].logo + '" alt=""></span>'
+                + (typeKind === 'target'
+                    ? duoProgress(PARTNERS[PARTNER].logo, 38, targetPct(p), targetChip(p)[0] === 'BEHIND')
+                    : duo(PARTNERS[PARTNER].logo, 38))
                 + '<span class="t"><small>' + line + '</small><p><span>SAVED</span>' + (typeHidden ? '*****' : whole(p.balance) + ' BIRR') + '</p></span>'
                 + CHEV + '</div>';
         }
@@ -4260,23 +4281,19 @@
             const T = {
                 target: {
                     title: 'TARGET SAVINGS', label: 'TOTAL TARGET SAVINGS', cta: 'NEW TARGET SAVING', go: 'openIndCreate(\'target\')',
-                    promo: ['M-PESA Challenge', '30-day Goal Sprint', 'Hit your pocket target in 30 days.<br>2,341 joined'],
                     empty: 'Give your saving a goal and track how close you are.'
                 },
                 individual: {
                     title: 'INDIVIDUAL SAVINGS', label: 'TOTAL INDIVIDUAL SAVINGS', cta: 'NEW INDIVIDUAL SAVING', go: 'openIndCreate()',
-                    promo: ['Lehulum Saving', 'Save a little, every day', 'Turn on automatic deduction and earn ' + IND_RATE + '% a year.'],
                     empty: 'Save any amount, any time, and withdraw when you need it.'
                 },
                 fixed: {
                     title: 'FIXED DEPOSIT', label: 'TOTAL LOCKED SAVINGS', cta: 'NEW FIXED DEPOSIT', go: 'startNewDeposit()',
-                    promo: ['Fixed Deposit', 'Lock in up to 10%', 'Choose 3 to 12 months at a rate that never changes.'],
                     empty: 'Lock your money for a fixed term and earn more than a regular saving.'
                 },
                 group: {
-                    title: 'GROUP SAVINGS', label: 'TOTAL GROUP SAVINGS', cta: 'NEW GROUP', go: 'showToast(\'NEW GROUP\')',
-                    promo: ['Save together', 'Reach it as a group', 'Pool money with family and friends toward one goal.'],
-                    empty: 'You are not in any saving group yet. Start one and invite family and friends.'
+                    title: 'GROUP SAVINGS', label: 'TOTAL GROUP SAVINGS', cta: null, go: '',
+                    empty: GROUP_SOON
                 }
             }[typeKind];
 
@@ -4289,12 +4306,12 @@
             let left, right;
             if (typeKind === 'target') {
                 left = ['Target Amount', hide('ETB ' + whole(list.reduce((t, p) => t + p.target.amount, 0)))];
-                right = ['On Track', list.filter(p => targetChip(p)[0] !== 'BEHIND').length + ' OF ' + list.length];
+                right = ['On Track', list.filter(p => ['ON TRACK', 'REACHED'].includes(targetChip(p)[0])).length + ' OF ' + list.length];
             } else if (typeKind === 'fixed') {
-                left = ['Accrued Interest', hide('+' + money(list.reduce((t, a) => t + accrued(a), 0)))];
-                right = ['Deposits', list.filter(a => statusOf(a) === 'active').length + ' ACTIVE'];
+                left = ['Total Accrued Interest', hide('+' + money(list.reduce((t, a) => t + accrued(a), 0)))];
+                right = ['Active Accounts', String(list.length)];
             } else if (typeKind === 'individual') {
-                left = ['Pockets', String(list.length)];
+                left = ['Accounts', String(list.length)];
                 right = ['Auto-save', list.filter(p => p.auto).length + ' ON'];
             } else {
                 left = ['Groups', '0'];
@@ -4302,7 +4319,9 @@
             }
 
             document.getElementById('typeTitle').textContent = T.title;
-            document.getElementById('typeCtaLabel').textContent = T.cta;
+            /* group savings isn't open yet, so it has nothing to start */
+            document.querySelector('#stepType .home-foot').style.display = T.cta ? '' : 'none';
+            document.getElementById('typeCtaLabel').textContent = T.cta || '';
             document.getElementById('typeCta').setAttribute('onclick', T.go);
 
             document.getElementById('typeBody').innerHTML = '<div class="total-card">'
@@ -4314,12 +4333,9 @@
                 + '<div class="split"><div><small>' + left[0] + '</small><b>' + left[1] + '</b></div>'
                 + '<div><small>' + right[0] + '</small><b>' + right[1] + '</b></div></div>'
                 + '</div>'
-                + '<div class="promo"><img src="assets/savings-optin.jpg" alt="">'
-                + '<div class="t"><small>' + T.promo[0] + '</small><h3>' + T.promo[1] + '</h3><p>' + T.promo[2] + '</p></div>'
-                + '<button onclick="showToast(\'' + T.promo[1].toUpperCase() + '\')">VIEW DETAILS</button></div>'
-                + '<div class="section-head"><span>ACTIVE POCKETS</span></div>'
+                + '<div class="section-head"><span>ACTIVE ACCOUNTS</span></div>'
                 + (list.length ? list.map(typeRow).join('')
-                    : '<div class="list-empty">' + T.empty + '<button onclick="' + T.go + '">' + T.cta + '</button></div>');
+                    : '<div class="list-empty">' + T.empty + (T.cta ? '<button onclick="' + T.go + '">' + T.cta + '</button>' : '') + '</div>');
         }
 
         function statusChip(a) {
@@ -4387,8 +4403,8 @@
                     + '<svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3.1"/>'
                     + (lockedHidden ? '' : '<path d="M4 20 20 4"/>') + '</svg></button></div>'
                     + '<p class="amt' + (lockedHidden ? ' masked' : '') + '">' + (lockedHidden ? '*****' : money(locked) + ' Birr') + '</p>'
-                    + '<div class="split"><div><small>Accrued Interest</small><b>' + (lockedHidden ? '*****' : '+' + money(interest)) + '</b></div>'
-                    + '<div><small>Deposits</small><b>' + live.length + ' ACTIVE</b></div></div>'
+                    + '<div class="split"><div><small>Total Accrued Interest</small><b>' + (lockedHidden ? '*****' : '+' + money(interest)) + '</b></div>'
+                    + '<div><small>Active Accounts</small><b>' + live.length + '</b></div></div>'
                     + '</div>';
             }
 
@@ -4508,13 +4524,14 @@
             const roll = flow.kind === 'rollover';
             document.getElementById('plansTitle').textContent = roll ? 'ROLL OVER' : 'CHOOSE A PLAN';
             const lead = document.getElementById('plansLead');
-            lead.innerHTML = roll ? 'Pick a new term for <b>' + money(flow.amount) + ' Birr</b>.' : '';
+            lead.innerHTML = roll ? 'Pick a new term for <b>' + money(flow.base) + ' Birr</b>.' : '';
             lead.style.display = roll ? '' : 'none';
 
+            /* every plan stays open on a rollover; one above the matured
+               amount is checked when it's picked, not greyed out */
             document.getElementById('planList').innerHTML = PLANS.map(p => {
-                const off = roll && flow.amount < p.min;
-                const go = off ? 'showToast(\'BELOW THIS PLAN\\\'S MINIMUM\')' : 'choosePlan(\'' + p.id + '\')';
-                return '<div class="pkg' + (off ? ' off' : '') + '" onclick="' + go + '">'
+                const short = roll && flow.base < p.min;
+                return '<div class="pkg" onclick="choosePlan(\'' + p.id + '\')">'
                     + '<div class="pkg-top">'
                     + '<span class="pkg-ic"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>'
                     + '<span class="pkg-head"><b>' + p.months + ' Months Lock + ' + p.rate + '% Interest</b></span>'
@@ -4522,8 +4539,10 @@
                     + '<div class="pkg-bot">'
                     + '<div class="earn-item"><small>MINIMUM DEPOSIT</small><b>' + whole(p.min) + ' BIRR</b></div>'
                     + '<div class="earn-item"><small>MATURITY DATE</small><b>' + ddmmyyyy(addMonths(TODAY, p.months)) + '</b></div>'
-                    + '<button class="pkg-go" tabindex="-1">' + (off ? 'TOO LOW' : 'SELECT') + '</button>'
-                    + '</div></div>';
+                    + '<button class="pkg-go" tabindex="-1">SELECT</button>'
+                    + '</div>'
+                    + (short ? '<p class="pkg-short">Needs ' + money(p.min - flow.base) + ' Birr more from your wallet</p>' : '')
+                    + '</div>';
             }).join('')
                 + '<div class="note warn" style="margin-top:4px"><svg viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>'
                 + '<span>If you withdraw before the maturity date, you lose all the interest &mdash; only your deposit is returned.</span></div>'
@@ -4532,10 +4551,44 @@
 
         function planById(id) { return PLANS.find(p => p.id === id); }
 
+        /* The matured amount is below the plan's minimum: offer to cover
+           the gap from the wallet, and leave every other plan available. */
+        function rollShort() {
+            const p = flow.plan;
+            const gap = Math.round((p.min - flow.base) * 100) / 100;
+            const can = S.wallet >= gap;
+            openSheet({
+                label: 'ROLL OVER',
+                icon: ['amber', '<path d="M12 7.5v6M12 16.6v.1"/><circle cx="12" cy="12" r="9"/>'],
+                title: 'BELOW THIS PLAN\'S MINIMUM',
+                text: 'The ' + p.months + ' months plan needs at least ' + whole(p.min) + ' Birr. Your matured amount is '
+                    + money(flow.base) + ' Birr. '
+                    + (can ? 'Add ' + money(gap) + ' Birr from your M-PESA wallet to continue, or choose another plan.'
+                           : 'Your M-PESA wallet doesn\'t have the ' + money(gap) + ' Birr needed. Choose another plan.'),
+                actions: can
+                    ? [['CHOOSE ANOTHER', 'ghost', 'closeSheet()'], ['ADD & CONTINUE', 'primary', 'rollTopUp()']]
+                    : [['CHOOSE ANOTHER', 'primary', 'closeSheet()']],
+                row: true
+            });
+        }
+
+        function rollTopUp() {
+            flow.topUp = Math.round((flow.plan.min - flow.base) * 100) / 100;
+            flow.amount = flow.plan.min;
+            closeSheet();
+            openReview();
+        }
+
         function choosePlan(id) {
             flow.plan = planById(id);
             flow.name = planName(flow.plan);
-            if (flow.kind === 'rollover') { openReview(); return; }
+            if (flow.kind === 'rollover') {
+                flow.topUp = 0;
+                flow.amount = flow.base;
+                if (flow.base < flow.plan.min) { rollShort(); return; }
+                openReview();
+                return;
+            }
             amountMode = 'fd';
             document.getElementById('amountTitle').textContent = 'DEPOSIT';
             amount = '';
@@ -4624,6 +4677,7 @@
 
         /* ---------- Review (P1-07, P3R-03) ---------- */
         function openReview() {
+            confirmPin = null;
             const p = flow.plan;
             const est = projected(p, flow.amount);
             const roll = flow.kind === 'rollover';
@@ -4636,26 +4690,30 @@
                     ['DEPOSIT NAME', flow.name],
                     [roll ? 'ROLLOVER AMOUNT' : 'DEPOSIT AMOUNT', money(flow.amount) + ' BIRR']
                 ],
-                rows: [
+                rows: (roll && flow.topUp ? [
+                    ['FROM MATURED DEPOSIT', money(flow.base) + ' BIRR'],
+                    ['ADDED FROM WALLET', money(flow.topUp) + ' BIRR']
+                ] : []).concat([
                     ['INTEREST RATE', p.rate + '% P.A.'],
                     ['MATURES ON', fmtDate(est.maturity).toUpperCase()],
                     ['AT MATURITY', money(flow.amount + est.interest) + ' BIRR', 'good']
-                ]
+                ])
             });
             document.getElementById('confirmBody').scrollTop = 0;
             go('stepConfirm');
         }
 
+        let confirmPin = null;   // set while the confirm page serves a saving, not a fixed deposit
+
         function reviewConfirm() {
+            if (confirmPin) { askPin(confirmPin); return; }
             const p = flow.plan;
             const roll = flow.kind === 'rollover';
             askPin({
                 title: roll ? 'ROLL OVER FIXED DEPOSIT' : 'FIXED DEPOSIT',
-                rows: [
-                    ['AMOUNT', money(flow.amount) + ' Birr'],
-                    ['LOCK PERIOD', p.months + ' months'],
-                    ['INTEREST RATE', p.rate + '% p.a.']
-                ],
+                rows: [['AMOUNT', money(flow.amount) + ' Birr']]
+                    .concat(roll && flow.topUp ? [['FROM WALLET', money(flow.topUp) + ' Birr']] : [])
+                    .concat([['LOCK PERIOD', p.months + ' months'], ['INTEREST RATE', p.rate + '% p.a.']]),
                 ok: roll ? runRollover : runOpen
             });
         }
@@ -5111,7 +5169,7 @@
 
         function destinations() {
             return [{ id: 'wallet', name: 'M-PESA Wallet', sub: 'Balance ' + money(S.wallet) + ' Birr', logo: LOGOS + 'M-PESA-logo-icon.png' }]
-                .concat(S.individual.map(p => ({ id: p.id, name: p.name, sub: 'Savings pocket', logo: PARTNERS[PARTNER].logo })));
+                .concat(S.individual.map(p => ({ id: p.id, name: p.name, sub: 'Savings account', logo: PARTNERS[PARTNER].logo })));
         }
 
         function renderPayout() {
@@ -5141,12 +5199,12 @@
 
             if (early) {
                 html += '<div class="dest-label">SEND TO</div>'
-                    + destinations().map(d => destRow(d, d.id === flow.dest, 'pickDest(\'' + d.id + '\')')).join('')
+                    + destList()
                     + '<div class="note warn" style="margin-top:4px"><svg viewBox="0 0 24 24"><path d="M12 3.5 21.5 20h-19L12 3.5Z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>'
                     + '<span>If you withdraw before the maturity date, you lose all the interest &mdash; only your deposit is returned. This fixed deposit will be closed.</span></div>';
             } else {
                 html += '<div class="dest-label">SEND TO</div>'
-                    + destinations().map(d => destRow(d, d.id === flow.dest, 'pickDest(\'' + d.id + '\')')).join('')
+                    + destList()
                     + '<div class="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.9v.1"/></svg>'
                     + '<span>The full balance is paid out and this fixed deposit is closed.</span></div>';
             }
@@ -5164,9 +5222,43 @@
 
         function destRow(d, on, fn) {
             return '<div class="dest' + (on ? ' on' : '') + '"' + (fn ? ' onclick="' + fn + '"' : '') + '>'
-                + '<img src="' + d.logo + '" alt="">'
+                + (d.id === 'wallet' ? '<img src="' + d.logo + '" alt="">' : duo(d.logo, 30))
                 + '<span class="t"><b>' + d.name + '</b><small>' + d.sub + '</small></span>'
                 + '<span class="radio"></span></div>';
+        }
+
+        /* M-PESA wallet on top; the savings accounts sit behind one dropdown */
+        function destList() {
+            const all = destinations();
+            const wallet = all[0];
+            const accts = all.slice(1);
+            const picked = accts.find(d => d.id === flow.dest);
+            let html = destRow(wallet, flow.dest === 'wallet', 'pickDest(\'wallet\')');
+            if (accts.length) {
+                html += '<div class="dest' + (picked ? ' on' : '') + '" onclick="openDestSheet()">'
+                    + '<span class="save-ic"><svg viewBox="0 0 24 24"><path d="M19 10.5c0-3-3.1-5-7-5-1.2 0-2.3.2-3.3.5L6.5 4.5v2.8C5.3 8.2 4.6 9.3 4.4 10.5H3v3h1.6c.5 1.3 1.4 2.4 2.6 3.1V19h2.6v-1.5c.7.1 1.4.2 2.2.2s1.5-.1 2.2-.2V19h2.6v-2.4c1.4-.9 2.2-2.5 2.2-4.1Z"/><circle cx="15.5" cy="10" r="0.6"/></svg></span>'
+                    + '<span class="t"><b>' + (picked ? picked.name : 'Savings account') + '</b>'
+                    + '<small>' + (picked ? 'Savings account' : 'Choose from ' + accts.length + ' active accounts') + '</small></span>'
+                    + '<svg class="dd" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>';
+            }
+            return html;
+        }
+
+        function openDestSheet() {
+            const accts = destinations().slice(1);
+            document.getElementById('sheetBody').innerHTML = '<div class="sheet-grab"></div>'
+                + '<p class="sheet-title">SEND TO ACCOUNT</p><div style="margin-top:16px">'
+                + accts.map(d => {
+                    const p = findInd(d.id);
+                    return destRow(Object.assign({}, d, { sub: 'Balance ' + money(p ? p.balance : 0) + ' Birr' }), d.id === flow.dest, 'pickDestSheet(\'' + d.id + '\')');
+                }).join('')
+                + '</div>';
+            document.getElementById('sheet').classList.add('show');
+        }
+
+        function pickDestSheet(id) {
+            closeSheet();
+            pickDest(id);
         }
 
         function pickDest(id) {
@@ -5230,7 +5322,8 @@
 
         /* ---------- Phase 3R: rollover ---------- */
         function startRollover() {
-            flow = { kind: 'rollover', amount: Math.floor(maturedTotal(current) * 100) / 100, partner: current.partner };
+            const base = Math.floor(maturedTotal(current) * 100) / 100;
+            flow = { kind: 'rollover', base: base, amount: base, topUp: 0, partner: current.partner };
             renderPlans();
             go('stepPlans');
         }
@@ -5246,9 +5339,10 @@
             ], () => {
                 const interest = accrued(old);
                 old.txns.push({ type: 'INTEREST POSTED', amount: interest, on: TODAY.toISOString() });
-                old.txns.push({ type: 'ROLLED OVER', amount: flow.amount, on: TODAY.toISOString() });
-                closeAccount(old, flow.amount, 'Rollover to a new term');
+                old.txns.push({ type: 'ROLLED OVER', amount: flow.base, on: TODAY.toISOString() });
+                closeAccount(old, flow.base, 'Rollover to a new term');
                 const a = account(newId('FD', 8), planName(p), p, flow.amount, TODAY, flow.partner);
+                S.wallet -= flow.topUp || 0;
                 S.accounts.unshift(a);
                 save();
                 current = a;
@@ -5284,8 +5378,8 @@
             const lost = accrued(a);
             document.getElementById('earlyBody').innerHTML =
                 '<span class="warn-ring" style="display:flex"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 6.6-1.6"/><path d="M12 14.5v2"/></svg></span>'
-                + '<p class="early-title">BREAK YOUR DEPOSIT BEFORE ' + fmtDate(maturityOf(a)).toUpperCase() + '?</p>'
-                + '<p class="early-copy">You are ' + daysBetween(TODAY, maturityOf(a)) + ' days from maturity. Withdrawing now closes the account and returns your principal only.</p>'
+                + '<p class="early-title">ARE YOU SURE YOU WANT TO WITHDRAW EARLY?</p>'
+                + '<p class="early-copy">Your deposit matures on ' + fmtDate(maturityOf(a)) + ', ' + daysBetween(TODAY, maturityOf(a)) + ' days from now. Withdrawing now closes the account and returns your principal only.</p>'
                 + accFacts('WHAT HAPPENS', [
                     ['Principal returned', money(a.principal) + ' Birr', { v: 'good' }],
                     ['Accrued interest', 'Lost<small>' + money(accrued(a)) + ' Birr</small>', { v: 'bad' }],
@@ -5471,8 +5565,8 @@
             ['What is a fixed deposit?', 'A fixed deposit locks your money with a partner bank for a set period of 3, 6, 9 or 12 months. In return you earn a fixed interest rate that does not change during the term.'],
             ['How much interest will I earn?', 'The rate depends on the period: 8% for 3 months, 9% for 6 months, 9.5% for 9 months and 10% for 12 months, per year. Interest builds up every day and is paid on the maturity date.'],
             ['What is the minimum deposit?', 'Each period has its own minimum: 10,000 Birr for 3 months, 20,000 Birr for 6 months, 30,000 Birr for 9 months and 50,000 Birr for 12 months.'],
-            ['Can I withdraw before the maturity date?', 'Yes, but you will lose all the interest. Only your deposit is returned, to your M-PESA wallet or another savings pocket, and the fixed deposit is closed.'],
-            ['What happens at maturity?', 'You get a notification. You can then withdraw your deposit plus interest to M-PESA or a savings pocket, or roll it over into a new term.'],
+            ['Can I withdraw before the maturity date?', 'Yes, but you will lose all the interest. Only your deposit is returned, to your M-PESA wallet or another savings account, and the fixed deposit is closed.'],
+            ['What happens at maturity?', 'You get a notification. You can then withdraw your deposit plus interest to M-PESA or a savings account, or roll it over into a new term.'],
             ['Can I add money to an existing fixed deposit?', 'No. The amount is fixed for the whole term. You can open another fixed deposit at any time.'],
             ['How do I close my fixed deposit?', 'Open the deposit, tap the menu at the top right and choose Close account. Confirm, then enter your M-PESA PIN. A closed deposit cannot be reopened.']
         ];
@@ -5527,9 +5621,38 @@
         const TARGET_MIN = 500;
 
         /* ---- target maths ---- */
-        /* the customer picks any day from tomorrow, up to five years out */
+        /* the customer picks any day from tomorrow, up to a field's limit */
         const BY_MIN = () => addDays(TODAY, 1);
-        const BY_MAX = () => addMonths(TODAY, 60);
+
+        /* each date field: sheet title, quick picks, latest month, what to repaint */
+        const DP = {
+            indBy: { title: 'SELECT TARGET DATE', prompt: 'Pick the day you want to reach your target', max: 60,
+                     quick: [['3 MONTHS', 3, 'm'], ['6 MONTHS', 6, 'm'], ['1 YEAR', 12, 'm']], after: () => paintIndForm() },
+            tgtBy: { title: 'SELECT TARGET DATE', prompt: 'Pick the day you want to reach your target', max: 60,
+                     quick: [['3 MONTHS', 3, 'm'], ['6 MONTHS', 6, 'm'], ['1 YEAR', 12, 'm']], after: () => paintTargetSet() }
+        };
+
+        function quickDate(q) { return q[2] === 'd' ? addDays(TODAY, q[1]) : addMonths(TODAY, q[1]); }
+
+        /* automatic deduction: the first one is taken when it's set up */
+        function nextDeduction(from, freq) {
+            const d = new Date(from);
+            return freq === 'Daily' ? addDays(d, 1) : freq === 'Weekly' ? addDays(d, 7) : addMonths(d, 1);
+        }
+
+        /* take today's deduction now; the next one follows the frequency */
+        function deductNow(p) {
+            const n = p.auto.amount;
+            S.wallet -= n;
+            p.balance += n;
+            p.txns.push({ type: 'DEPOSIT', amount: n, on: new Date().toISOString() });
+            p.auto.start = nextDeduction(TODAY, p.auto.freq).toISOString();
+        }
+
+        /* " · next 1 Nov 2026" while the next deduction is ahead */
+        function startLine(auto) {
+            return auto.start && new Date(auto.start) > TODAY ? ' · next ' + fmtDate(auto.start) : '';
+        }
 
         function setupBy(field, picked) {
             field.dataset.value = picked ? startOfDay(picked).toISOString() : '';
@@ -5567,15 +5690,16 @@
             renderDatePicker();
         }
 
-        function dpQuick(months) {
-            const d = addMonths(TODAY, months);
+        function dpQuick(i) {
+            const d = quickDate(DP[dp.field].quick[i]);
             dp.picked = d;
             dp.month = new Date(d.getFullYear(), d.getMonth(), 1);
             renderDatePicker();
         }
 
         function renderDatePicker() {
-            const min = BY_MIN(), max = BY_MAX();
+            const cfg = DP[dp.field];
+            const min = BY_MIN(), max = addMonths(TODAY, cfg.max);
             const y = dp.month.getFullYear(), m = dp.month.getMonth();
             const first = new Date(y, m, 1).getDay();
             const days = new Date(y, m + 1, 0).getDate();
@@ -5590,14 +5714,14 @@
                 grid += '<button class="' + cls + '"' + (off ? ' disabled' : ' onclick="dpPick(' + day.getTime() + ')"') + '>' + d + '</button>';
             }
 
-            const quick = [[3, '3 MONTHS'], [6, '6 MONTHS'], [12, '1 YEAR']].map(q =>
-                '<button class="' + (same(addMonths(TODAY, q[0]), dp.picked) ? 'on' : '') + '" onclick="dpQuick(' + q[0] + ')">' + q[1] + '</button>').join('');
+            const quick = cfg.quick.map((q, i) =>
+                '<button class="' + (same(quickDate(q), dp.picked) ? 'on' : '') + '" onclick="dpQuick(' + i + ')">' + q[0] + '</button>').join('');
 
             const prevOff = new Date(y, m, 0) < min;
             const nextOff = new Date(y, m + 1, 1) > max;
 
             document.getElementById('sheetBody').innerHTML = '<div class="sheet-grab"></div>'
-                + '<p class="sheet-title">SELECT TARGET DATE</p>'
+                + '<p class="sheet-title">' + cfg.title + '</p>'
                 + '<div class="dp-chips">' + quick + '</div>'
                 + '<div class="dp-head">'
                 + '<button class="icon-btn" onclick="dpMove(-1)" aria-label="Previous month"' + (prevOff ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>'
@@ -5608,7 +5732,7 @@
                 + '<div class="dp-grid">' + grid + '</div>'
                 + '<p class="dp-picked">' + (dp.picked
                     ? '<b>' + fmtDate(dp.picked) + '</b> &middot; ' + daysBetween(TODAY, dp.picked) + ' days from today'
-                    : 'Pick the day you want to reach your target') + '</p>'
+                    : cfg.prompt) + '</p>'
                 + '<div class="sheet-actions row"><button class="sheet-btn ghost" onclick="closeSheet()">CANCEL</button>'
                 + '<button class="sheet-btn primary" onclick="dpConfirm()"' + (dp.picked ? '' : ' disabled style="opacity:.45"') + '>CONFIRM</button></div>';
         }
@@ -5617,8 +5741,7 @@
             if (!dp.picked) return;
             setupBy(document.getElementById(dp.field), dp.picked);
             closeSheet();
-            if (dp.field === 'indBy') paintIndForm();
-            else paintTargetSet();
+            DP[dp.field].after();
         }
 
         /* how many deductions fit before the date, at a frequency */
@@ -5637,6 +5760,8 @@
         /* on track = at least the straight-line share of the goal for the time gone */
         function targetChip(p) {
             if (p.balance >= p.target.amount) return ['REACHED', 'green', ''];
+            /* nothing saved yet: too early to call it on track or behind */
+            if (p.balance <= 0) return ['NOT STARTED', 'grey', 'grey'];
             const total = Math.max(daysBetween(new Date(p.target.from), new Date(p.target.by)), 1);
             const gone = Math.min(Math.max(daysBetween(new Date(p.target.from), TODAY), 0), total);
             const due = p.target.amount * gone / total;
@@ -5653,7 +5778,7 @@
             const types = [
                 ['INDIVIDUAL SAVINGS', '<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.6-3.8 3.4-6 7-6s6.4 2.2 7 6"/>', 'openIndCreate()'],
                 ['TARGET SAVINGS', '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m12 12 6-6M15.5 5.5H18v2.5"/>', 'openIndCreate(\'target\')'],
-                ['GROUP SAVINGS', '<circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.5-3.2 2.8-5 5.5-5s5 1.8 5.5 5"/><path d="M14.5 14.3c.6-.2 1.3-.3 2-.3 2.3 0 4 1.5 4.4 4.5"/>', 'closeSheet(); showToast(\'GROUP SAVINGS\')'],
+                ['GROUP SAVINGS', '<circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.5-3.2 2.8-5 5.5-5s5 1.8 5.5 5"/><path d="M14.5 14.3c.6-.2 1.3-.3 2-.3 2.3 0 4 1.5 4.4 4.5"/>', 'openType(\'group\')'],
                 ['FIXED-TIME SAVINGS', '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/>', 'openType(\'fixed\')']
             ];
             document.getElementById('sheetBody').innerHTML = '<div class="sheet-grab"></div>'
@@ -5661,6 +5786,12 @@
                 + types.map(t => '<button class="type-row" onclick="' + t[2] + '"><span class="ic"><svg viewBox="0 0 24 24">' + t[1] + '</svg></span>' + t[0] + '</button>').join('')
                 + '</div>';
             document.getElementById('sheet').classList.add('show');
+        }
+
+        function autoName() {
+            let n = 1;
+            while (S.individual.some(p => p.name === 'Individual Saving ' + n)) n++;
+            return 'Individual Saving ' + n;
         }
 
         function openIndCreate(mode) {
@@ -5671,9 +5802,12 @@
             document.getElementById('indTargetFields').hidden = indMode !== 'target';
             document.getElementById('indTarget').value = '';
             setupBy(document.getElementById('indBy'));
-            document.getElementById('indLogo').src = PARTNERS[PARTNER].logo;
+            document.getElementById('indLogos').innerHTML = duo(PARTNERS[PARTNER].logo, 60);
             document.getElementById('indRate').textContent = IND_RATE + '% INTEREST';
             document.getElementById('indName').value = '';
+            /* an individual saving may go unnamed; it then takes the next "Individual Saving N" */
+            document.getElementById('indNameLabel').textContent = indMode === 'target' ? 'SAVING NAME' : 'SAVING NAME (OPTIONAL)';
+            document.getElementById('indName').placeholder = indMode === 'target' ? '' : autoName();
             document.getElementById('indAmount').value = '';
             document.getElementById('indFreq').value = 'Monthly';
             paintIndForm();
@@ -5713,42 +5847,76 @@
                     ? (n >= suggested(goal, by, freq) ? 'Reaches your target on time' : 'Save ' + whole(suggested(goal, by, freq)) + ' Birr ' + freq.toLowerCase() + ' to reach it on time')
                     : 'Taken from your M-PESA wallet';
             hint.style.color = low ? '#F0335F' : '';
-            document.getElementById('indCreateBtn').disabled = !name.trim() || (indAuto && n < IND_MIN_AUTO) || (tgt && (goal < TARGET_MIN || !by));
+            document.getElementById('indCreateBtn').disabled = (tgt && !name.trim()) || (indAuto && n < IND_MIN_AUTO) || (tgt && (goal < TARGET_MIN || !by));
         }
 
         function indCreate() {
-            const name = document.getElementById('indName').value.trim();
-            const auto = indAuto ? { amount: Number(document.getElementById('indAmount').value), freq: document.getElementById('indFreq').value } : null;
+            const name = document.getElementById('indName').value.trim() || autoName();
+            const auto = indAuto ? { amount: Number(document.getElementById('indAmount').value), freq: document.getElementById('indFreq').value, start: TODAY.toISOString() } : null;
             const target = indMode === 'target'
                 ? { amount: Number(document.getElementById('indTarget').value), by: byValue('indBy'), from: TODAY.toISOString() }
                 : null;
             const rows = [['SAVING NAME', name]];
             if (target) rows.push(['TARGET', money(target.amount) + ' Birr'], ['BY', fmtDate(target.by)]);
             rows.push(['INTEREST RATE', IND_RATE + '% p.a.']);
-            if (auto) rows.push(['AUTO DEDUCTION', freqLine(auto)]);
-            askPin({ title: target ? 'TARGET SAVING' : 'INDIVIDUAL SAVING', rows: rows, ok: () => runIndCreate(name, auto, target) });
+            const pin = { title: target ? 'TARGET SAVING' : 'INDIVIDUAL SAVING', rows: rows, ok: () => runIndCreate(name, auto, target) };
+            if (!auto) { askPin(pin); return; }
+
+            /* automatic: the first deduction is a deposit, so confirm it first */
+            if (S.wallet < auto.amount) { showToast('NOT ENOUGH IN YOUR WALLET'); return; }
+            pin.rows = [['SAVING NAME', name], ['FIRST DEPOSIT', money(auto.amount) + ' Birr'], ['THEN', freqLine(auto)]];
+            openAutoConfirm(name, auto, target, pin);
+        }
+
+        /* The deposit confirmation for the first automatic deduction */
+        function openAutoConfirm(name, auto, target, pin) {
+            confirmPin = pin;
+            document.getElementById('confirmTitle').textContent = 'CONFIRM DEPOSIT';
+            document.getElementById('confirmBody').innerHTML = receiptHtml({
+                chip: 'REVIEW YOUR FIRST DEPOSIT',
+                logo: PARTNERS[PARTNER].logo,
+                pct: target ? auto.amount / target.amount : 0,
+                main: [
+                    ['SAVING NAME', name],
+                    ['DEPOSIT AMOUNT', money(auto.amount) + ' BIRR']
+                ],
+                rows: [['FROM', 'M-PESA WALLET'], ['AUTOMATIC DEDUCTION', freqLine(auto).toUpperCase()],
+                       ['START DATE', fmtDate(TODAY).toUpperCase()],
+                       ['NEXT DEDUCTION', fmtDate(nextDeduction(TODAY, auto.freq)).toUpperCase()]]
+                    .concat(target ? [['TARGET', money(target.amount) + ' BIRR BY ' + fmtDate(target.by).toUpperCase()]] : [])
+                    .concat([['INTEREST RATE', IND_RATE + '% P.A.']])
+            });
+            document.getElementById('confirmBody').scrollTop = 0;
+            go('stepConfirm');
         }
 
         function runIndCreate(name, auto, target) {
             processing('CREATING YOUR SAVING', [
                 'Verifying your identity',
-                'Creating your saving pocket'
+                'Creating your saving account'
             ], () => {
                 ind = { id: newId('IS', 8), name: name, balance: 0, opened: TODAY.toISOString(), auto: auto, target: target, txns: [] };
                 S.individual.unshift(ind);
                 save();
-                stack = ['stepHome', 'stepIndPocket'];
-                renderIndPocket();
-                show('stepIndPocket');
-                document.getElementById('sheetBody').innerHTML = '<p class="sheet-title">SAVING CREATED SUCCESSFULLY</p>'
-                    + '<p class="sheet-text">Do you want to add money to your pocket?</p>'
-                    + '<div class="sheet-actions row"><button class="sheet-btn ghost" onclick="closeSheet()">ADD LATER</button>'
-                    + '<button class="sheet-btn blue" onclick="openIndAmount(\'deposit\')">ADD MONEY</button></div>';
-                document.getElementById('sheet').classList.add('show');
-                sms('Your saving pocket ' + name + ' is ready'
+                if (auto) {
+                    /* today's deduction is the first deposit */
+                    deductNow(ind);
+                    save();
+                    showIndResult(true);
+                } else {
+                    stack = ['stepHome', 'stepIndPocket'];
+                    renderIndPocket();
+                    show('stepIndPocket');
+                    document.getElementById('sheetBody').innerHTML = '<p class="sheet-title">SAVING CREATED SUCCESSFULLY</p>'
+                        + '<p class="sheet-text">Make your first deposit to start saving.</p>'
+                        + '<div class="sheet-actions row"><button class="sheet-btn ghost" onclick="closeSheet()">ADD LATER</button>'
+                        + '<button class="sheet-btn blue" onclick="openIndAmount(\'deposit\')">ADD MONEY</button></div>';
+                    document.getElementById('sheet').classList.add('show');
+                }
+                sms('Your saving account ' + name + ' is ready'
                     + (target ? ', with a target of ' + money(target.amount) + ' Birr by ' + fmtDate(target.by) : '')
                     + '. Interest is ' + IND_RATE + '% a year'
-                    + (auto ? ', and ' + freqLine(auto) + ' will be saved automatically.' : '.'));
+                    + (auto ? '. ' + money(auto.amount) + ' Birr was saved today; the next ' + auto.freq.toLowerCase() + ' deduction is on ' + fmtDate(auto.start) + '.' : '.'));
             });
         }
 
@@ -5773,7 +5941,7 @@
             return '<div class="pocket" onclick="openIndPocket(\'' + p.id + '\')">' + bank
                 + '<div class="head"><span class="name">' + p.name + '</span><span class="chip green">INDIVIDUAL</span></div>'
                 + '<div class="money"><span><small>SAVED</small><b>' + whole(p.balance) + ' BIRR</b></span></div>'
-                + '<div class="foot"><span>' + (p.auto ? 'Auto-save ' + freqLine(p.auto) : 'Save any amount, any time') + '</span></div>'
+                + '<div class="foot"><span>' + (p.auto ? 'Auto-save ' + freqLine(p.auto) + startLine(p.auto) : 'Save any amount, any time') + '</span></div>'
                 + '</div>';
         }
 
@@ -5791,7 +5959,7 @@
                     + '<div class="term-foot"><span>' + targetDaysLeft(p) + ' days to ' + fmtShort(p.target.by) + '</span><span>' + pct.toFixed(1) + '%</span></div>';
             }
             if (p.auto) {
-                html += '<div class="auto-line"><svg viewBox="0 0 24 24">' + IC.roll + '</svg>' + freqLine(p.auto) + '</div>';
+                html += '<div class="auto-line"><svg viewBox="0 0 24 24">' + IC.roll + '</svg>' + freqLine(p.auto) + startLine(p.auto) + '</div>';
             }
             html += '</div>'
                 + '<div class="actions">'
@@ -5881,14 +6049,14 @@
             const fill = ind.target ? arc * targetPct(ind) / 100 : 44;
             document.querySelector('#stepIndResult .res-ring circle + circle').setAttribute('stroke-dasharray', fill + ' ' + arc);
             document.getElementById('resName').textContent = ind.name.toUpperCase();
-            document.getElementById('resRows').innerHTML = '<div class="pin-row"><b>POCKET BALANCE</b>' + money(ind.balance) + ' BIRR</div>'
+            document.getElementById('resRows').innerHTML = '<div class="pin-row"><b>ACCOUNT BALANCE</b>' + money(ind.balance) + ' BIRR</div>'
                 + (ind.target ? '<div class="pin-row"><b>TARGET</b>' + money(ind.target.amount) + ' BIRR</div>' : '');
             document.getElementById('resText').textContent = dep && ind.target && ind.balance >= ind.target.amount
                 ? 'You have reached your target!'
                 : dep
-                ? 'Money added to your pocket with success'
+                ? 'Money added to your account with success'
                 : 'Money withdrawn to your M-PESA wallet with success';
-            document.getElementById('resView').textContent = dep ? 'VIEW POCKET' : 'VIEW SAVING';
+            document.getElementById('resView').textContent = dep ? 'VIEW ACCOUNT' : 'VIEW SAVING';
             stack = ['stepHome', 'stepIndResult'];
             show('stepIndResult');
         }
@@ -5970,18 +6138,39 @@
         }
 
         function saveRecurring() {
-            const auto = { amount: Number(document.getElementById('recAmount').value), freq: document.getElementById('recFreq').value };
-            askPin({
+            const amount = Number(document.getElementById('recAmount').value);
+            const freq = document.getElementById('recFreq').value;
+
+            /* changing one already running keeps its schedule */
+            if (ind.auto) {
+                askPin({
+                    title: 'RECURRING TRANSFER',
+                    rows: [['AMOUNT', money(amount) + ' Birr'], ['FREQUENCY', freq], ['TO', ind.name]],
+                    ok: () => {
+                        ind.auto = { amount: amount, freq: freq, start: ind.auto.start };
+                        save();
+                        stack = ['stepHome', 'stepIndPocket'];
+                        renderIndPocket();
+                        show('stepIndPocket');
+                        showToast('RECURRING TRANSFER UPDATED');
+                        sms(ind.name + ' will now receive ' + money(amount) + ' Birr ' + freq.toLowerCase() + ' from your M-PESA wallet.');
+                    }
+                });
+                return;
+            }
+
+            /* a new one takes its first deduction now, confirmed like a deposit */
+            if (S.wallet < amount) { showToast('NOT ENOUGH IN YOUR WALLET'); return; }
+            const auto = { amount: amount, freq: freq, start: TODAY.toISOString() };
+            openAutoConfirm(ind.name, auto, ind.target, {
                 title: 'RECURRING TRANSFER',
-                rows: [['AMOUNT', money(auto.amount) + ' Birr'], ['FREQUENCY', auto.freq], ['TO', ind.name]],
+                rows: [['FIRST DEPOSIT', money(amount) + ' Birr'], ['THEN', freqLine(auto)], ['TO', ind.name]],
                 ok: () => {
                     ind.auto = auto;
+                    deductNow(ind);
                     save();
-                    stack = ['stepHome', 'stepIndPocket'];
-                    renderIndPocket();
-                    show('stepIndPocket');
-                    showToast('RECURRING TRANSFER SAVED');
-                    sms(freqLine(auto) + ' will now move from your M-PESA wallet to ' + ind.name + '.');
+                    showIndResult(true);
+                    sms(money(amount) + ' Birr was saved to ' + ind.name + ' today. The next ' + freq.toLowerCase() + ' deduction is on ' + fmtDate(ind.auto.start) + '.');
                 }
             });
         }
