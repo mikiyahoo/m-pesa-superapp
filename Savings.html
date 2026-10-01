@@ -1315,14 +1315,6 @@
             margin-top: 22px;
         }
 
-        .amount-sub {
-            text-align: center;
-            font-size: 12px;
-            color: #9a9a9a;
-            letter-spacing: 0.6px;
-            margin-top: 6px;
-        }
-
         .entry {
             display: flex;
             align-items: center;
@@ -2839,7 +2831,6 @@
                 <span class="progress"><span class="dot"></span><span class="track"></span></span>
             </div>
             <p class="amount-title">DEPOSIT</p>
-            <p class="amount-sub" id="amountSub"></p>
 
             <div class="entry">
                 <span class="num" id="amountNum"><span class="caret"></span><span id="amountDigits">0</span></span>
@@ -3558,7 +3549,6 @@
             const p = flow.plan;
             const n = Number(amount || 0);
             document.getElementById('amountDigits').textContent = amount === '' ? '0' : whole(n);
-            document.getElementById('amountSub').textContent = p.months + ' MONTHS · ' + p.rate + '% INTEREST · MIN. ' + whole(p.min) + ' BIRR';
             document.getElementById('walletLine').textContent = 'WALLET BALANCE: ' + money(S.wallet) + ' Birr';
 
             const msg = document.getElementById('amountMsg');
