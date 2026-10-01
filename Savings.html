@@ -3086,12 +3086,7 @@
         /* ---------- Reference data ---------- */
         const LOGOS = 'assets/banks logo/';
         const PARTNERS = {
-            awash:     { name: 'AWASH BANK',     logo: LOGOS + 'awass-bank.png' },
-            cbe:       { name: 'CBE',            logo: LOGOS + 'cbe-logo.png' },
-            dashen:    { name: 'DASHEN BANK',    logo: LOGOS + 'dashen-bank.png' },
-            abyssinia: { name: 'BANK OF ABYSSINIA', logo: LOGOS + 'abyssinya-bank.png' },
-            coop:      { name: 'COOP BANK',      logo: LOGOS + 'coop-bank.png' },
-            zemen:     { name: 'ZEMEN BANK',     logo: LOGOS + 'zemen-bank.png' }
+            awash:     { name: 'AWASH BANK',     logo: LOGOS + 'awass-bank.png' }
         };
 
         /* Four lock periods. Each has its own minimum and fixed rate;
@@ -3109,8 +3104,8 @@
 
         const POCKETS = [
             { name: 'University Tuition', partner: 'awash',  acct: '4821',  rate: 8,   saved: 75000, goal: 200000, days: 89,  chip: ['ON TRACK', 'green'], bar: '' },
-            { name: 'Emergency Fund',     partner: 'cbe',    acct: '0506',  rate: 7,   saved: 7200,  goal: 15000,  days: 45,  chip: ['BEHIND', 'amber'],   bar: 'amber' },
-            { name: 'Business Startup',   partner: 'dashen', acct: '49341', rate: 9.5, saved: 50000, goal: 150000, days: 210, chip: ['ACTIVE', 'green'],   bar: 'blue' }
+            { name: 'Emergency Fund',     partner: 'awash',  acct: '0506',  rate: 7,   saved: 7200,  goal: 15000,  days: 45,  chip: ['BEHIND', 'amber'],   bar: 'amber' },
+            { name: 'Business Startup',   partner: 'awash',  acct: '49341', rate: 9.5, saved: 50000, goal: 150000, days: 210, chip: ['ACTIVE', 'green'],   bar: 'blue' }
         ];
 
         const DAY = 86400000;
