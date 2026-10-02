@@ -962,7 +962,7 @@
             transform: translateX(-50%) translateY(0);
         }
     </style>
-    <script src="assets/prototype-mode.js?v=34"></script>
+    <script src="assets/prototype-mode.js?v=63"></script>
 </head>
 <body data-link-reason="To buy a package" data-prompt="popup">
 
@@ -1048,8 +1048,8 @@
         <!-- Purchase confirmation -->
         <section class="step" id="stepConfirm">
             <div class="app-bar">
-                <button class="back-btn" onclick="backToList()" aria-label="Back">
-                    <svg viewBox="0 0 24 24"><path d="M20 12H4.4"/><path d="m10.6 5.4-6.2 6.6 6.2 6.6"/></svg>
+                <button class="back-btn" onclick="backToList()" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
                 </button>
                 <h1>CONFIRM</h1>
                 <span class="progress"><span class="bar"><span class="fill" style="width:34%"></span></span></span>
@@ -1072,8 +1072,8 @@
         <!-- PIN -->
         <section class="step" id="stepPin">
             <div class="app-bar">
-                <button class="back-btn" onclick="showStep('stepConfirm')" aria-label="Back">
-                    <svg viewBox="0 0 24 24"><path d="M20 12H4.4"/><path d="m10.6 5.4-6.2 6.6 6.2 6.6"/></svg>
+                <button class="back-btn" onclick="showStep('stepConfirm')" aria-label="Close">
+                    <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
                 </button>
                 <span class="progress"><span class="bar"><span class="fill" style="width:44%"></span></span></span>
             </div>
@@ -1240,12 +1240,19 @@
         /* ---------- Fayda modal ---------- */
         const FAYDA_DELAY = 900; // a beat on the screen before the prompt
 
+        /* Developer notes beside the phone, one per stage of the flow. */
+        function devNote(text) {
+            if (window.prototypeMode && window.prototypeMode.devNote) window.prototypeMode.devNote(text);
+        }
+
         function openFayda() {
             document.getElementById('faydaModal').classList.add('show');
+            devNote('The Fayda popup should be displayed after 900 ms, after the confirmation screen is displayed.');
         }
 
         function closeFayda() {
             document.getElementById('faydaModal').classList.remove('show');
+            devNote();
         }
 
         function linkFayda() {
@@ -1280,7 +1287,7 @@
         /* ---------- Packages ---------- */
         const ME    = { name: 'MIKIAS DEREJE', phone: '0911 032 052' };
         const OTHER_PERSON = { name: 'ALEX NJERU', phone: '079 123 1222' };
-        const BALANCE_LABEL = '4,678 BIRR';
+        const BALANCE_LABEL = '4,678 ETB';
 
         /* data/price tiers per category; anything not listed falls back to DAILY */
         const TIERS = {
@@ -1326,7 +1333,7 @@
             document.getElementById('packList').innerHTML = tiers.items.map((it, i) => {
                 const [data, price, extra] = it;
                 const label = packageName(name, data);
-                const money = price.toFixed(2) + ' BIRR';
+                const money = price.toFixed(2) + ' ETB';
                 return `
                 <div class="pack">
                     <div class="pack-head">
@@ -1378,10 +1385,12 @@
                 payWith: payWith
             };
             document.getElementById('buySheet').classList.add('show');
+            devNote('Both self and gift purchases should be included.');
         }
 
         function closeBuySheet() {
             document.getElementById('buySheet').classList.remove('show');
+            devNote();
         }
 
         function chooseBuyer(which) {
@@ -1419,7 +1428,7 @@
                 + row(picked.category + ' PACKAGE', picked.name, null, true)
                 + row('PACKAGE TYPE', 'BUY ONCE')
                 + row('VALIDITY PERIOD', picked.validity)
-                + row('PRICE', picked.price + ' BIRR')
+                + row('PRICE', picked.price + ' ETB')
                 + row('PAYMENT METHOD', picked.payWith,
                       picked.payWith === 'M-PESA' ? 'BALANCE ' + BALANCE_LABEL : 'AIRTIME BALANCE', true);
         }
@@ -1431,7 +1440,7 @@
                 + '<div class="line"><b>' + picked.category + ' PACKAGE</b> ' + picked.name + '</div>'
                 + '<div class="line"><b>PACKAGE TYPE</b> BUY ONCE</div>'
                 + '<div class="line"><b>VALIDITY PERIOD</b> ' + picked.validity + '</div>'
-                + '<div class="line"><b>' + picked.price + ' BIRR</b> <span class="muted">FEE: 0.00 Birr</span></div>';
+                + '<div class="line"><b>' + picked.price + ' ETB</b> <span class="muted">FEE: 0.00 ETB</span></div>';
         }
 
         /* ---------- Step 4: PIN ---------- */
@@ -1472,6 +1481,8 @@
             showStep('stepDone');
             /* The linking prompt belongs here, once the purchase is placed. */
             if (promptFayda) faydaTimer = setTimeout(openFayda, FAYDA_DELAY);
+            /* back from linking: the bundle's final confirmation */
+            else devNote('Once the Fayda linking is completed, the customer must be able to see the bundle final confirmation screen.');
         }
 
         /* Runs last: restorePurchase() assigns `picked`/`buyer`, which are

@@ -1,0 +1,115 @@
+﻿### num-pair     
+  133: | `DEMO_GROUP` / `INVITEE` | 7814 / 8194 | `'GS30215547'` (Family Trip) / `'c4'` (Daniel Bekele) |
+  659: | `loadState` / `save` | 4809 / 4824 | `findAccount` / `startNewDeposit` / `planName` |  |
+  665: | `pocketInterest` | 4933 | `openType` / `toggleTypeHidden` | 5061 / 5068 |
+  666: | `toggleMineHidden` / `renderHome` | 4940 / 4945 | `duoProgress` / `typeRow` / `renderType` |  |
+  667: | `setListFilter` / `toggleListKind` | 4975 / 4980 | `statusChip` | 5149 |
+  668: | `openListPicker` / `renderListPicker` | 4990 / 4996 | `cardHead` / `cv` / `depositCard` |  |
+  669: | `renderSavingsList` | 5006 | `toggleLocked` / `renderFixedPane` | 5211 / 5216 |
+  676: | `openOptin` / `goSlide` | 5290 / 5301 | `askPin` / `paintPin` / `pinPress` |  |
+  677: | `optIn` / `activateSavings` | 5322 / 5331 | `pinFill` / `checkPin` / `pinCancel` |  |
+  679: | `rollShort` / `rollTopUp` | 5392 / 5411 | `stamp` / `newTxnId` / `duo` |  |
+  681: | `amountPress` / `amountDelete` | 5452 / 5459 | `copyTxn` / `doneClose` | 5743 / 5748 |
+  682: | `paintAmount` / `amountContinue` | 5464 / 5509 | `runOpen` / `viewCurrent` | 5758 / 5792 |
+  689: | `openAccount` / `actionBtn` | 5797 / 5811 | `destinations` / `renderPayout` | 6025 / 6030 |
+  691: | `checkBalance` / `miniStatement` | 5943 / 5972 | `openDestSheet` / `pickDestSheet` / `pickDest` |  |
+  693: | `startRollover` / `runRollover` | 6179 / 6186 | `openMenu` / `closeMenu` | 6345 / 6371 |
+  695: | `acceptEarly` / `runEarly` | 6293 / 6298 | `openFaq` / `setFaqTab` / `renderFaq` |  |
+  705: | `dpSync` / `dpTap` / `dpScrolled` / `dpConfirm` |  | `indResultView` / `indResultDone` | 7018 / 7032 |
+  706: | `periodsUntil` / `suggested` | 6665 / 6672 | `openTargetSet` / `paintTargetSet` / `saveTarget` / `removeTarget` |  |
+  707: | `targetsInOrder` / `targetPct` / `targetDaysLeft` / `targetChip` |  | `askCloseInd` / `runCloseInd` | 7084 / 7104 |
+  716: | `seedGroups` / `findGrp` / `memberById` |  | `openGroup` / `renderGrpPocket` | 7431 / 7437 |
+  717: | `memberTotal` / `myShare` / `joined` / `invitedCount` / `membersLine` |  | `showGrpMembers` / `openManageGroup` | 7499 / 7504 |
+  718: | `memberInterest` / `leavePayout` / `adminOf` / `fmtPhone` / `grpCanWithdraw` / `avatar` |  | `memberActions` / `askRemoveMember` | 7520 / 7532 |
+  720: | `openGroupCreate` / `paintGrpForm` / `removeDraft` |  | `askCloseGroup` / `runCloseGroup` | 7579 / 7594 |
+  721: | `openMemberSheet` / `renderMemberSheet` | 7330 / 7337 | `nameOf` / `approvalDots` / `leaveCard` / `showApprovers` |  |
+  723: | `grpCreate` / `runGrpCreate` | 7393 / 7404 | `confirmApprove` / `declineLeave` / `completeLeave` |  |
+  730: | `savedAt` / `movedIn` / `actSeries` |  | `sms` / `hideSms` | 8100 / 8108 |
+  732: | `openSheet` / `closeSheet` | 8068 / 8085 | `renderNotes` / `openNotes` / `markAllRead` |  |
+  733: | `inviteePrompt` / `answerInvite` | 8180 / 8199 | `showToast` | 8217 |
+### paren3dig    
+  38: | `Mini Apps.html` → "M-PESA Saving" feature card (464) or Discover tile (557) | `openPocketMoney()` (`Mini Apps.html:577`) | sets `savingsReturn = 'Mini Apps.html'`, navigates to `Savings.html` |
+### colon-orphan 
+  6: **Scope note at :** *"Locked / Fixed Time Deposit, added to Savings as its own tab. Covers: opt in → plan → amount → review → PIN → account (phase 1); balance inquiry and mini statement (phase 2); maturity withdrawal, rollover and early withdrawal (phase 3); closure (phase 4)."*
+### paren-comma  
+### empty-cell   
+  683: | `openReview` / `openConfirmStep` / `reviewConfirm` |  | | |
+  710: | `toggleIndAuto` / `paintIndForm` / `indCreate` / `openAutoConfirm` / `runIndCreate` |  | | |
+### space-paren  
+  206: - **Pinned balance card** — wrapped in `.home-pin` (markup 4049; CSS ) with `position: sticky; top: 0; z-index: 2` and a white fade (`::after`) so the card stays put while the list scrolls under it and dissolves into the fade.
+  263: - **`emptyState(icon, title, text, plus)`** (5037, CSS ) renders a green art mark — with a small **+** bubble when `plus` is set — a bold title and one short line of copy, centred.
+### paren-space  
+  343: `openAccount(id)` · `renderAccount()` · `stepAccount` ( `data-green`)
+  383: **Create** — `openIndCreate(mode)` · `paintIndForm()` · `indCreate()` · `stepIndCreate` ( `data-green`)
+  391: **Pocket page** — `openIndPocket(id)` · `renderIndPocket()` · `stepIndPocket` ( `data-green`)
+  425: **Create** — `openGroupCreate()` · `paintGrpForm()` · `grpCreate()` · `runGrpCreate()` · `stepGrpCreate` ( `data-green`)
+  434: **Group page** — `openGroup(id)` · `renderGrpPocket()` · `stepGrpPocket` ( `data-green`)
+### dash-orphan  
+### dbl-space    
+  74: optedIn:  <bool>,      // has the customer activated savings?
+  75: wallet:   75000,       // M-PESA wallet balance (ETB)
+  76: notes:    [ note… ],   // every SMS and in-app notice, newest last
+  78: accounts:   [ deposit… ],
+  79: groups:     [ group… ]
+  87: auto:   { amount, freq, start } | null,   // recurring wallet → pocket transfer
+  88: target: { amount, from, by }     | null,  // goal
+  107: leave:   { who, approvals: [ memberId… ], on } | null,
+  108: txns:    [ { type, amount, on, by, label } ] }
+  128: | `IND_RATE` / `IND_MIN_AUTO` |  | `7` / `50` |
+  134: | Date picker |  | tomorrow → **+60 months** (`dpRange` / `dpClamp`) |
+  166: maturityOf(a)   = opened + months
+  167: termDays(a)     = days(opened → maturity)
+  168: statusOf(a)     = closed → 'closed'
+  171: elapsed(a)      = clamp(days(opened → today), 0, termDays(a))
+  172: accrued(a)      = principal × rate/100 × elapsed / 365   // 4840  (daily, capped at term)
+  182: Σ  sign × amount × 7/100 × days(txn → today) / 365       // sign = −1 for WITHDRAW
+  204: Markup  · `renderHome()` · list in `renderSavingsList()`
+  231: - **Pinned** `TOTAL LOCKED SAVINGS` card  in the `locked` style with the M-PESA pattern, its own eye (`toggleLocked`), **Total Accrued Interest** and **Active Accounts**.
+  232: - **Maturity banners**  — one per matured deposit: *"EMERGENCY FUND HAS MATURED · 10,045.20 ETB is ready to withdraw or roll over"* → opens the deposit.
+  234: - **HOW IT WORKS**  — shown only when nothing is locked: choose a period and bank → deposit and accrue daily → collect or roll over at maturity, interest lost if early.
+  235: - **Empty state**  — "NO FIXED DEPOSIT YET" with a lock ring: *"Lock your savings with a partner bank and earn a fixed rate of up to 10%."*
+  236: - **CLOSED** section  — retired deposits stay listed here.
+  654: | `startOfDay` / `addDays` / `addMonths` |  | `maturityOf` / `termDays` / `statusOf` |  |
+  655: | `daysBetween` | 4723 | `elapsed` / `accrued` / `projected` |  |
+  656: | `fmtDate` / `ddmmyyyy` / `fmtShort` |  | `maskId` | 4851 |
+  657: | `money` / `whole` / `newId` |  | `show` / `go` / `resetTo` / `back` |  |
+  658: | `seedPockets` / `seedState` / `account` |  | `savingsReturn` / `setTab` / `homeCta` |  |
+  659: | `loadState` / `save` | 4809 / 4824 | `findAccount` / `startNewDeposit` / `planName` |  |
+  666: | `toggleMineHidden` / `renderHome` | 4940 / 4945 | `duoProgress` / `typeRow` / `renderType` |  |
+  668: | `openListPicker` / `renderListPicker` | 4990 / 4996 | `cardHead` / `cv` / `depositCard` |  |
+  670: | `emptyState` / `EMPTY` / `noPocket` |  | `maybeNotifyMaturity` | 5277 |
+  676: | `openOptin` / `goSlide` | 5290 / 5301 | `askPin` / `paintPin` / `pinPress` |  |
+  677: | `optIn` / `activateSavings` | 5322 / 5331 | `pinFill` / `checkPin` / `pinCancel` |  |
+  678: | `renderPlans` / `planById` / `choosePlan` |  | `processing` | 5634 |
+  679: | `rollShort` / `rollTopUp` | 5392 / 5411 | `stamp` / `newTxnId` / `duo` |  |
+  680: | `accFacts` / `toggleAcc` / `fact` |  | `receiptHtml` / `showInfo` / `showDone` |  |
+  683: | `openReview` / `openConfirmStep` / `reviewConfirm` |  | | |
+  690: | `history` / `txnRow` / `acctEye` / `renderAccount` |  | `payInto` / `destRow` / `destList` |  |
+  691: | `checkBalance` / `miniStatement` | 5943 / 5972 | `openDestSheet` / `pickDestSheet` / `pickDest` |  |
+  692: | `maturedTotal` / `maturityChoice` / `startMatureWithdraw` |  | `payoutContinue` / `closeAccount` / `runMature` |  |
+  694: | `startEarly` / `toggleConsent` / `declineEarly` |  | `openDialog` / `closeDialog` / `pickToClose` / `askClose` |  |
+  695: | `acceptEarly` / `runEarly` | 6293 / 6298 | `openFaq` / `setFaqTab` / `renderFaq` |  |
+  701: | `quickDate` / `nextDeduction` / `deductNow` |  | `openIndPocket` / `indCard` / `renderIndPocket` |  |
+  702: | `startLine` / `setupBy` / `byValue` / `byHint` |  | `openIndAmount` / `paintIndAmount` / `indAmountContinue` |  |
+  703: | `ordinal` / `dpRange` / `dpClamp` |  | `runIndMove` | 6975 |
+  704: | `openDatePicker` / `dpQuick` / `renderDatePicker` |  | `showIndResult` | 6995 |
+  705: | `dpSync` / `dpTap` / `dpScrolled` / `dpConfirm` |  | `indResultView` / `indResultDone` | 7018 / 7032 |
+  706: | `periodsUntil` / `suggested` | 6665 / 6672 | `openTargetSet` / `paintTargetSet` / `saveTarget` / `removeTarget` |  |
+  707: | `targetsInOrder` / `targetPct` / `targetDaysLeft` / `targetChip` |  | `askCloseInd` / `runCloseInd` | 7084 / 7104 |
+  708: | `findInd` / `moneyInput` / `fmtInput` / `numVal` / `digitsOnly` |  | `recHolder` / `openRecurring` / `recBackToAccount` / `walletLine` |  |
+  709: | `freqLine` / `chooseSavingType` / `autoName` / `openIndCreate` |  | `paintRecurring` / `saveRecurring` / `stopRecurring` |  |
+  710: | `toggleIndAuto` / `paintIndForm` / `indCreate` / `openAutoConfirm` / `runIndCreate` |  | | |
+  716: | `seedGroups` / `findGrp` / `memberById` |  | `openGroup` / `renderGrpPocket` | 7431 / 7437 |
+  717: | `memberTotal` / `myShare` / `joined` / `invitedCount` / `membersLine` |  | `showGrpMembers` / `openManageGroup` | 7499 / 7504 |
+  718: | `memberInterest` / `leavePayout` / `adminOf` / `fmtPhone` / `grpCanWithdraw` / `avatar` |  | `memberActions` / `askRemoveMember` | 7520 / 7532 |
+  719: | `groupCard` | 7275 | `openGrpEdit` / `paintGrpEdit` / `saveGrpEdit` |  |
+  720: | `openGroupCreate` / `paintGrpForm` / `removeDraft` |  | `askCloseGroup` / `runCloseGroup` | 7579 / 7594 |
+  721: | `openMemberSheet` / `renderMemberSheet` | 7330 / 7337 | `nameOf` / `approvalDots` / `leaveCard` / `showApprovers` |  |
+  722: | `toggleMember` / `addByNumber` / `memberDone` |  | `askLeaveGroup` / `othersApprove` / `approveLeave` |  |
+  723: | `grpCreate` / `runGrpCreate` | 7393 / 7404 | `confirmApprove` / `declineLeave` / `completeLeave` |  |
+  724: | `demoLeavePrompt` / `demoReview` / `demoDeclines` |  | `openGrpContribute` / `paintGrpAmount` / `grpAmountContinue` / `grpWithdraw` / `runGrpMove` |  |
+  730: | `savedAt` / `movedIn` / `actSeries` |  | `sms` / `hideSms` | 8100 / 8108 |
+  731: | `openActivity` / `actSelect` / `smoothPath` / `renderActivity` |  | `logNote` / `paintBell` / `notify` / `hideNotice` |  |
+  732: | `openSheet` / `closeSheet` | 8068 / 8085 | `renderNotes` / `openNotes` / `markAllRead` |  |
+  734: | Keyboard handler | 8236 | Start-up block |  |
+### dash-line    

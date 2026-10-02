@@ -386,7 +386,7 @@
         }
     </style>
 
-    <script src="assets/prototype-mode.js?v=34"></script>
+    <script src="assets/prototype-mode.js?v=63"></script>
 </head>
 <body data-link-reason="To withdraw money">
 
@@ -522,8 +522,15 @@
         }
 
         /* ---------- Link Fayda ---------- */
+        /* Withdrawing needs a linked account, so the prompt has no way past
+           it: no close, no skip. */
         function openFayda() {
-            document.getElementById('faydaModal').classList.add('show');
+            const modal = document.getElementById('faydaModal');
+            if (window.prototypeMode && window.prototypeMode.forceMandatory) window.prototypeMode.forceMandatory(modal);
+            modal.classList.add('show');
+            if (window.prototypeMode && window.prototypeMode.devNote) {
+                window.prototypeMode.devNote('Customers can select any of the services below. If they are not linked to Fayda, they should be asked for a non-skippable Fayda activation.');
+            }
         }
 
         function closeFayda() {
@@ -557,6 +564,10 @@
            only while the account is still unlinked. */
         const FAYDA_DELAY = 900; // a beat on the screen before the prompt
         if (!isFaydaActivated()) setTimeout(openFayda, FAYDA_DELAY);
+        else if (window.prototypeMode && window.prototypeMode.devNote) {
+            /* back from linking (or already linked): the chosen service carries on */
+            window.prototypeMode.devNote('Should allow the customer to proceed with the selected service once activated, continuing from where the Fayda journey was triggered.');
+        }
     </script>
 
 </body>

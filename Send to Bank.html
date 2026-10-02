@@ -117,7 +117,7 @@
 
         .form::-webkit-scrollbar { display: none; }
 
-        .field { margin-bottom: 46px; }
+        .field { position: relative; margin-bottom: 46px; }
 
         .field.with-hint { margin-bottom: 26px; }
 
@@ -239,9 +239,15 @@
         .chevron.open { transform: rotate(180deg); }
 
         /* ---------- Bank list ---------- */
+        /* floats over the fields below instead of pushing them down */
         .bank-list {
             display: none;
-            margin-top: 10px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            margin-top: 6px;
             border: 1px solid #ececec;
             border-radius: 6px;
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
@@ -979,7 +985,7 @@
             transform: translateX(-50%) translateY(0);
         }
     </style>
-    <script src="assets/prototype-mode.js?v=34"></script>
+    <script src="assets/prototype-mode.js?v=63"></script>
 </head>
 <body data-link-reason="To send money to a bank">
 
@@ -1058,9 +1064,9 @@
             <div class="field with-hint">
                 <label>AMOUNT</label>
                 <div class="underline">
-                    <input type="text" id="amount" inputmode="decimal" placeholder="Birr  0" oninput="onAmountInput(this)">
+                    <input type="text" id="amount" inputmode="decimal" placeholder="ETB  0" oninput="onAmountInput(this)">
                 </div>
-                <p class="hint" id="balanceHint"><b>BALANCE:</b> 50,000.00 BIRR</p>
+                <p class="hint" id="balanceHint"><b>BALANCE:</b> 50,000.00 ETB</p>
             </div>
 
             <!-- Description -->
@@ -1418,7 +1424,7 @@
                 row('BANK NAME', t.bank.name.toUpperCase())
                 + row('NAME', holder)
                 + row('BANK ACCOUNT NUMBER', t.account)
-                + row('AMOUNT', money(t.amount) + ' BIRR', 'FEE: ' + money(t.fee) + ' BIRR');
+                + row('AMOUNT', money(t.amount) + ' ETB', 'FEE: ' + money(t.fee) + ' ETB');
             document.getElementById('confirmSheet').classList.add('show');
         }
 
@@ -1437,7 +1443,7 @@
                 + '<h3>' + t.bank.name.toUpperCase() + '</h3>'
                 + '<div class="line"><b>NAME</b>' + accountHolder(t.account) + '</div>'
                 + '<div class="line"><b>BANK ACCOUNT NUMBER</b>' + t.account + '</div>'
-                + '<div class="line"><b>' + money(t.amount) + ' BIRR</b> <span class="muted">FEE: ' + money(t.fee) + ' BIRR</span></div>';
+                + '<div class="line"><b>' + money(t.amount) + ' ETB</b> <span class="muted">FEE: ' + money(t.fee) + ' ETB</span></div>';
         }
 
         /* ---------- PIN ---------- */
@@ -1530,7 +1536,7 @@
            reason line has to match instead of talking about sending. */
         function openFaydaAfterSend() {
             var cta = document.querySelector('.fayda-cta');
-            if (cta) cta.textContent = "Money sent, link your Fayda ID";
+            if (cta) cta.innerHTML = 'Money sent,<br>link your Fayda ID';
             openFayda();
         }
 
@@ -1591,7 +1597,30 @@
 
         buildBankList();
         validate();
+        /* The sidebar's "Fayda Not Linked" lands here with ?fayda=ask: the
+           account starts unlinked and a centred card asks to link before
+           anything else. Arriving from Home or the M-PESA tab is the
+           whitelisted flow, which only asks above the threshold or after
+           sending. */
+        const FAYDA_DELAY = 900; // a beat on the screen before the prompt
+        const askFirst = new URLSearchParams(location.search).get('fayda') === 'ask';
+        if (askFirst) {
+            try { sessionStorage.removeItem('faydaActivated'); } catch (e) {}
+            document.body.dataset.prompt = 'popup';   // a centred card, not the full screen
+        }
+        /* the whitelisted way in (Home or the M-PESA tab) asks on the full
+           screen, with no way past it; after linking it comes back here and
+           carries on where it left off */
+        let returning = false;
+        try { returning = !!sessionStorage.getItem('pendingTransfer'); } catch (e) {}
         restoreTransfer();
+        if (askFirst) setTimeout(openFayda, FAYDA_DELAY);
+        else if (!returning && !isFaydaActivated()) {
+            setTimeout(openFaydaMandatory, FAYDA_DELAY);
+            if (window.prototypeMode && window.prototypeMode.devNote) {
+                window.prototypeMode.devNote('Customer must be validated if it is under the whitelisted lists, and Fayda not linked numbers should only see this screen.');
+            }
+        }
     </script>
 </body>
 </html>

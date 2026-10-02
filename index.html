@@ -78,6 +78,7 @@
 
         /* ---------- Green header ---------- */
         .header {
+            flex-shrink: 0;
             background: linear-gradient(180deg, #0E7A38 0%, #26A652 52%, #43CB74 100%);
             padding: 28px 16px 20px 16px;
             color: #ffffff;
@@ -106,16 +107,16 @@
 
         .greeting .hello small {
             display: block;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 400;
             color: rgba(255, 255, 255, 0.92);
             line-height: 1.1;
         }
 
         .greeting .hello strong {
             display: block;
-            font-size: 21px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 500;   /* medium, not bold */
             color: #ffffff;
             line-height: 1.2;
         }
@@ -184,12 +185,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         .balance-label span {
-            font-size: 15.5px;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 400;
             letter-spacing: 0.8px;
         }
 
@@ -212,14 +213,17 @@
         }
 
         .balance-amount {
-            font-size: 30px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            margin-bottom: 10px;
         }
 
+        /* the unit here is as big as the number beside it */
+        .balance-extra .cur { font-size: inherit; }
+
         .balance-extra {
-            font-size: 15.5px;
+            font-size: 13px;
             font-weight: 600;
             margin-bottom: 20px;
         }
@@ -231,10 +235,12 @@
             gap: 8px;
         }
 
+        /* solid dark green tiles, a full tone below the header */
         .quick button {
-            background: rgba(0, 0, 0, 0.13);
+            background: #0B7A43;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
             padding: 10px 8px 10px 8px;
             cursor: pointer;
             font-family: 'Barlow', sans-serif;
@@ -246,13 +252,13 @@
             transition: background 0.15s ease;
         }
 
-        .quick button:active { background: rgba(0, 0, 0, 0.2); }
+        .quick button:active { background: #096A3A; }
 
         .quick .ic {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.22);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -264,10 +270,146 @@
 
         .quick .lbl {
             font-size: 12.5px;
-            font-weight: 700;
+            font-weight: 600;
             color: #ffffff;
             line-height: 1.2;
         }
+
+        /* ---------- Suggested for you ---------- */
+        .suggest-label {
+            margin: 0 16px 10px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #5f5f5f;
+        }
+
+        .suggest {
+            display: flex;
+            gap: 10px;
+            padding: 0 16px 24px 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .suggest::-webkit-scrollbar { display: none; }
+
+        .ad {
+            position: relative;
+            flex: 0 0 auto;
+            width: 110px;
+            aspect-ratio: 104 / 156;
+            border: none;
+            padding: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #1c1c1c;
+            cursor: pointer;
+        }
+
+        .ad img.art { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* the "for you" mark: a red circle holding a person */
+        .ad .for-you {
+            position: absolute;
+            top: 7px;
+            left: 7px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #E4002B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ad .for-you svg { width: 15px; height: 15px; display: block; }
+
+        /* ---------- Frequents and transactions ---------- */
+        .sec-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 16px 12px 16px;
+        }
+
+        .sec-head h2 {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #5f5f5f;
+        }
+
+        .sec-head button {
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: 'Barlow', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #2BAF57;
+            cursor: pointer;
+        }
+
+        .frequents {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            margin: 0 12px 26px 12px;
+        }
+
+        .frequents button {
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: 'Barlow', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            min-width: 0;
+        }
+
+        .frequents img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 6px;
+        }
+
+        .frequents img.logo { object-fit: contain; }
+
+        .frequents b {
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #2a2a2a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .frequents small { font-size: 11px; color: #9a9a9a; margin-top: 1px; }
+
+        .txn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .txn img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .txn .who { flex: 1; min-width: 0; }
+        .txn .who b { display: block; font-size: 13.5px; font-weight: 600; letter-spacing: 0.4px; color: #4a4a4a; }
+        .txn .who small { display: block; margin-top: 2px; font-size: 12px; color: #9a9a9a; }
+        .txn .amt { text-align: right; }
+        .txn .amt b { display: block; font-size: 13.5px; font-weight: 600; color: #4a4a4a; }
+        .txn .amt small { display: block; margin-top: 2px; font-size: 12px; color: #9a9a9a; }
+
 
         /* ---------- Reward banner ---------- */
         .reward {
@@ -446,7 +588,7 @@
 
         .masked { letter-spacing: 3px; }
     </style>
-    <script src="assets/prototype-mode.js?v=34"></script>
+    <script src="assets/prototype-mode.js?v=63"></script>
 </head>
 <body>
 
@@ -472,16 +614,14 @@
             </div>
         </div>
 
-        <div class="scroll">
-
-            <!-- Green header -->
-            <div class="header">
+        <!-- Green header: stays put while the rest scrolls -->
+        <div class="header">
 
                 <div class="greeting">
                     <img src="assets/avatars/avatar-2.png" alt="">
                     <div class="hello">
                         <small>Hello,</small>
-                        <strong>Zendu!</strong>
+                        <strong>Mikias!</strong>
                     </div>
                     <div class="header-actions">
                         <button onclick="showToast('NOTIFICATIONS')" aria-label="Notifications">
@@ -520,8 +660,8 @@
                     </button>
                 </div>
 
-                <p class="balance-amount" id="balanceAmount">5,000 BIRR</p>
-                <p class="balance-extra" id="balanceExtra">Eriff Balance: 500 BIRR</p>
+                <p class="balance-amount" id="balanceAmount">5,000 ETB</p>
+                <p class="balance-extra" id="balanceExtra">Eriff Balance: 500 ETB</p>
 
                 <!-- Quick actions -->
                 <div class="quick">
@@ -578,6 +718,8 @@
                 </div>
             </div>
 
+        <div class="scroll">
+
             <!-- Reward banner -->
             <div class="reward" onclick="showToast('REWARD ACCOUNT')">
                 <span class="badge">
@@ -589,7 +731,7 @@
                 </span>
                 <div class="copy">
                     <small>Reward Account</small>
-                    <strong>250 BIRR</strong>
+                    <strong>250 ETB</strong>
                 </div>
                 <button class="explore" onclick="event.stopPropagation(); showToast('EXPLORE REWARDS');">
                     <svg viewBox="0 0 24 24" fill="none">
@@ -601,6 +743,42 @@
                     <span>EXPLORE</span>
                 </button>
                 <img class="trophy" src="assets/reward_account.png" alt="">
+            </div>
+
+            <!-- Suggested for you -->
+            <p class="suggest-label">SUGGESTED FOR YOU</p>
+            <div class="suggest">
+                <button class="ad" onclick="showToast('DALA STUDIO')" aria-label="Dala Studio: Pay in Birr, imagine and build">
+                    <img class="art" src="assets/Dala-Banner-156-by-104-px.jpg" alt="">
+                    <span class="for-you">
+                        <svg viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4.5 20.5c.6-4.2 3.6-6.6 7.5-6.6s6.9 2.4 7.5 6.6Z"/>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Frequents -->
+            <div class="sec-head"><h2>FREQUENTS</h2></div>
+            <div class="frequents">
+                <button onclick="showToast('BIRUK TEKLE')"><img src="assets/avatars/avatar-4.png" alt=""><b>Biruk Tekle</b><small>Send money</small></button>
+                <button onclick="showToast('AWASH BANK')"><img class="logo" src="assets/banks%20logo/awass-bank.png" alt=""><b>Awash Bank</b><small>Buy goods</small></button>
+                <button onclick="showToast('MERON BELAY')"><img src="assets/avatars/avatar-6.png" alt=""><b>Meron Belay</b><small>Send money</small></button>
+                <button onclick="showToast('HIBRET BANK')"><img class="logo" src="assets/banks%20logo/Hibret-bank.png" alt=""><b>Hibret Bank</b><small>Buy goods</small></button>
+            </div>
+
+            <!-- M-PESA transactions -->
+            <div class="sec-head"><h2>M-PESA TRANSACTIONS</h2><button onclick="showToast('TRANSACTION HISTORY')">SEE ALL</button></div>
+            <div class="txn" onclick="showToast('RAHEL GETACHEW')">
+                <img src="assets/avatars/avatar-1.png" alt="">
+                <span class="who"><b>RAHEL GETACHEW</b><small>91 1395802</small></span>
+                <span class="amt"><b>+500.00 ETB</b><small>01:23 PM</small></span>
+            </div>
+            <div class="txn" onclick="showToast('MAHLET HAILE')">
+                <img src="assets/avatars/avatar-3.png" alt="">
+                <span class="who"><b>MAHLET HAILE</b><small>91 2957682</small></span>
+                <span class="amt"><b>+20.00 ETB</b><small>01:23 PM</small></span>
             </div>
 
         </div>
@@ -679,8 +857,8 @@
             const slash = document.getElementById('eyeSlash');
 
             if (visible) {
-                amount.textContent = '5,000 BIRR';
-                extra.textContent = 'Eriff Balance: 500 BIRR';
+                amount.textContent = '5,000 ETB';
+                extra.textContent = 'Eriff Balance: 500 ETB';
                 amount.classList.remove('masked');
                 slash.style.display = '';
             } else {
@@ -700,6 +878,16 @@
             clearTimeout(toastTimer);
             toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
         }
+
+        /* Developer note beside the phone: what Send to Bank does from here
+           while the account isn't linked yet (the 3000 Whitelist flow). */
+        (function () {
+            var linked = false;
+            try { linked = sessionStorage.getItem('faydaActivated') === '1'; } catch (e) {}
+            if (!linked && window.prototypeMode && window.prototypeMode.devNote) {
+                window.prototypeMode.devNote('From both Send to Bank entry points, the homepage and the M-PESA bottom nav: after 900 ms on the Send to Bank screen, the link to Fayda popup appears.');
+            }
+        })();
     </script>
 </body>
 </html>

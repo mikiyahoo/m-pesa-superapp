@@ -1,0 +1,103 @@
+﻿17: | **Target Saving** | No, but goal-driven | **7% p.a.** | target ≥ 500 ETB | Pocket + amount + deadline |
+19: | **Group Saving** | Shared pot | **7% p.a.** | target ≥ 500 ETB | Save together; admin-controlled payout |
+38: | `Mini Apps.html` → "M-PESA Saving" feature card (464) or Discover tile (557) | `openPocketMoney()` (`Mini Apps.html:577`) | sets `savingsReturn = 'Mini Apps.html'`, navigates to `Savings.html` |
+53: 6. `paintBell()`, then `?invite` → `inviteePrompt()` after 700 ms, else a stored `pendingNotice` → `notify()` after 700 ms, else `demo` → `demoLeavePrompt()` after 700 ms.
+65: - **One card header everywhere.** `cardHead(kind, right, pct, ringColor, title, chip, pair)` draws the top line of every saving card from the `KIND` map (5171 — colour class, label and icon per product), optionally wrapping the icon in a progress ring or replacing it with the bank + M-PESA pair (`duoProgress`).
+121: | `PARTNERS` | 4704 | `awash → { name: 'AWASH BANK', logo: 'assets/banks logo/awass-bank.png' }` — the only partner |
+122: | `PLANS` | 4710 | 3 mo / 10,000 / 8% · 6 mo / 20,000 / 9% · 9 mo / 30,000 / 9.5% · 12 mo / 50,000 / 10% |
+123: | `PARTNER` / `PARTNER_ORDER` | 4718 | `'awash'` / `[PARTNER]` |
+124: | `ME` | 4722 | `Mikias`, avatar-2, `me: true` |
+125: | `CONTACTS` | 4723 | Beth Obura (c1), Sara Tesfaye (c3), Daniel Bekele (c4), Hana Girma (c5), Yonas Alemu (c6) |
+126: | `LIST_KINDS` | 4986 | the one product order used by the tiles, the filter, the list and the new-saving picker: individual, target, fixed, group |
+127: | `KIND` | 5171 | per-product colour class, card label and icon (target / individual / fixed / group) |
+129: | `TARGET_MIN` | 6520 | `500` |
+130: | `LEAVE_NEEDED` | 7634 | `3` |
+131: | `ACT_MONTHS` | 7962 | `6` |
+132: | `QUESTIONS` | 6463 | the 7 fixed-deposit FAQs |
+133: | `DEMO_GROUP` / `INVITEE` | 7814 / 8194 | `'GS30215547'` (Family Trip) / `'c4'` (Daniel Bekele) |
+142: - one **active** 12-month / 50,000 deposit whose maturity is **210 days** away;
+172: accrued(a)      = principal × rate/100 × elapsed / 365   // 4840  (daily, capped at term)
+182: Σ  sign × amount × 7/100 × days(txn → today) / 365       // sign = −1 for WITHDRAW
+196: `targetsInOrder()` sorts behind-schedule targets **last**; `targetPct()` caps the progress bar at 100%; `targetDaysLeft()` floors the countdown at 0.
+206: - **Pinned balance card** — wrapped in `.home-pin` (markup 4049; CSS ) with `position: sticky; top: 0; z-index: 2` and a white fade (`::after`) so the card stays put while the list scrolls under it and dissolves into the fade.
+210: - **Totals** : `Σ pocket balances + Σ my group shares + Σ live fixed principals`; accrued interest = fixed `accrued` **+** pocket interest; active accounts = pockets + open deposits + open groups. `renderHome()` also renders the fixed pane (4965), so both views are always in step.
+212: - **ACTIVE SAVING ACCOUNTS** header (4082) with a **FILTER** dropdown (`openListPicker` · `toggleListKind` · `renderListPicker`). The label reads `All`, one kind's name, or "N kinds"; cards render in `LIST_KINDS` order regardless of the order the filter was ticked; matured deposits sort after still-locked ones.
+263: - **`emptyState(icon, title, text, plus)`** (5037, CSS ) renders a green art mark — with a small **+** bubble when `plus` is set — a bold title and one short line of copy, centred.
+264: - **`EMPTY`** (5042) holds the copy per kind:
+274: - **`noPocket(kind)`** (5049) picks the icon (`KIND[kind]`, or the wallet mark `WALLET_IC` for `home`) and returns the component with the `+`.
+280: | Savings list, when the visible filter is empty | the single visible kind, else `'home'` | 5032 |
+281: | A product's first page with no accounts | `typeKind` | 5146 |
+282: | Notifications, when nothing has arrived | its own bell art (no `+`) | 8160 |
+284: Two places still use their own blocks on purpose: the **fixed deposit pane** keeps the larger "NO FIXED DEPOSIT YET" card with the lock ring , and **transaction lists** inside accounts use the compact inline "No Transaction" strip (6926 for pockets, 7492 for groups).
+331: - A blocking overlay (`procOverlay`) with rotating step labels: **700 ms per step** (label swap, then tick), completing at `700 × steps + 200 ms`.
+381: Individual and Target are the **same pocket object**; the mode only decides whether a goal is asked for. Rate 7% p.a. (`IND_RATE`), auto-save minimum 50 ETB (`IND_MIN_AUTO`), target minimum 500 ETB (`TARGET_MIN`).
+385: - Fields: **name** (required for target, optional for individual — it then takes the next free "Individual Saving N" via `autoName()`, capped at 10 characters with a live counter), an **automatic-deduction switch** (`toggleIndAuto`) with amount and Daily / Weekly / Monthly (`startLine`, `nextDeduction`), and in target mode a **goal** (≥ 500 ETB) and a **target date**.
+386: - **Date picker** — `openDatePicker` · `renderDatePicker` · `dpSync` / `dpTap` / `dpScrolled` / `dpConfirm`: a three-wheel day / month / year sheet (row height 44, 140 ms snap settle); impossible days clamp to the month's last day (`dpClamp`), the range runs **tomorrow → +60 months** (`dpRange`), quick chips 3 MONTHS / 6 MONTHS / 1 YEAR (`dpQuick`, `quickDate`) sit above a live "N days from today" hint (`byHint`).
+387: - **Validation & hints:** name required in target mode; goal ≥ 500; date required; auto amount ≥ 50 and ≤ wallet — because **the first deduction is taken today** (`deductNow`). `periodsUntil` / `suggested` compute the deduction that reaches the goal on time and say "Reaches your target on time" or "Save X ETB monthly to reach it on time".
+396: - **TRANSACTIONS** with a compact "No Transaction" empty state (6926), and the ⋮ menu (`FAQS` + `CLOSE ACCOUNT`).
+407: - Goal + date with hints: minimum 500, "Already saved X ETB. Pick a higher target." or "Save X ETB monthly to reach it". **SAVE** stays disabled until valid (`saveTarget`).
+427: - Fields: **name** (max 15 characters with a live `n/15` counter), **target** (≥ 500), **target date**, and **at least one member**. I am added automatically as **admin**.
+441: - **TRANSACTIONS** with per-member attribution (`nameOf`) and a compact empty state (7492), plus the leave card whenever a request is live.
+457: - **As the invitee** — `?invite=c4` (sidebar: *"Daniel B – Invited"*) → `inviteePrompt()` after 700 ms:
+547: | **Processing** | `processing(title, steps, then)` | blocking overlay with rotating labelled steps, 700 ms each, then the callback |
+555: | **Physical keyboard** | 8236 | digits type, Backspace deletes, **Enter** continues on the amount screen, **Esc** goes back; ignored inside inputs, sheets, dialogs and while processing |
+610: | `stepHome` | 4030 | Savings home (`paneMine` + `paneFixed`) | — |
+611: | `stepOptin` | 4101 | Activation carousel | — |
+612: | `stepPlans` | 4148 | Choose a lock period | — |
+613: | `stepAmount` | 4161 | Amount (shared: deposit / pocket / group) | — |
+614: | `stepPin` | 4204 | PIN (shared by every journey) | — |
+615: | `stepProcessing` | 4237 | Processing overlay | — |
+616: | `stepConfirm` | 4247 | Review / confirm (also the approve-leave review) | — |
+617: | `stepInfo` | 4263 | Non-terminal receipt | — |
+618: | `stepDone` | 4275 | Terminal receipt | — |
+619: | `stepAccount` | 4288 | Fixed deposit account | ✅ |
+620: | `stepEarly` | 4305 | Early withdrawal (consent) | — |
+621: | `stepPayout` | 4317 | Payout destination | — |
+622: | `stepType` | 4332 | A product's first page | — |
+623: | `stepGrpCreate` | 4355 | Create a group | ✅ |
+624: | `stepGrpEdit` | 4395 | Edit a group (admin) | — |
+625: | `stepGrpPocket` | 4422 | Group account | ✅ |
+626: | `stepIndCreate` | 4435 | Create an individual / target saving | ✅ |
+627: | `stepIndPocket` | 4492 | Pocket account | ✅ |
+628: | `stepIndResult` | 4509 | Deposit / withdraw result | — |
+629: | `stepTgtSet` | 4532 | Set, change or remove a target | — |
+630: | `stepIndRecurring` | 4557 | Recurring transfer (pocket or group) | — |
+631: | `stepActivity` | 4582 | Savings activity chart | — |
+632: | `stepNotes` | 4593 | Notifications | — |
+633: | `stepFaq` | 4605 | FAQs | — |
+655: | `daysBetween` | 4723 | `elapsed` / `accrued` / `projected` |  |
+656: | `fmtDate` / `ddmmyyyy` / `fmtShort` |  | `maskId` | 4851 |
+659: | `loadState` / `save` | 4809 / 4824 | `findAccount` / `startNewDeposit` / `planName` |  |
+665: | `pocketInterest` | 4933 | `openType` / `toggleTypeHidden` | 5061 / 5068 |
+666: | `toggleMineHidden` / `renderHome` | 4940 / 4945 | `duoProgress` / `typeRow` / `renderType` |  |
+667: | `setListFilter` / `toggleListKind` | 4975 / 4980 | `statusChip` | 5149 |
+668: | `openListPicker` / `renderListPicker` | 4990 / 4996 | `cardHead` / `cv` / `depositCard` |  |
+669: | `renderSavingsList` | 5006 | `toggleLocked` / `renderFixedPane` | 5211 / 5216 |
+670: | `emptyState` / `EMPTY` / `noPocket` |  | `maybeNotifyMaturity` | 5277 |
+676: | `openOptin` / `goSlide` | 5290 / 5301 | `askPin` / `paintPin` / `pinPress` |  |
+677: | `optIn` / `activateSavings` | 5322 / 5331 | `pinFill` / `checkPin` / `pinCancel` |  |
+678: | `renderPlans` / `planById` / `choosePlan` |  | `processing` | 5634 |
+679: | `rollShort` / `rollTopUp` | 5392 / 5411 | `stamp` / `newTxnId` / `duo` |  |
+681: | `amountPress` / `amountDelete` | 5452 / 5459 | `copyTxn` / `doneClose` | 5743 / 5748 |
+682: | `paintAmount` / `amountContinue` | 5464 / 5509 | `runOpen` / `viewCurrent` | 5758 / 5792 |
+689: | `openAccount` / `actionBtn` | 5797 / 5811 | `destinations` / `renderPayout` | 6025 / 6030 |
+691: | `checkBalance` / `miniStatement` | 5943 / 5972 | `openDestSheet` / `pickDestSheet` / `pickDest` |  |
+693: | `startRollover` / `runRollover` | 6179 / 6186 | `openMenu` / `closeMenu` | 6345 / 6371 |
+695: | `acceptEarly` / `runEarly` | 6293 / 6298 | `openFaq` / `setFaqTab` / `renderFaq` |  |
+703: | `ordinal` / `dpRange` / `dpClamp` |  | `runIndMove` | 6975 |
+704: | `openDatePicker` / `dpQuick` / `renderDatePicker` |  | `showIndResult` | 6995 |
+705: | `dpSync` / `dpTap` / `dpScrolled` / `dpConfirm` |  | `indResultView` / `indResultDone` | 7018 / 7032 |
+706: | `periodsUntil` / `suggested` | 6665 / 6672 | `openTargetSet` / `paintTargetSet` / `saveTarget` / `removeTarget` |  |
+707: | `targetsInOrder` / `targetPct` / `targetDaysLeft` / `targetChip` |  | `askCloseInd` / `runCloseInd` | 7084 / 7104 |
+716: | `seedGroups` / `findGrp` / `memberById` |  | `openGroup` / `renderGrpPocket` | 7431 / 7437 |
+717: | `memberTotal` / `myShare` / `joined` / `invitedCount` / `membersLine` |  | `showGrpMembers` / `openManageGroup` | 7499 / 7504 |
+718: | `memberInterest` / `leavePayout` / `adminOf` / `fmtPhone` / `grpCanWithdraw` / `avatar` |  | `memberActions` / `askRemoveMember` | 7520 / 7532 |
+719: | `groupCard` | 7275 | `openGrpEdit` / `paintGrpEdit` / `saveGrpEdit` |  |
+720: | `openGroupCreate` / `paintGrpForm` / `removeDraft` |  | `askCloseGroup` / `runCloseGroup` | 7579 / 7594 |
+721: | `openMemberSheet` / `renderMemberSheet` | 7330 / 7337 | `nameOf` / `approvalDots` / `leaveCard` / `showApprovers` |  |
+723: | `grpCreate` / `runGrpCreate` | 7393 / 7404 | `confirmApprove` / `declineLeave` / `completeLeave` |  |
+730: | `savedAt` / `movedIn` / `actSeries` |  | `sms` / `hideSms` | 8100 / 8108 |
+732: | `openSheet` / `closeSheet` | 8068 / 8085 | `renderNotes` / `openNotes` / `markAllRead` |  |
+733: | `inviteePrompt` / `answerInvite` | 8180 / 8199 | `showToast` | 8217 |
+734: | Keyboard handler | 8236 | Start-up block |  |
+750: *Generated from `Savings.html` — 8,293 lines, 24 steps, ~230 functions. All line numbers refer to the revision described above; the function index in §25 is the reliable way to relocate anything if the file changes.*

@@ -124,6 +124,8 @@
 
         .scroll::-webkit-scrollbar { display: none; }
 
+        .pinned { flex-shrink: 0; }
+
         .section-head {
             display: flex;
             justify-content: space-between;
@@ -411,7 +413,7 @@
         }
     </style>
 
-    <script src="assets/prototype-mode.js?v=34"></script>
+    <script src="assets/prototype-mode.js?v=63"></script>
 </head>
 <body>
 
@@ -450,7 +452,8 @@
             </button>
         </div>
 
-        <div class="scroll">
+        <!-- Recently used and highlighted stay put; scrolling starts at Discover more -->
+        <div class="pinned">
 
             <!-- Recently used -->
             <div class="recent" id="recent"></div>
@@ -477,6 +480,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="scroll">
 
             <!-- Discover more -->
             <div class="section-head">
