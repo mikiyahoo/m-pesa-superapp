@@ -126,8 +126,8 @@ All components are in `Global Vouchers.html`; class names below.
 |---|---|---|
 | Mini-app capsule | `.capsule` (`.light` on the green hero) | ••• menu + ◎ close, on every screen |
 | App header | `.bar` | Centred uppercase light title; ← / ✕ left; capsule right |
-| Home hero | `.hero` / `.panel` | Green gradient hero with the header inside it, stacked gift cards, M-PESA balance; white panel overlaps it with a 22px radius |
-| Gift card | `.gc.gc-<key>` via `giftCard(key, label)` | The product as a card: brand wordmark, value, M-PESA seal, watermark. Scales to any width (container units): store tile, featured tile, product hero, success screen, thumbnails |
+| Home hero | `.hero` / `.panel` | Green gradient hero with the header inside it, stacked voucher cards, M-PESA balance; white panel overlaps it with a 22px radius |
+| Voucher card | `.gc.gc-<key>` via `giftCard(key, label)` | The product as a card: brand wordmark, value, M-PESA seal, watermark. Scales to any width (container units): store tile, featured tile, product hero, success screen, thumbnails |
 | Store grid | `.store` / `.tile` (`.wide` = featured) | 2 columns; odd counts lead with a full-width featured card |
 | Ready-to-use strip | `.strip` / `.mini` | Active vouchers, one tap from the home |
 | Buy bar | `.buybar` | Product page footer: total on the left, **Buy now** on the right |

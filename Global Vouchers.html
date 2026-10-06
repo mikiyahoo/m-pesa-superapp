@@ -126,7 +126,7 @@
         .capsule.light button { color: #ffffff; }
         .capsule.light i { background: rgba(255, 255, 255, 0.34); }
 
-        /* ---------- Gift card visual (the product, as the customer will picture it) ---------- */
+        /* ---------- Voucher card visual (the product, as the customer will picture it) ---------- */
         .gc {
             position: relative;
             overflow: hidden;
@@ -183,7 +183,7 @@
         .hero-txt { flex: 1; min-width: 0; }
         .hero-txt small { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 10px; background: rgba(255, 255, 255, 0.16); font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; }
         .hero-txt small svg { width: 12px; height: 12px; stroke: #ffffff; stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .hero-txt h2 { margin-top: 0; font-size: 23px; font-weight: 600; line-height: 1.15; }
+        .hero-txt h2 { margin-top: 0; font-size: 19px; font-weight: 800; line-height: 1.15; }
         .hero-txt p { margin-top: 6px; font-size: 13px; line-height: 1.35; opacity: 0.9; }
         .stack { position: relative; width: 132px; height: 118px; flex-shrink: 0; }
         .stack .gc { position: absolute; width: 98px; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3); }
@@ -247,6 +247,23 @@
         /* ••• menu */
         .menu-row { display: flex; align-items: center; gap: 14px; width: 100%; padding: 13px 4px; border: 0; border-bottom: 1px solid var(--line); background: none; font-size: 15px; color: var(--ink); text-align: left; cursor: pointer; }
         .menu-row:last-of-type { border-bottom: 0; }
+        /* terms & conditions page */
+        .terms { padding: 10px 16px 20px 16px; }
+        .term { position: relative; display: flex; gap: 14px; padding: 12px 12px; margin-bottom: 4px; border-radius: 14px; }
+        .term .n { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--ink); }
+        .term b { display: block; font-size: 16px; font-weight: 700; color: var(--ink); margin: 4px 0 4px 0; }
+        .term p { font-size: 13px; line-height: 1.5; color: var(--ink-2); margin: 0; }
+        .term .hl { display: inline; white-space: nowrap; padding: 1px 6px; border-radius: 6px; background: #FDECEC; color: var(--red); font-weight: 600; }
+        .term.warn { background: #FDF1F1; padding-left: 12px; }
+        .term.warn .n { background: #ffffff; }
+        .term .alert { width: 22px; height: 22px; flex-shrink: 0; margin-top: 4px; margin-right: -4px; border-radius: 50%; background: var(--red); color: #ffffff; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .term-help { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 14px; padding: 14px; border: 0; border-radius: 14px; background: var(--surface); font-family: inherit; text-align: left; cursor: pointer; }
+        .term-help .ic { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; background: #FDECEC; display: flex; align-items: center; justify-content: center; }
+        .term-help .ic svg { width: 20px; height: 20px; stroke: var(--red); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .term-help .t { flex: 1; font-size: 14px; color: var(--ink); line-height: 1.35; }
+        .term-help .t b { display: block; font-size: 15px; font-weight: 700; }
+        .term-help .t small { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+        .term-help .chev { width: 18px; height: 18px; flex-shrink: 0; stroke: #6a6a6a; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
         .mini-id { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
         .mini-id .logo { width: 44px; height: 44px; border-radius: 12px; background: var(--green-dark); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .mini-id .logo svg { width: 24px; height: 24px; stroke: #ffffff; stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
@@ -370,7 +387,7 @@
             text-align: center;
             cursor: pointer;
         }
-        .denom b { display: block; font-size: 22px; font-weight: 600; color: var(--ink); }
+        .denom b { display: block; font-size: 16px; font-weight: 600; white-space: nowrap; color: var(--ink); }
         .denom small { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
         .denom.on { border-color: var(--green); background: #F3FBF6; box-shadow: 0 0 0 3px rgba(47, 197, 109, 0.14); }
         .denom.on::after {
@@ -790,6 +807,15 @@
             <div class="scroll" id="helpBody"></div>
         </section>
 
+        <section class="step" id="stepTerms">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h1>Terms &amp; conditions</h1>
+                <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>
+            </div>
+            <div class="scroll" id="termsBody"></div>
+        </section>
+
         <!-- Bottom navigation: shown on the three tab roots only -->
         <nav class="tabs show" id="tabs">
             <button class="tab on" data-tab="stepHome" onclick="goTab('stepHome')">
@@ -855,31 +881,31 @@
         const PRODUCTS = {
             netflix: {
                 name: 'Netflix', category: 'Streaming', prefix: 'NFLX', tagline: 'Watch your favorite shows and movies',
-                desc: 'Pay for your Netflix plan with a gift card to watch your favorite movies.',
-                denoms: [10, 20, 30], unavailable: [30],
+                desc: 'Pay for your Netflix plan with a voucher to watch your favorite movies.',
+                denoms: [10, 20, 30], plans: ['Basic', 'Standard', 'Premium'], unavailable: [30],
                 steps: ['Go to Netflix', 'Sign in to your account', 'Enter your code and enjoy!'],
                 link: ['Netflix Ethiopia - Watch TV Shows Online, Watch Movies Online', 'https://www.netflix.com/et/']
             },
             googleplay: {
                 name: 'Google Play', category: 'Apps & games', prefix: 'GPLY', tagline: 'Get your favorite apps and games',
-                desc: 'Top up your Google Play balance with a gift card to get your favorite apps and games.',
-                denoms: [10, 20, 30], unavailable: [],
+                desc: 'Top up your Google Play balance with a voucher to get your favorite apps and games.',
+                denoms: [10, 20, 30], plans: ['Mini', 'Plus', 'Max'], unavailable: [],
                 steps: ['Go to Google Play', 'Sign in to your Google account', 'Enter your code and enjoy!'],
-                link: ['Google Play - Redeem a gift code', 'https://play.google.com/redeem']
+                link: ['Google Play - Redeem a voucher code', 'https://play.google.com/redeem']
             },
             pubg: {
                 name: 'PUBG Mobile', category: 'Gaming', prefix: 'PUBG', tagline: 'Top up your PUBG',
-                desc: 'Top up your PUBG Mobile account with a gift card to unlock skins, outfits and more.',
-                denoms: [10, 20, 30], unavailable: [],
+                desc: 'Top up your PUBG Mobile account with a voucher to unlock skins, outfits and more.',
+                denoms: [10, 20, 30], plans: ['60 UC', '325 UC', '660 UC'], unavailable: [],
                 steps: ['Go to the PUBG Mobile redeem page', 'Sign in with your player ID', 'Enter your code and enjoy!'],
                 link: ['Midasbuy - PUBG Mobile redeem', 'https://www.midasbuy.com/']
             },
             spotify: {
                 name: 'Spotify', category: 'Music', prefix: 'SPTF', tagline: 'Enjoy endless music',
-                desc: 'Pay for Spotify Premium with a gift card to enjoy endless music.',
-                denoms: [10, 20, 30], unavailable: [],
+                desc: 'Pay for Spotify Premium with a voucher to enjoy endless music.',
+                denoms: [10, 20, 30], plans: ['Individual', 'Duo', 'Family'], unavailable: [],
                 steps: ['Go to Spotify', 'Sign in to your account', 'Enter your code and enjoy!'],
-                link: ['Spotify - Redeem your gift card', 'https://www.spotify.com/redeem/']
+                link: ['Spotify - Redeem your voucher', 'https://www.spotify.com/redeem/']
             }
         };
         const ORDER = ['netflix', 'googleplay', 'pubg', 'spotify'];
@@ -898,7 +924,7 @@
             pubg: '<span class="gw gw-pubg">PUBG<small>MOBILE</small></span>',
             spotify: '<span class="gw gw-spotify">' + MARK.spotify + 'Spotify</span>'
         };
-        /* the gift card: wordmark, value, M-PESA seal. Scales to any width (container units). */
+        /* the voucher card: wordmark, value, M-PESA seal. Scales to any width (container units). */
         /* cover photos (supplied artwork); products without one keep the drawn card */
         const COVER = {
             netflix: ['assets/NETFLIX.jpg', 'center'],
@@ -908,7 +934,7 @@
 
         function giftCard(key, label, tagline) {
             const left = tagline != null ? (tagline ? '<span class="gc-tag">' + tagline + '</span>' : '<span></span>')
-                : '<span><small>GIFT CARD</small><b>' + label + '</b></span>';
+                : '<span><small>VOUCHER</small><b>' + label + '</b></span>';
             const cover = COVER[key]
                 ? '<img class="cover" src="' + COVER[key][0] + '" alt="" style="object-position:' + COVER[key][1] + '"><span class="shade"></span>'
                 : '<span class="wm">' + MARK[key] + '</span><span class="shine"></span>';
@@ -938,7 +964,9 @@
         function newRef() { return 'MPV' + rand(8, ALNUM); }                      // unique transaction reference
         function newCode(p) { return PRODUCTS[p].prefix + '-' + rand(4, ALNUM) + '-' + rand(4, ALNUM); }
         function maskCode(c) { const parts = c.split('-'); return parts[0] + '-••••-' + parts[2]; }
-        function voucherName(v) { return PRODUCTS[v.product].name + ' $' + v.usd; }
+        /* the package name stands for the value: customers never see dollars */
+        function pk(key, usd) { const P = PRODUCTS[key]; return P.plans[P.denoms.indexOf(usd)]; }
+        function voucherName(v) { return PRODUCTS[v.product].name + ' ' + pk(v.product, v.usd); }
 
         /* ================================================================
            State. Demo scenarios come from the sidebar (?gv=...):
@@ -956,7 +984,7 @@
             const vouchers = [
                 { id: 'v1', product: 'netflix', usd: 10, code: 'NFLX-7K2M-9QXA', bought: v1.toISOString(), expires: addMonths(v1, EXPIRY_MONTHS).toISOString(), status: 'active', ref: 'MPV4K7Q2X9A', sms: 'sent' },
                 { id: 'v2', product: 'googleplay', usd: 20, code: 'GPLY-3H8D-QW2L', bought: v2.toISOString(), expires: addMonths(v2, EXPIRY_MONTHS).toISOString(), status: 'redeemed', ref: 'MPV8RT3MZ2C', sms: 'sent' },
-                { id: 'v3', product: 'pubg', usd: 10, code: 'PUBG-9X2C-71MN', bought: v3.toISOString(), expires: addMonths(v3, EXPIRY_MONTHS).toISOString(), status: 'expired', ref: 'MPV2NC6PL8D', sms: 'sent' }
+                { id: 'v3', product: 'pubg', usd: 10, code: 'PUBG-9X2C-71MN', bought: v3.toISOString(), expires: addMonths(v3, EXPIRY_MONTHS).toISOString(), status: 'redeemed', ref: 'MPV2NC6PL8D', sms: 'sent' }
             ];
             const tx = vouchers.map(v => ({ ref: v.ref, product: v.product, usd: v.usd, on: v.bought, status: 'success', voucher: v.id }));
             tx.push({ ref: 'MPV7DQ4KW1E', product: 'pubg', usd: 20, on: f1.toISOString(), status: 'failed', reason: 'payment' });
@@ -1028,8 +1056,31 @@
                 + '<span><b>Global Vouchers</b><small>M-PESA mini app &middot; by Safaricom</small></span></div>'
                 + row('<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6"/><path d="M12 16.8v.1"/>', 'Help &amp; support', 'openHelp()')
                 + row('<path d="m12 3.8 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.9l5.8-.8L12 3.8Z"/>', 'Add to favourites', "showToast('Added to your favourite mini apps')")
+                + row('<path d="M6.5 3.5h8l4 4v13h-12Z"/><path d="M14.5 3.5v4h4M9.5 12h6M9.5 15.5h6"/>', 'Terms &amp; conditions', 'openTerms()')
                 + row('<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>', 'Share', "showToast('Link copied')");
             document.getElementById('sheet').classList.add('show');
+        }
+
+        /* terms & conditions (sample wording, to be replaced by Legal) */
+        function openTerms() {
+            /* [title, text, warn?] : the warning term sits in a red card */
+            const T = [
+                ['Who provides vouchers', 'Vouchers are issued by the brand through our partner, not by M-PESA directly. M-PESA sells them and takes payment.'],
+                ['Prices and fees', 'Prices are shown in ETB and include a <span class="hl">' + SERVICE_FEE + ' ETB service fee</span>. The total is shown before you pay.'],
+                ['Your code', 'Your code is sent by SMS and kept in My Vouchers. Keep it private: anyone with the code can use it.'],
+                ['No refunds after issue', 'A voucher can\u2019t be cancelled or refunded once the code is issued. If a code can\u2019t be issued, your money is returned to M-PESA automatically.', true],
+                ['Redeeming', 'Codes are redeemed on the brand\u2019s own site or app and follow that brand\u2019s rules.'],
+                ['Help', 'For any problem, call the M-PESA Call Center on 127 with your transaction ID.']
+            ];
+            document.getElementById('termsBody').innerHTML = '<div class="terms">'
+                + T.map((t, i) => '<div class="term' + (t[2] ? ' warn' : '') + '">'
+                    + (t[2] ? '<span class="alert">!</span>' : '') + '<span class="n">' + (i + 1) + '</span>'
+                    + '<div><b>' + t[0] + '</b><p>' + t[1] + '</p></div></div>').join('')
+                + '<button class="term-help" onclick="showToast(\'Calling M-PESA Call Center\')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 4.5h3.5l1.5 4-2 1.3a10 10 0 0 0 6.2 6.2l1.3-2 4 1.5V19a1.5 1.5 0 0 1-1.5 1.5A15.5 15.5 0 0 1 3.5 6 1.5 1.5 0 0 1 5 4.5Z"/></svg></span>'
+                + '<span class="t"><b>Need help?</b>Call M-PESA Call Center on 127<small>Please have your transaction ID ready.</small></span>'
+                + '<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>'
+                + '</div>';
+            go('stepTerms');
         }
 
         /* developer notes beside the phone, for the screens where a business rule matters */
@@ -1037,8 +1088,8 @@
             stepProduct: 'Out-of-stock or unavailable denominations are shown but cannot be selected (BRD: unavailable vouchers are not purchasable). Availability comes from Pincoon.',
             stepReview: 'Service fee and total must be visible before confirmation (BRD). Wallet balance is validated here, before the PIN, so an insufficient balance never reaches the payment step.',
             stepPin: 'Payment and voucher issuance are separate stages. A purchase is only successful once Pincoon issues the voucher; if the customer was debited and issuance fails, the amount is reversed automatically.',
-            stepVoucher: 'Codes are masked in lists and only revealed on the voucher screen of the buyer (BRD: codes accessible only to the purchaser). Whether revealing also needs the M-PESA PIN is an open question.',
-            stepTx: 'Transactions = what I paid for (amounts, status, reference). My Vouchers = what I own (codes, expiry, redemption). Codes are not shown in transaction lists.'
+            stepVoucher: 'Codes are masked in lists and only revealed on the voucher screen of the buyer (BRD: codes accessible only to the purchaser). Viewing a code from My Vouchers or Transactions asks for the M-PESA PIN; the code is hidden again each time the voucher is reopened.',
+            stepTx: 'Transactions = what I paid for (amounts, status, reference). My Vouchers = what I own (codes, purchase date, redemption). Codes are not shown in transaction lists.'
         };
         function note(id) {
             if (window.prototypeMode && window.prototypeMode.devNote) window.prototypeMode.devNote(NOTES[id] || '');
@@ -1067,11 +1118,11 @@
             document.getElementById('homeBody').innerHTML = '<div class="hero"><img class="pat" src="assets/M-PESA-pattern.svg" alt="">'
                 + '<div class="hero-bar"><button class="icon-btn on-dark" onclick="leaveApp()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button><h1>Global Vouchers</h1>' + CAPSULE.replace('class="capsule"', 'class="capsule light"') + '</div>'
                 + '<div class="hero-in"><div class="hero-txt">'
-                + '<h2>Gift cards for the apps you love</h2><p>Pay with M-PESA.</p></div>'
+                + '<h2>VOUCHERS FOR THE APPS YOU LOVE</h2><p>Pay with M-PESA.</p></div>'
                 + '<div class="stack">' + giftCard('spotify', null, '') + giftCard('pubg', null, '') + giftCard('netflix', null, '') + '</div></div>'
                 + '</div>'
                 + '<div class="panel">'
-                + '<div class="section" style="margin-top:4px"><h2>Gift cards</h2></div>'
+                + '<div class="section" style="margin-top:4px"><h2>Vouchers</h2></div>'
                 + '<div class="chips">' + cats.map(c => '<button class="chip' + (homeCat === c ? ' on' : '') + '" onclick="setHomeCat(\'' + c + '\')">' + c + '</button>').join('') + '</div>'
                 + (catalogueReady
                     /* the first card is featured (wide, POPULAR); if the rest leave one alone, it goes wide too */
@@ -1120,18 +1171,18 @@
         function renderProduct() {
             const P = PRODUCTS[cur.product];
             document.getElementById('productTitle').textContent = P.name;
-            document.getElementById('productBody').innerHTML = '<div class="p-stage">' + giftCard(cur.product, cur.usd ? '$' + cur.usd : '$' + P.denoms[0]) + '</div>'
-                + '<div class="p-hero title-row" style="margin-top:4px"><span><b>' + P.name + ' gift card</b></span>'
+            document.getElementById('productBody').innerHTML = '<div class="p-stage">' + giftCard(cur.product, pk(cur.product, cur.usd || P.denoms[0])) + '</div>'
+                + '<div class="p-hero title-row" style="margin-top:4px"><span><b>' + P.name + ' voucher</b></span>'
                 + '</div>'
                 + '<p class="p-desc" style="margin-top:6px">' + P.desc + '</p>'
-                + '<div class="section"><h2>Choose a value</h2></div>'
+                + '<div class="section"><h2>Choose a package</h2></div>'
                 + '<div class="denoms">' + P.denoms.map(d => {
                     const off = P.unavailable.includes(d);
                     return '<button class="denom' + (cur.usd === d ? ' on' : '') + '"' + (off ? ' disabled' : ' onclick="pickDenom(' + d + ')"') + '>'
-                        + '<b>$' + d + '</b><small>' + (off ? 'Unavailable' : whole(priceOf(d)) + ' ETB') + '</small></button>';
+                        + '<b>' + pk(cur.product, d) + '</b><small>' + (off ? 'Unavailable' : whole(priceOf(d)) + ' ETB') + '</small></button>';
                 }).join('') + '</div>'
                 + (cur.usd
-                    ? '<div class="you-pay"><span>$' + cur.usd + ' gift card</span><b>' + money(totalOf(cur.usd)) + ' ETB</b></div>'
+                    ? '<div class="you-pay"><span>' + P.name + ' ' + pk(cur.product, cur.usd) + '</span><b>' + money(totalOf(cur.usd)) + ' ETB</b></div>'
                     : '')
                 + '<div class="section"><h2>Redemption guide</h2></div>' + guideHtml(cur.product)
                 + '<div style="height:16px"></div>';
@@ -1148,30 +1199,29 @@
         function renderReview() {
             const P = PRODUCTS[cur.product], price = priceOf(cur.usd), total = totalOf(cur.usd);
             const short = total - S.wallet;
-            const expires = addMonths(new Date(), EXPIRY_MONTHS);
             let html = '<div class="card" style="margin-top:6px">'
-                + '<div class="v-sum">' + mark(cur.product) + '<span><b>' + P.name + ' voucher</b><small>Voucher value $' + cur.usd + '.00</small></span></div>'
+                + '<div class="v-sum">' + mark(cur.product) + '<span><b>' + P.name + ' voucher</b><small>' + pk(cur.product, cur.usd) + ' package</small></span></div>'
                 + '<div class="rows">'
-                + '<div class="row"><span>Voucher value</span><b>$' + money(cur.usd) + '</b></div>'
+                + '<div class="row"><span>Voucher type</span><b>' + P.name + ' ' + pk(cur.product, cur.usd) + '</b></div>'
                 + '<div class="row"><span>Voucher price</span><b>' + money(price) + ' ETB</b></div>'
                 + '<div class="row"><span>Service fee</span><b>' + money(SERVICE_FEE) + ' ETB</b></div>'
                 + '<div class="row total"><span>Total to pay</span><b>' + money(total) + ' ETB</b></div>'
                 + '</div></div>';
             if (short > 0) {
                 html += '<div class="banner err"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg><div>'
-                    + '<b>Not enough money in M-PESA</b>Add money at any M-PESA agent, or choose a lower value.'
+                    + '<b>Not enough money in M-PESA</b>Add money at any M-PESA agent, or choose a smaller package.'
                     + '<div class="short"><div><span>Available balance</span><b>' + money(S.wallet) + ' ETB</b></div>'
                     + '<div><span>Required</span><b>' + money(total) + ' ETB</b></div>'
                     + '<div><span>Short by</span><b>' + money(short) + ' ETB</b></div></div></div></div>';
             }
             /* payment and delivery: one card per fact */
-            html += '<div class="section"><h2>Payment &amp; delivery</h2></div>'
+            html += '<div class="section"><h2>Payment details</h2></div>'
+                + '<div class="fact-card"><span class="ic"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.2"/><path d="M10.5 18.5h3"/></svg></span>'
+                + '<span class="t"><b>Payer phone number</b><small>' + ME.phone + '</small></span></div>'
                 + '<div class="fact-card"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12.5" rx="2"/><path d="M3.5 10h17"/></svg></span>'
                 + '<span class="t"><b>Pay from M-PESA</b><small>Available balance ' + money(S.wallet) + ' ETB</small></span></div>'
-                + '<div class="fact-card"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/></svg></span>'
-                + '<span class="t"><b>Code delivery</b><small>SMS to ' + ME.phone + ' and in My Vouchers</small></span></div>'
                 + '<div class="fact-card"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>'
-                + '<span class="t"><b>Expires ' + fmtDate(expires) + '</b><small>Redeem the code before this date</small></span></div>'
+                + '<span class="t"><b>Purchased on ' + fmtDate(new Date()) + '</b><small>Today, when you pay</small></span></div>'
                 + '<div style="height:12px"></div>';
             document.getElementById('reviewBody').innerHTML = html;
 
@@ -1179,9 +1229,9 @@
             const lower = P2.denoms.filter(d => d < cur.usd && !P2.unavailable.includes(d) && totalOf(d) <= S.wallet);
             document.getElementById('reviewFoot').innerHTML = short > 0
                 ? (lower.length
-                    ? '<button class="btn" onclick="pickLower(' + lower[lower.length - 1] + ')">Choose $' + lower[lower.length - 1] + ' instead</button>'
+                    ? '<button class="btn" onclick="pickLower(' + lower[lower.length - 1] + ')">Choose ' + pk(cur.product, lower[lower.length - 1]) + ' instead</button>'
                     : '<button class="btn" onclick="backToHome()">Back to vouchers</button>')
-                  + '<button class="btn text" onclick="back()">Change value</button>'
+                  + '<button class="btn text" onclick="back()">Change package</button>'
                 : '<button class="btn" onclick="toPin()">Pay<svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>';
         }
 
@@ -1191,12 +1241,12 @@
         /* ================================================================
            PIN (0000 = incorrect, for the demo)
            ================================================================ */
-        let pin = '';
+        let pin = '', pinFor = null;   // pinFor = voucher id when the PIN unlocks a code
         function toPin() {
-            pin = '';
+            pin = ''; pinFor = null;
             paintPin();
             document.getElementById('pinErr').textContent = '';
-            document.getElementById('pinSum').innerHTML = '<div class="pin-row"><b>VOUCHER</b>' + PRODUCTS[cur.product].name + ' $' + cur.usd + '</div>'
+            document.getElementById('pinSum').innerHTML = '<div class="pin-row"><b>VOUCHER</b>' + PRODUCTS[cur.product].name + ' ' + pk(cur.product, cur.usd) + '</div>'
                 + '<div class="pin-row"><b>AMOUNT</b>' + money(totalOf(cur.usd)) + ' ETB</div>';
             go('stepPin');
         }
@@ -1218,9 +1268,10 @@
                 setTimeout(paintPin, 350);
                 return;
             }
+            if (pinFor) { const id = pinFor; pinFor = null; pin = ''; revealed[id] = true; back(); return; }
             startPurchase();
         }
-        function cancelPin() { pin = ''; back(); }
+        function cancelPin() { pin = ''; pinFor = null; back(); }
         /* the fingerprint stands in for a correct PIN, as in Savings */
         function pinFill() { pin = '1234'; paintPin(); setTimeout(checkPin, 320); }
 
@@ -1288,7 +1339,7 @@
             document.getElementById('resultBody').innerHTML = '<div class="result">'
                 + '<div class="badge err"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg></div>'
                 + '<h3>Payment didn’t go through</h3>'
-                + '<p>Your ' + P.name + ' $' + purchase.usd + ' voucher wasn’t bought. <b>No money was taken</b> from your M-PESA.</p></div>'
+                + '<p>Your ' + P.name + ' ' + pk(purchase.product, purchase.usd) + ' voucher wasn’t bought. <b>No money was taken</b> from your M-PESA.</p></div>'
                 + factsHtml([['Amount', money(purchase.total) + ' ETB'], ['Status', '<span class="st failed">Not charged</span>'], ['Date', fmtDate(new Date(purchase.on)) + ', ' + fmtTime(new Date(purchase.on))], refRow(purchase.ref)])
                 + supportLine();
             document.getElementById('resultFoot').innerHTML = '<button class="btn" onclick="retry()">Try again</button><button class="btn ghost" onclick="backToHome()">Back to vouchers</button>';
@@ -1305,7 +1356,7 @@
             document.getElementById('resultBody').innerHTML = '<div class="result">'
                 + '<div class="badge warn"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/></svg></div>'
                 + '<h3>Your money has been returned</h3>'
-                + '<p>We took your payment but couldn’t create your ' + P.name + ' $' + purchase.usd + ' voucher, so the full <b>' + money(purchase.total) + ' ETB</b> was returned to your M-PESA.</p></div>'
+                + '<p>We took your payment but couldn’t create your ' + P.name + ' ' + pk(purchase.product, purchase.usd) + ' voucher, so the full <b>' + money(purchase.total) + ' ETB</b> was returned to your M-PESA.</p></div>'
                 + '<div class="tl">'
                 + '<div class="tl-row g"><i><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4 8-9"/></svg></i><span><b>Payment received</b><small>' + money(purchase.total) + ' ETB &middot; ' + fmtTime(when) + '</small></span></div>'
                 + '<div class="tl-row r"><i><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg></i><span><b>Voucher couldn’t be issued</b><small>The provider didn’t return a code</small></span></div>'
@@ -1316,7 +1367,7 @@
             document.getElementById('resultFoot').innerHTML = '<button class="btn" onclick="backToHome()">Done</button><button class="btn text" onclick="retry()">Try another value</button>';
             stack = ['stepHome', 'stepResult'];
             show('stepResult');
-            notify('M-PESA', 'Your ' + money(purchase.total) + ' ETB for ' + P.name + ' $' + purchase.usd + ' was refunded. Ref ' + purchase.ref + '.');
+            notify('M-PESA', 'Your ' + money(purchase.total) + ' ETB for ' + P.name + ' ' + pk(purchase.product, purchase.usd) + ' was refunded. Ref ' + purchase.ref + '.');
         }
 
         function voucherReady() {
@@ -1342,7 +1393,7 @@
             document.getElementById('resultFoot').innerHTML = '<button class="btn" onclick="backToHome()">Done</button><button class="btn text" onclick="openVoucher(\'' + v.id + '\', true)">View in My Vouchers</button>';
             stack = ['stepHome', 'stepResult'];
             show('stepResult');
-            if (smsOk) setTimeout(() => notify('M-PESA', 'Your ' + P.name + ' $' + v.usd + ' voucher code is ' + v.code + '. Expires ' + fmtDate(new Date(v.expires)) + '. Ref ' + v.ref + '.'), 500);
+            if (smsOk) setTimeout(() => notify('M-PESA', 'Your ' + P.name + ' ' + pk(v.product, v.usd) + ' voucher code is ' + v.code + '. Ref ' + v.ref + '.'), 500);
         }
 
         function retry() { renderProduct(); stack = ['stepHome', 'stepProduct']; show('stepProduct'); }
@@ -1355,30 +1406,38 @@
         let revealed = {};
         function ticketHtml(v, open) {
             const P = PRODUCTS[v.product], shown = open || revealed[v.id], live = v.status === 'active';
-            const exp = new Date(v.expires);
             return '<div class="ticket"><div class="top">' + mark(v.product)
-                + '<span><b>' + P.name + ' $' + v.usd + '</b><small>' + P.category + ' voucher</small></span>'
-                + '<span class="st ' + v.status + '">' + v.status + '</span></div>'
+                + '<span><b>' + P.name + ' ' + pk(v.product, v.usd) + '</b><small>' + P.category + ' voucher</small></span>'
+                + '<span class="st ' + v.status + '">' + (v.status === 'redeemed' ? 'used' : v.status) + '</span></div>'
                 + '<div class="perf"></div>'
                 + '<div class="code"><small>YOUR VOUCHER CODE</small>'
                 + '<div class="code-line"><span class="' + (shown ? '' : 'masked') + '">' + (shown ? v.code : maskCode(v.code)) + '</span>'
                 + (shown
                     ? '<span class="code-acts"><button onclick="copyText(\'' + v.code + '\', \'Code copied\')"><svg viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="12" rx="2"/><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/></svg>COPY CODE</button>' + '<button class="soft" onclick="shareCode(\'' + v.id + '\')"><svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg>SHARE</button></span>'
-                    : '<span class="code-acts"><button class="soft" onclick="reveal(\'' + v.id + '\')"><svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3"/></svg>SHOW CODE</button>' + '<button class="soft" onclick="shareCode(\'' + v.id + '\')"><svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg>SHARE</button></span>')
+                    : '<span class="code-acts"><button onclick="reveal(\'' + v.id + '\')"><svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3"/></svg>VIEW CODE</button></span>')
                 + '</div>'
                 + '<p class="exp"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>'
-                + (v.status === 'expired' ? 'Expired on <b>' + fmtDate(exp) + '</b>' : v.status === 'redeemed' ? 'Redeemed &middot; was valid until <b>' + fmtDate(exp) + '</b>' : 'Expires on <b>' + fmtDate(exp) + '</b>')
+                + 'Purchased on <b>' + fmtDate(new Date(v.bought)) + '</b>'
                 + '</p></div></div>';
         }
         /* share the code through the phone's share sheet (copies a message where there isn't one) */
         function shareCode(id) {
             const v = S.vouchers.find(x => x.id === id);
-            const text = 'My ' + voucherName(v) + ' voucher code: ' + v.code + ' (expires ' + fmtDate(new Date(v.expires)) + ')';
+            const text = 'My ' + voucherName(v) + ' voucher code: ' + v.code;
             if (navigator.share) { navigator.share({ title: voucherName(v) + ' voucher', text: text }).catch(() => {}); return; }
             copyText(text, 'Code copied to share');
         }
 
-        function reveal(id) { revealed[id] = true; renderVoucher(); }
+        /* viewing a code asks for the M-PESA PIN first */
+        function reveal(id) {
+            const v = S.vouchers.find(x => x.id === id);
+            pin = ''; pinFor = id;
+            paintPin();
+            document.getElementById('pinErr').textContent = '';
+            document.getElementById('pinSum').innerHTML = '<div class="pin-row"><b>VOUCHER</b>' + voucherName(v) + '</div>'
+                + '<div class="pin-row">Enter your PIN to view the code</div>';
+            go('stepPin');
+        }
 
         /* ================================================================
            Tab 2 - My Vouchers: what I own
@@ -1392,14 +1451,14 @@
             const list = S.vouchers.filter(v => mineFilter === 'all' || v.product === mineFilter);
             const item = v => '<button class="item' + (v.status === 'active' ? '' : ' dim') + '" onclick="openVoucher(\'' + v.id + '\')">' + mark(v.product)
                 + '<span class="t"><b>' + voucherName(v) + '</b>'
-                + '<small>' + (v.status === 'active' ? 'Expires ' + fmtDate(new Date(v.expires)) : v.status === 'expired' ? 'Expired ' + fmtDate(new Date(v.expires)) : 'Bought ' + fmtDate(new Date(v.bought))) + '</small></span>'
-                + '<span class="r"><span class="st ' + v.status + '">' + v.status + '</span></span></button>';
+                + '<small>' + 'Purchased on ' + fmtDate(new Date(v.bought)) + '</small></span>'
+                + '<span class="r"><span class="st ' + v.status + '">' + (v.status === 'redeemed' ? 'used' : v.status) + '</span></span></button>';
             const active = list.filter(v => v.status === 'active'), past = list.filter(v => v.status !== 'active');
             document.getElementById('mineBody').innerHTML = !S.vouchers.length
                 ? emptyHtml('<path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/>',
-                    'No vouchers yet', 'Vouchers you buy are kept here, with their codes and expiry dates.', '<button class="btn" onclick="backToHome()">Browse vouchers</button>')
+                    'No vouchers yet', 'Vouchers you buy are kept here, with their codes and purchase dates.', '<button class="btn" onclick="backToHome()">Browse vouchers</button>')
                 : (active.length ? '<p class="list-head">Ready to use</p><div class="group-card">' + active.map(item).join('') + '</div>' : '')
-                  + (past.length ? '<p class="list-head" style="margin-top:16px">Used &amp; expired</p><div class="group-card">' + past.map(item).join('') + '</div>' : '')
+                  + (past.length ? '<p class="list-head" style="margin-top:16px">Used codes</p><div class="group-card">' + past.map(item).join('') + '</div>' : '')
                   + '<div style="height:12px"></div>';
             paintCount();
         }
@@ -1410,6 +1469,7 @@
         function openVoucher(id, fromResult) {
             curVoucher = id;
             if (fromResult) { revealed[id] = true; stack = ['stepMine', 'stepVoucher']; renderVoucher(); show('stepVoucher'); return; }
+            delete revealed[id];
             renderVoucher();
             go('stepVoucher');
         }
@@ -1420,7 +1480,7 @@
             document.getElementById('voucherBody').innerHTML = ticketHtml(v, false)
                 + (v.sms === 'failed' && v.status === 'active' ? '<div class="banner warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg><div><b>SMS not delivered</b>Your code is safe here. You can resend it by SMS below.</div></div>' : '')
                 + '<button class="redeem-link" onclick="openGuide(\'' + v.product + '\')"><span>How to redeem<small>' + PRODUCTS[v.product].steps.length + ' quick steps</small></span><span class="info-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M12 11v5"/><circle cx="12" cy="7.9" r="1.1" class="dot"/></svg></span></button>'
-                + factsHtml([['Voucher value', '$' + money(v.usd)], ['Paid', money(totalOf(v.usd)) + ' ETB'], ['Bought', fmtDate(new Date(v.bought)) + ', ' + fmtTime(new Date(v.bought))], refRow(v.ref)])
+                + factsHtml([['Voucher type', voucherName(v)], ['Paid', money(totalOf(v.usd)) + ' ETB'], ['Purchased on', fmtDate(new Date(v.bought)) + ', ' + fmtTime(new Date(v.bought))], refRow(v.ref)])
                 + (tx ? '<p style="margin:12px 16px 0 16px;text-align:center"><a href="#" onclick="openTx(\'' + tx.ref + '\');return false;" style="font-size:13px;color:var(--green-dark);font-weight:600">View payment details</a></p>' : '')
                 + '<div style="height:12px"></div>';
             document.getElementById('voucherFoot').innerHTML = v.status === 'active'
@@ -1457,7 +1517,7 @@
                 closeSheet();
                 if (document.getElementById('stepVoucher').classList.contains('active')) renderVoucher();
                 showToast('SMS sent to ' + ME.phone);
-                setTimeout(() => notify('SMS', 'Your ' + voucherName(v) + ' voucher code is ' + v.code + '. Expires ' + fmtDate(new Date(v.expires)) + '.'), 400);
+                setTimeout(() => notify('SMS', 'Your ' + voucherName(v) + ' voucher code is ' + v.code + '.'), 400);
             }, 1300);
         }
 
@@ -1488,7 +1548,7 @@
                     const d = new Date(t.on);
                     const s = txStatus(t);
                     return '<button class="item" onclick="openTx(\'' + t.ref + '\')">' + mark(t.product)
-                        + '<span class="t"><b>' + PRODUCTS[t.product].name + ' $' + t.usd + '</b><small>' + fmtDate(d) + ', ' + fmtTime(d) + '</small></span>'
+                        + '<span class="t"><b>' + PRODUCTS[t.product].name + ' ' + pk(t.product, t.usd) + '</b><small>' + fmtDate(d) + ', ' + fmtTime(d) + '</small></span>'
                         + '<span class="r"><b>' + (t.status === 'success' ? '-' : '') + whole(totalOf(t.usd)) + ' ETB</b><span class="st ' + s[0] + '">' + s[1] + '</span></span></button>';
                 };
             document.getElementById('txBody').innerHTML = list.length
@@ -1509,7 +1569,7 @@
                     : ['err', '<path d="M7 7l10 10M17 7 7 17"/>', 'Payment failed', 'The payment didn’t go through. No money was taken.'];
             document.getElementById('txDetailBody').innerHTML = '<div class="result"><div class="badge ' + head[0] + '"><svg viewBox="0 0 24 24">' + head[1] + '</svg></div>'
                 + '<h3>' + head[2] + '</h3><p>' + head[3] + '</p></div>'
-                + '<div class="card" style="margin-top:18px"><div class="v-sum">' + mark(t.product) + '<span><b>' + P.name + ' voucher</b><small>Voucher value $' + t.usd + '.00</small></span></div>'
+                + '<div class="card" style="margin-top:18px"><div class="v-sum">' + mark(t.product) + '<span><b>' + P.name + ' voucher</b><small>' + pk(t.product, t.usd) + ' package</small></span></div>'
                 + '<div class="rows"><div class="row"><span>Voucher price</span><b>' + money(priceOf(t.usd)) + ' ETB</b></div>'
                 + '<div class="row"><span>Service fee</span><b>' + money(SERVICE_FEE) + ' ETB</b></div>'
                 + '<div class="row total"><span>' + (t.status === 'success' ? 'Total paid' : t.reason === 'issuance' ? 'Paid, then refunded' : 'Total (not charged)') + '</span><b>' + money(totalOf(t.usd)) + ' ETB</b></div></div></div>'
