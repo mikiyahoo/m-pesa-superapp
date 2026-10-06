@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Vouchers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ================================================================
+           M-PESA Global Vouchers mini app.
+           Buy a digital voucher (Netflix, Google Play, PUBG Mobile) with the
+           M-PESA wallet: browse -> value -> review -> PIN -> payment ->
+           voucher issuance -> code (+ SMS / app notification) -> My Vouchers.
+           Payment and issuance are separate stages: a voucher only counts as
+           bought once it is issued, and a debit with no voucher is reversed.
+           Design notes, decisions and open questions: GLOBAL-VOUCHERS.md
+           ================================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --green: #2FC56D;
+            --green-dark: #1E9E4F;
+            --green-tint: #E6F5EA;
+            --red: #F0335F;
+            --red-tint: #FDE8EE;
+            --amber: #F08A12;
+            --amber-tint: #FFF1DE;
+            --ink: #1c1c1c;
+            --ink-2: #4a4a4a;
+            --muted: #8a8a8a;
+            --line: #EEF0EF;
+            --surface: #F6F8F7;
+        }
+
+        body {
+            font-family: 'Barlow', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--ink);
+        }
+
+        button { font-family: inherit; }
+
+        .mobile-container {
+            width: 360px;
+            height: 808px; /* 760px screen + 48px system nav */
+            background-color: #ffffff;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Status bar ---------- */
+        .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 4px 16px; flex-shrink: 0; }
+        .status-bar .time { font-size: 13px; font-weight: 600; color: #333333; }
+        .status-icons { display: flex; align-items: center; gap: 6px; color: #666666; }
+        .status-icons svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+
+        /* ---------- Steps ---------- */
+        .step { display: none; flex: 1; min-height: 0; flex-direction: column; }
+        .step.active { display: flex; }
+        .scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+        .scroll::-webkit-scrollbar { display: none; }
+
+        /* ---------- Header: back/close left, title centred, help right ---------- */
+        .bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            min-height: 52px;
+            padding: 8px 12px;
+            flex-shrink: 0;
+        }
+        /* the title sits left, right after the back / close button */
+        .bar h1 {
+            flex: 1;
+            min-width: 0;
+            margin: 0 10px 0 6px;
+            text-align: left;
+            font-size: 17px;
+            font-weight: 300;
+            letter-spacing: 0.6px;
+            color: #2f2f2f;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+        }
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: 0;
+            border-radius: 50%;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+        .icon-btn:hover { background: #F2F4F3; }
+        .icon-btn svg { width: 22px; height: 22px; stroke: #2f2f2f; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .bar .spacer { width: 40px; }
+        .icon-btn.on-dark svg { stroke: #ffffff; }
+        .icon-btn.on-dark:hover { background: rgba(255, 255, 255, 0.14); }
+
+        /* ---------- Mini app capsule (more / close), as on every super-app mini app ---------- */
+        .capsule { display: flex; align-items: center; height: 32px; border-radius: 16px; border: 1px solid #E1E5E3; background: rgba(255, 255, 255, 0.92); position: relative; z-index: 1; flex-shrink: 0; }
+        .capsule button { width: 40px; height: 30px; border: 0; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #1c1c1c; }
+        .capsule svg { width: 19px; height: 19px; }
+        .capsule .dots { fill: currentColor; }
+        .capsule .ring { fill: none; stroke: currentColor; stroke-width: 1.8; }
+        .capsule .ring .core { fill: currentColor; stroke: none; }
+        .capsule i { width: 1px; height: 16px; background: #E1E5E3; }
+        .capsule.light { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.34); }
+        .capsule.light button { color: #ffffff; }
+        .capsule.light i { background: rgba(255, 255, 255, 0.34); }
+
+        /* ---------- Gift card visual (the product, as the customer will picture it) ---------- */
+        .gc {
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            aspect-ratio: 1.6 / 1;
+            padding: 9% 9% 8% 9%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+            container-type: inline-size;
+            text-align: left;
+        }
+        .gc .wm { position: absolute; right: -10%; bottom: -18%; width: 64%; opacity: 0.14; pointer-events: none; }
+        .gc .wm svg { width: 100%; height: auto; display: block; }
+        /* a cover photo fills the card; a shade keeps the wordmark and text readable */
+        .gc .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .gc .shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.12) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 55%); }
+        .gc.has-cover { color: #ffffff; }
+        .gc .shine { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 38%); pointer-events: none; }
+        .gc-netflix { background: radial-gradient(120% 100% at 100% 0%, #9B0B14 0%, rgba(155, 11, 20, 0) 62%), linear-gradient(160deg, #1d1d1d 0%, #060606 100%); }
+        .gc-googleplay { background: radial-gradient(90% 90% at 100% 100%, rgba(0, 195, 255, 0.26), rgba(0, 195, 255, 0) 62%), radial-gradient(80% 80% at 0% 0%, rgba(255, 212, 0, 0.3), rgba(255, 212, 0, 0) 60%), #ffffff; color: #1c1c1c; border: 1px solid #EEF0EF; }
+        .gc-googleplay .shine { display: none; }
+        .gc-pubg { background: radial-gradient(120% 100% at 100% 0%, rgba(242, 169, 0, 0.6) 0%, rgba(242, 169, 0, 0) 58%), linear-gradient(160deg, #2a2c30 0%, #0f1012 100%); }
+        .gw { position: relative; display: flex; align-items: center; gap: 3cqw; font-size: 11cqw; font-weight: 800; letter-spacing: 0.5cqw; line-height: 1; }
+        .gw-netflix { color: #E50914; }
+        .gw-gp { color: #1c1c1c; font-size: 9.5cqw; font-weight: 600; letter-spacing: 0; }
+        .gw-gp svg { width: 11cqw; height: 11cqw; }
+        .gw-pubg { color: #F2A900; flex-direction: column; align-items: flex-start; gap: 1cqw; }
+        .gw-pubg small { font-size: 4.8cqw; letter-spacing: 1.4cqw; color: #ffffff; opacity: 0.85; }
+        .gc-bot { position: relative; display: flex; align-items: flex-end; justify-content: space-between; }
+        .gc-bot .gc-tag { display: block; max-width: 74%; font-size: 7.4cqw; font-weight: 600; line-height: 1.18; }
+        .tile.wide .gc-bot .gc-tag { font-size: 4.4cqw; max-width: 52%; }   /* the tagline on two lines */
+        .gc-spotify { background: radial-gradient(120% 100% at 100% 0%, rgba(29, 185, 84, 0.55) 0%, rgba(29, 185, 84, 0) 58%), linear-gradient(160deg, #222222 0%, #0b0b0b 100%); }
+        .gw-spotify { color: #ffffff; font-size: 9.5cqw; font-weight: 700; letter-spacing: 0; }
+        .gw-spotify svg { width: 11cqw; height: 11cqw; }
+        .tile.wide .gc .gw-spotify { font-size: 6cqw; }
+        .tile.wide .gc .gw-spotify svg { width: 7cqw; height: 7cqw; }
+        .p-stage .gc .gw-spotify { font-size: 6cqw; }
+        .p-stage .gc .gw-spotify svg { width: 7cqw; height: 7cqw; }
+        .gc-bot small { display: block; font-size: 4.6cqw; font-weight: 700; letter-spacing: 0.9cqw; opacity: 0.75; }
+        .gc-bot b { display: block; margin-top: 1cqw; font-size: 15cqw; font-weight: 700; line-height: 1; }
+        .gc .mp { width: 15cqw; height: 15cqw; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
+        .gc .mp img { width: 68%; height: 68%; object-fit: contain; }
+        .gc-googleplay .mp { box-shadow: 0 0 0 1px #E6E9E8; }
+
+        /* ---------- Home: green hero with the mini app header inside it ---------- */
+        .hero { position: relative; overflow: hidden; padding-bottom: 44px; color: #ffffff; background: linear-gradient(165deg, #0A5A31 0%, #138A47 55%, #22B262 100%); }
+        .hero .pat { position: absolute; right: -120px; top: -40px; width: 300px; opacity: 0.1; pointer-events: none; }
+        .hero-bar { position: relative; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 8px 12px; }
+        .hero-bar h1 { flex: 1; min-width: 0; margin: 0 10px 0 6px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 16px; font-weight: 300; letter-spacing: 0.8px; text-transform: uppercase; color: #ffffff; pointer-events: none; }
+        .hero-in { position: relative; display: flex; align-items: center; gap: 6px; padding: 8px 6px 0 18px; }
+        .hero-txt { flex: 1; min-width: 0; }
+        .hero-txt small { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 10px; background: rgba(255, 255, 255, 0.16); font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; }
+        .hero-txt small svg { width: 12px; height: 12px; stroke: #ffffff; stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .hero-txt h2 { margin-top: 0; font-size: 23px; font-weight: 600; line-height: 1.15; }
+        .hero-txt p { margin-top: 6px; font-size: 13px; line-height: 1.35; opacity: 0.9; }
+        .stack { position: relative; width: 132px; height: 118px; flex-shrink: 0; }
+        .stack .gc { position: absolute; width: 98px; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3); }
+        .stack .gc:nth-child(1) { right: 6px; top: 4px; transform: rotate(14deg); }
+        .stack .gc:nth-child(2) { right: 22px; top: 26px; transform: rotate(-4deg); }
+        .stack .gc:nth-child(3) { right: 34px; top: 52px; transform: rotate(-16deg); }
+        .panel { position: relative; margin-top: -26px; padding-top: 16px; border-radius: 22px 22px 0 0; background: #ffffff; }
+        .panel .chips { padding-top: 0; }
+
+        /* store grid: odd counts lead with a wide "featured" card */
+        .store { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; margin: 0 16px; }
+        .tile { border: 0; padding: 0; background: none; text-align: left; cursor: pointer; font-family: inherit; min-width: 0; }
+        .tile .gc { width: 100%; }
+        .tile.wide { grid-column: 1 / -1; }
+        .tile.wide .gc { aspect-ratio: 3 / 1; padding: 4.5% 5%; }   /* short featured card */
+        .tile.wide .gc .gw { font-size: 6cqw; }
+        .tile.wide .gc .gw-gp { font-size: 6cqw; }
+        .tile.wide .gc .gw-gp svg { width: 7cqw; height: 7cqw; }
+        .tile.wide .gc .gw-pubg small { font-size: 3cqw; }
+        .tile.wide .gc-bot small { font-size: 3cqw; }
+        .tile.wide .gc-bot b { font-size: 9cqw; }
+        .tile.wide .gc .mp { width: 8cqw; height: 8cqw; }
+        .tile.wide .gc .wm { width: 40%; bottom: -22%; }
+        /* product page: the same short, wide card (30% lower than a standard card) */
+        .p-stage .gc { aspect-ratio: 2.3 / 1; padding: 5.5% 6%; }
+        .p-stage .gc .gw { font-size: 7cqw; }
+        .p-stage .gc .gw-gp { font-size: 6cqw; }
+        .p-stage .gc .gw-gp svg { width: 7cqw; height: 7cqw; }
+        .p-stage .gc .gw-pubg small { font-size: 3cqw; }
+        .p-stage .gc-bot small { font-size: 3cqw; }
+        .p-stage .gc-bot b { font-size: 10cqw; }
+        .p-stage .gc .mp { width: 9cqw; height: 9cqw; }
+        .p-stage .gc .wm { width: 40%; bottom: -22%; }
+        .tile .meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-top: 9px; }
+        .tile .meta b { display: block; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+        .tile .meta small { display: block; margin-top: 1px; font-size: 12px; color: var(--muted); }
+        .tag { flex-shrink: 0; padding: 3px 7px; border-radius: 6px; background: var(--green-tint); color: var(--green-dark); font-size: 10px; font-weight: 700; letter-spacing: 0.6px; }
+
+        /* at thumbnail size the card shows its brand mark only */
+
+
+        /* product page: the card itself is the hero */
+        .p-stage { margin: 0 0 4px 0; padding: 8px 16px 20px 16px; background: linear-gradient(180deg, #F2F6F4 0%, #ffffff 100%); }
+        .p-stage .gc { width: 100%; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22); }
+        .buybar { display: flex; align-items: center; gap: 14px; padding: 10px 16px 14px 16px; border-top: 1px solid var(--line); background: #ffffff; flex-shrink: 0; }
+        .buybar span { flex-shrink: 0; }
+        .buybar small { display: block; font-size: 11.5px; color: var(--muted); letter-spacing: 0.4px; }
+        .buybar b { display: block; font-size: 17px; font-weight: 700; white-space: nowrap; }
+        .buybar .btn { flex: 1; }
+
+
+        /* ⓘ: outlined circle, same weight as the capsule icons; opens How to redeem */
+        .info-btn { flex-shrink: 0; width: 32px; height: 32px; border: 1px solid #E1E5E3; border-radius: 50%; background: #ffffff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+        .info-btn svg { width: 19px; height: 19px; fill: none; stroke: #1c1c1c; stroke-width: 1.8; stroke-linecap: round; }
+        .info-btn svg .dot { fill: #1c1c1c; stroke: none; }
+        .title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .redeem-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: calc(100% - 32px); margin: 14px 16px 0 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #ffffff; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; text-align: left; }
+        .redeem-link small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 1px; }
+        .sheet .guide { margin: 10px 0 0 0; }
+
+        /* ••• menu */
+        .menu-row { display: flex; align-items: center; gap: 14px; width: 100%; padding: 13px 4px; border: 0; border-bottom: 1px solid var(--line); background: none; font-size: 15px; color: var(--ink); text-align: left; cursor: pointer; }
+        .menu-row:last-of-type { border-bottom: 0; }
+        .mini-id { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+        .mini-id .logo { width: 44px; height: 44px; border-radius: 12px; background: var(--green-dark); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .mini-id .logo svg { width: 24px; height: 24px; stroke: #ffffff; stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .mini-id b { display: block; font-size: 16px; font-weight: 600; }
+        .mini-id small { display: block; font-size: 12px; color: var(--muted); }
+        .menu-row .ic { width: 38px; height: 38px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .menu-row .ic svg { width: 19px; height: 19px; stroke: var(--green-dark); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* ---------- Buttons ---------- */
+        .foot { padding: 10px 16px 14px 16px; flex-shrink: 0; background: #ffffff; }
+        .foot.line { border-top: 1px solid var(--line); }
+        .btn {
+            width: 100%;
+            min-height: 48px;
+            border: 0;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: var(--green);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(47, 197, 109, 0.28);
+        }
+        .btn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .btn:disabled { background: #E6E9E8; color: #B4B9B6; box-shadow: none; cursor: default; }
+        .btn.ghost { background: #ffffff; color: var(--ink); border: 1.5px solid #DCE0DE; box-shadow: none; }
+        .btn.text { background: none; color: var(--green-dark); box-shadow: none; min-height: 40px; }
+        .btn + .btn { margin-top: 10px; }
+        .btn .spin { width: 18px; height: 18px; border: 2.4px solid rgba(255,255,255,0.4); border-top-color: #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ---------- Brand marks (placeholders for the partners' official logos) ---------- */
+        .mark { flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .mark svg { width: 62%; height: 62%; display: block; }
+        .mark.m-netflix { background: radial-gradient(110% 110% at 100% 0%, #7E0911 0%, rgba(126, 9, 17, 0) 65%), #141414; }
+        .mark.m-googleplay { background: #ffffff; border: 1px solid var(--line); }
+        .mark.m-spotify { background: #121212; }
+        .mark.m-pubg { background: radial-gradient(110% 110% at 100% 0%, rgba(242, 169, 0, 0.55) 0%, rgba(242, 169, 0, 0) 60%), #1b1c1f; }
+
+        /* ---------- Cards and sections ---------- */
+        .section { margin: 22px 16px 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+        .section h2 { font-size: 13px; font-weight: 600; letter-spacing: 1px; color: #555555; text-transform: uppercase; }
+        .card { margin: 0 16px; border-radius: 14px; background: #ffffff; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); }
+
+        /* ---------- Home: intro ---------- */
+        .intro {
+            position: relative;
+            overflow: hidden;
+            margin: 6px 16px 0 16px;
+            padding: 18px 18px 16px 18px;
+            border-radius: 16px;
+            background: linear-gradient(60deg, #1A9049 0%, #24A95A 50%, #2FC56D 100%);
+            color: #ffffff;
+        }
+        .intro .pat { position: absolute; right: -110px; top: -130px; width: 230px; opacity: 0.12; pointer-events: none; }
+        .intro small { position: relative; display: block; font-size: 11.5px; font-weight: 600; letter-spacing: 1px; opacity: 0.9; }
+        .intro h3 { position: relative; margin-top: 6px; font-size: 21px; font-weight: 600; line-height: 1.2; }
+        .intro .bal { position: relative; display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.25); font-size: 12.5px; }
+        .intro .bal b { font-size: 15px; font-weight: 600; }
+
+        .trust { display: flex; gap: 8px; margin: 12px 16px 0 16px; }
+        .trust span { flex: 1; display: flex; align-items: center; gap: 6px; padding: 8px 8px; border-radius: 10px; background: var(--surface); font-size: 11.5px; font-weight: 500; color: var(--ink-2); line-height: 1.2; }
+        .trust svg { width: 16px; height: 16px; flex-shrink: 0; stroke: var(--green-dark); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* ---------- Product card (reusable for any voucher product) ---------- */
+        .product {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 0 16px 10px 16px;
+            padding: 14px;
+            border: 0;
+            border-radius: 14px;
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            width: calc(100% - 32px);
+            text-align: left;
+            cursor: pointer;
+        }
+        .product .mark { width: 52px; height: 52px; }
+        .product .t { flex: 1; min-width: 0; }
+        .product .t b { display: block; font-size: 16px; font-weight: 600; color: var(--ink); }
+        .product .t small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--muted); }
+        .product .t .from { display: block; margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+        .product .t .from b { display: inline; font-size: 13px; font-weight: 600; }
+        .product .chev { width: 18px; height: 18px; stroke: #9a9a9a; stroke-width: 2; fill: none; flex-shrink: 0; }
+
+
+
+        /* loading skeleton (catalogue comes from the voucher provider) */
+        .skel { margin: 0 16px 10px 16px; height: 80px; border-radius: 14px; background: linear-gradient(90deg, #F1F3F2 0%, #F8F9F9 50%, #F1F3F2 100%); background-size: 200% 100%; animation: shimmer 1.2s ease-in-out infinite; }
+        @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+        .loading-note { margin: 0 16px 12px 16px; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+        .loading-note .dotspin { width: 14px; height: 14px; border: 2px solid #DDE7E1; border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+        /* ---------- Product details ---------- */
+        .p-hero { display: flex; align-items: center; gap: 14px; margin: 4px 16px 0 16px; }
+        .p-hero .mark { width: 64px; height: 64px; border-radius: 16px; }
+        .p-hero b { display: block; font-size: 20px; font-weight: 600; }
+        .p-hero small { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
+        .p-desc { margin: 12px 16px 0 16px; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); }
+        /* product pages: the description is two lines at most */
+        #productBody .p-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .glink { display: block; margin-top: 3px; font-size: 12.5px; color: #1A62C6; text-decoration: underline; line-height: 1.35; }
+
+        /* denomination selector */
+        .denoms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 16px; }
+        .denom {
+            position: relative;
+            padding: 14px 6px 12px 6px;
+            border: 1.5px solid #DCE0DE;
+            border-radius: 14px;
+            background: #ffffff;
+            text-align: center;
+            cursor: pointer;
+        }
+        .denom b { display: block; font-size: 22px; font-weight: 600; color: var(--ink); }
+        .denom small { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+        .denom.on { border-color: var(--green); background: #F3FBF6; box-shadow: 0 0 0 3px rgba(47, 197, 109, 0.14); }
+        .denom.on::after {
+            content: '';
+            position: absolute;
+            top: -7px;
+            right: -7px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center / 13px no-repeat;
+        }
+        .denom:disabled { cursor: default; background: var(--surface); border-style: dashed; }
+        .denom:disabled b { color: #B9BEBB; }
+        .denom:disabled small { color: #9a9a9a; font-weight: 600; }
+
+        .you-pay { margin: 12px 16px 0 16px; padding: 12px 14px; border-radius: 12px; background: var(--surface); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--ink-2); }
+        .you-pay b { font-size: 16px; font-weight: 600; color: var(--ink); }
+        .you-pay small { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); }
+
+        /* redemption guide (steps) */
+        .guide { margin: 0 16px; }
+        .guide li { list-style: none; display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; font-size: 13.5px; line-height: 1.4; color: var(--ink-2); }
+        .guide li em { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--green-tint); color: var(--green-dark); font-style: normal; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+
+        .fold { margin: 0 16px; border-radius: 12px; border: 1px solid var(--line); }
+        .fold summary { list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .fold summary::-webkit-details-marker { display: none; }
+        .fold summary svg { width: 18px; height: 18px; stroke: #9a9a9a; stroke-width: 2; fill: none; transition: transform 0.2s ease; }
+        .fold[open] summary svg { transform: rotate(180deg); }
+        .fold .guide { padding: 0 0 8px 0; margin: 0 14px; }
+
+        /* ---------- Price breakdown ---------- */
+        .rows { padding: 4px 16px; }
+        .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 14px; color: var(--ink-2); }
+        .row b { font-weight: 600; color: var(--ink); text-align: right; }
+        .row.total { margin-top: 4px; padding-top: 14px; border-top: 1px dashed #D8DDDA; font-size: 15px; }
+        .row.total b { font-size: 19px; }
+        .row small { display: block; font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+
+        .v-sum { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+        .v-sum .mark { width: 44px; height: 44px; border-radius: 10px; }
+        .v-sum b { display: block; font-size: 15px; font-weight: 600; }
+        .v-sum small { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+
+        .info-list { margin: 12px 16px 0 16px; }
+        .info { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+        .info + .info { border-top: 1px solid var(--line); }
+        .info .ic { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; }
+        .info .ic svg { width: 17px; height: 17px; stroke: var(--green-dark); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .info b { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); }
+
+        /* ---------- Fact cards (Review & Pay) ---------- */
+        .fact-card { display: flex; align-items: center; gap: 14px; width: calc(100% - 32px); margin: 0 16px 10px 16px; padding: 14px; border: 1px solid #EEF0EF; border-radius: 14px; background: #ffffff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04); font-family: inherit; text-align: left; }
+        .fact-card .ic { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: var(--green-tint); display: flex; align-items: center; justify-content: center; }
+        .fact-card .ic svg { width: 21px; height: 21px; stroke: var(--green-dark); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .fact-card .t { flex: 1; min-width: 0; }
+        .fact-card .t b { display: block; font-size: 15px; font-weight: 600; color: var(--ink); }
+        .fact-card .t small { display: block; margin-top: 2px; font-size: 13px; color: #6a6a6a; }
+
+        /* ---------- Banners ---------- */
+        .banner { margin: 14px 16px 0 16px; padding: 12px 14px; border-radius: 12px; display: flex; gap: 10px; font-size: 13px; line-height: 1.4; }
+        .banner svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .banner b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .banner.err { background: var(--red-tint); color: #9A1B3A; }
+        .banner.err svg { stroke: var(--red); }
+        .banner.warn { background: var(--amber-tint); color: #8A4A00; }
+        .banner.warn svg { stroke: var(--amber); }
+        .banner.ok { background: var(--green-tint); color: #12613A; }
+        .banner.ok svg { stroke: var(--green-dark); }
+        .short { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(240, 51, 95, 0.18); }
+        .short div { display: flex; justify-content: space-between; padding: 2px 0; }
+        .short div b { display: inline; margin: 0; font-size: 13px; }
+
+        /* ---------- PIN: the same screen as Savings (M-PESA mark, what is
+           being paid, four rings, keypad on the floor) ---------- */
+        #stepPin { position: relative; }
+        .pin-close { position: absolute; top: 8px; left: 14px; }
+        .pin-close svg { stroke: #3a3a3a; }
+        .pin-head { text-align: center; padding: 38px 24px 0 24px; flex-shrink: 0; }
+        .pin-head img { width: 62px; height: 17px; object-fit: contain; display: block; margin: 0 auto 36px auto; }
+        .pin-head h3 { font-size: 17px; font-weight: 700; color: #1c1c1c; letter-spacing: 0.5px; line-height: 22px; }
+        .pin-head .pin-row { font-size: 13px; line-height: 20px; color: #1c1c1c; margin-top: 4px; }
+        .pin-head .pin-row b { font-weight: 700; letter-spacing: 0.5px; margin-right: 10px; }
+        .pin-label { text-align: center; font-size: 11.5px; font-weight: 500; color: #3a3a3a; letter-spacing: 0.7px; margin: 133px 0 14px 0; flex-shrink: 0; }
+        .pin-dots { display: flex; justify-content: center; gap: 12px; flex-shrink: 0; }
+        .pin-dots.bad { animation: shake 0.4s ease; }
+        @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        .pin-dot { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #D6D6D6; display: flex; align-items: center; justify-content: center; }
+        .pin-dot::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: #2FC56D; transform: scale(0); transition: transform 0.15s ease; }
+        .pin-dot.filled { border-color: #2FC56D; }
+        .pin-dot.filled::after { transform: scale(1); }
+        .pin-dots.bad .pin-dot { border-color: var(--red); }
+        .pin-err { min-height: 18px; margin-top: 10px; text-align: center; font-size: 12.5px; color: var(--red); flex-shrink: 0; }
+        .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0 24px; margin-top: auto; flex-shrink: 0; }
+        .key { background: none; border: none; cursor: pointer; border-radius: 8px; }
+        .key:active { background-color: #f4f4f4; }
+        .key.blank { visibility: hidden; }
+        .pin-keypad .key { height: 57px; padding: 0; font-size: 24px; font-weight: 400; color: #5f5f5f; }
+        .pin-keypad .key svg { width: 26px; height: 26px; display: block; margin: 0 auto; }
+
+        /* ---------- Processing: the Savings overlay, over the PIN screen,
+           one step at a time (payment, then voucher, then delivery) ---------- */
+        .proc-overlay { position: absolute; inset: 0 0 48px 0; background: rgba(255, 255, 255, 0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 30px 40px 30px; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; z-index: 38; }
+        .proc-overlay.show { opacity: 1; visibility: visible; }
+        .proc-overlay .spinner { width: 64px; height: 64px; border-radius: 50%; border: 4px solid #E8F7EE; border-top-color: #2FC56D; animation: spin 0.9s linear infinite; margin-bottom: 26px; }
+        .proc-overlay h3 { font-size: 20px; font-weight: 300; color: #2f2f2f; letter-spacing: 0.6px; margin-bottom: 22px; text-align: center; text-transform: uppercase; }
+        .proc-line { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; color: #3a3a3a; min-height: 24px; transition: opacity 0.18s ease, transform 0.18s ease; }
+        .proc-line.swap { opacity: 0; transform: translateY(6px); }
+        .proc-line .b { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #DADADA; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease, border-color 0.15s ease; }
+        .proc-line .b svg { width: 12px; height: 12px; stroke: #ffffff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; display: none; }
+        .proc-line.done .b { background: #2FC56D; border-color: #2FC56D; }
+        .proc-line.done .b .ok { display: block; }
+        .proc-line.fail .b { background: var(--red); border-color: var(--red); }
+        .proc-line.fail .b .no { display: block; }
+        .proc-line.fail { color: var(--red); }
+
+        /* ---------- Results ---------- */
+        .result { padding: 10px 18px 0 18px; text-align: center; }
+        .result .badge { width: 72px; height: 72px; margin: 10px auto 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .result .badge svg { width: 36px; height: 36px; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+        .result .badge.ok { background: var(--green-tint); } .result .badge.ok svg { stroke: var(--green-dark); }
+        .result .badge.err { background: var(--red-tint); } .result .badge.err svg { stroke: var(--red); }
+        .result .badge.warn { background: var(--amber-tint); } .result .badge.warn svg { stroke: var(--amber); }
+        .result h3 { margin-top: 16px; font-size: 21px; font-weight: 600; }
+        .result p { margin: 6px auto 0 auto; max-width: 290px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+
+        .facts { margin: 18px 16px 0 16px; border-radius: 14px; background: var(--surface); padding: 4px 14px; }
+        .fact { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; font-size: 13px; color: var(--muted); }
+        .fact + .fact { border-top: 1px solid #E8ECEA; }
+        .fact b { font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: right; }
+        .copy-mini { border: 0; background: none; color: var(--green-dark); font-weight: 700; font-size: 12px; letter-spacing: 0.6px; cursor: pointer; margin-left: 6px; }
+
+        /* refund timeline on the issuance-failed screen */
+        .tl { margin: 18px 16px 0 16px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); text-align: left; }
+        .tl-row { display: flex; gap: 12px; position: relative; padding-bottom: 14px; }
+        .tl-row:last-child { padding-bottom: 0; }
+        .tl-row::before { content: ''; position: absolute; left: 9px; top: 22px; bottom: 0; width: 2px; background: #E6E9E8; }
+        .tl-row:last-child::before { display: none; }
+        .tl-row i { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; z-index: 1; display: flex; align-items: center; justify-content: center; }
+        .tl-row i svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .tl-row.g i { background: var(--green); } .tl-row.r i { background: var(--red); } .tl-row.a i { background: var(--amber); }
+        .tl-row b { display: block; font-size: 13.5px; font-weight: 600; }
+        .tl-row small { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+        /* ---------- Voucher code component ---------- */
+        .ticket {
+            position: relative;
+            margin: 18px 16px 0 16px;
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        .ticket .top { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+        .ticket .top .mark { width: 44px; height: 44px; border-radius: 10px; }
+        .ticket .top b { display: block; font-size: 16px; font-weight: 600; }
+        .ticket .top small { display: block; font-size: 12.5px; color: var(--muted); }
+        .ticket .top .st { margin-left: auto; }
+        /* the perforation between the voucher and its code */
+        .ticket .perf { position: relative; height: 1px; margin: 0 14px; border-top: 2px dashed #E3E7E5; }
+        .ticket .code { padding: 14px 16px 16px 16px; }
+        .ticket .code small { display: block; font-size: 11.5px; font-weight: 600; letter-spacing: 1px; color: var(--muted); }
+        /* the code always shows in full, on its own line; the action sits under it */
+        .code-line { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; padding: 14px 12px 12px 12px; border-radius: 12px; background: #F3FBF6; border: 1.5px dashed #9EDCB7; }
+        .code-line span { font-size: 22px; font-weight: 700; letter-spacing: 2px; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .code-line span.masked { color: #7a7f7c; letter-spacing: 2.4px; }
+        .code-line button { flex-shrink: 0; height: 34px; padding: 0 16px; border: 0; border-radius: 17px; background: var(--green); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .code-acts { display: flex; gap: 8px; }
+        .code-line button.soft { background: #ffffff; color: var(--green-dark); border: 1.5px solid #9EDCB7; }
+        .code-line button svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .exp { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13.5px; color: var(--ink-2); }
+        .exp svg { width: 17px; height: 17px; stroke: var(--amber); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .exp b { font-weight: 600; color: var(--ink); }
+
+
+        /* ---------- Status badge ---------- */
+        .st { display: inline-block; padding: 4px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; white-space: nowrap; }
+        .st.active, .st.success { background: #DDF5E6; color: #1E9E4F; }
+        .st.redeemed { background: #E8EAF6; color: #3F51B5; }
+        .st.expired, .st.failed { background: #F1F2F2; color: #7a7f7c; }
+        .st.failed { background: var(--red-tint); color: #C2244B; }
+        .st.refunded { background: var(--amber-tint); color: #B25E00; }
+
+        /* ---------- Chips / segmented ---------- */
+        .chips { display: flex; gap: 8px; padding: 2px 16px 12px 16px; overflow-x: auto; flex-shrink: 0; }
+        .chips::-webkit-scrollbar { display: none; }
+        .chip { flex-shrink: 0; height: 34px; padding: 0 14px; border-radius: 17px; border: 1.5px solid #DCE0DE; background: #ffffff; font-size: 13px; font-weight: 500; color: var(--ink-2); cursor: pointer; }
+        .chip.on { border-color: var(--ink); background: var(--ink); color: #ffffff; }
+        .seg { display: flex; margin: 2px 16px 12px 16px; padding: 4px; border-radius: 12px; background: var(--surface); flex-shrink: 0; }
+        .seg button { flex: 1; height: 34px; border: 0; border-radius: 9px; background: none; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+        .seg button.on { background: #ffffff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+        /* ---------- List items ---------- */
+        .list-head { margin: 6px 16px 8px 16px; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+        .item { display: flex; align-items: center; gap: 12px; width: calc(100% - 32px); margin: 0 16px 10px 16px; padding: 12px 14px; border: 0; border-radius: 14px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.07); text-align: left; cursor: pointer; }
+        .item .mark { width: 42px; height: 42px; border-radius: 10px; }
+        .item .t { flex: 1; min-width: 0; }
+        .item .t b { display: block; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+        .item .t small { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item .t .mono { font-weight: 600; letter-spacing: 1px; color: var(--ink-2); }
+        .item .r { text-align: right; flex-shrink: 0; }
+        .item .r b { display: block; font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+        .item.dim { box-shadow: none; border: 1px solid var(--line); background: #FCFDFC; }
+
+        /* a list group: one card, rows split by a line */
+        .group-card { margin: 0 16px; border-radius: 14px; background: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.07); overflow: hidden; }
+        .group-card .item, .group-card .item.dim { width: 100%; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: #ffffff; }
+        .group-card .item + .item { border-top: 1px solid var(--line); }
+        .group-card .item .mark { width: 34px; height: 34px; border-radius: 8px; }
+        .item.dim .mark { opacity: 0.55; }
+
+        /* ---------- Empty states ---------- */
+        .empty { padding: 56px 32px 20px 32px; text-align: center; }
+        .empty .art { width: 84px; height: 84px; margin: 0 auto 16px auto; border-radius: 50%; background: var(--green-tint); display: flex; align-items: center; justify-content: center; }
+        .empty .art svg { width: 40px; height: 40px; stroke: var(--green-dark); stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .empty b { display: block; font-size: 17px; font-weight: 700; }
+        .empty p { margin: 8px auto 0 auto; max-width: 250px; font-size: 13.5px; line-height: 1.45; color: #7a7f7c; }
+        .empty .btn { margin-top: 20px; }
+
+        /* ---------- Bottom navigation (tab roots only) ---------- */
+        .tabs { display: none; grid-template-columns: repeat(3, 1fr); flex-shrink: 0; border-top: 1px solid #f0f0f0; background: #ffffff; padding: 8px 0 8px 0; }
+        .tabs.show { display: grid; }
+        .tab { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.6px; color: #9a9a9a; cursor: pointer; position: relative; }
+        .tab svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .tab.on { color: var(--green-dark); }
+        .tab .count { position: absolute; top: -3px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--green); color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; }
+
+        /* ---------- Help ---------- */
+        .help-card { margin: 0 16px 10px 16px; }
+        .faq { margin: 0 16px 8px 16px; border-radius: 12px; border: 1px solid var(--line); }
+        .faq summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 14px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .faq summary::-webkit-details-marker { display: none; }
+        .faq summary svg { width: 18px; height: 18px; stroke: #9a9a9a; stroke-width: 2; fill: none; flex-shrink: 0; transition: transform 0.2s ease; }
+        .faq[open] summary svg { transform: rotate(180deg); }
+        .faq p { padding: 0 14px 14px 14px; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); }
+        .contact { display: flex; align-items: center; gap: 12px; width: calc(100% - 32px); margin: 0 16px 10px 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: #fff; text-align: left; cursor: pointer; }
+        .contact .ic { width: 38px; height: 38px; border-radius: 50%; background: var(--green-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .contact .ic svg { width: 18px; height: 18px; stroke: var(--green-dark); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .contact b { display: block; font-size: 14px; font-weight: 600; }
+        .contact small { display: block; font-size: 12px; color: var(--muted); }
+
+        /* ---------- Sheet ---------- */
+        .sheet-overlay { position: absolute; inset: 0; z-index: 30; background: rgba(0,0,0,0); display: flex; align-items: flex-end; pointer-events: none; transition: background 0.2s ease; padding-bottom: 48px; }
+        .sheet-overlay.show { background: rgba(0,0,0,0.45); pointer-events: auto; }
+        .sheet { width: 100%; padding: 12px 18px 18px 18px; border-radius: 20px 20px 0 0; background: #ffffff; transform: translateY(110%); transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1); }
+        .sheet-overlay.show .sheet { transform: none; }
+        .sheet .grab { width: 36px; height: 4px; margin: 0 auto 16px auto; border-radius: 2px; background: #E0E0E0; }
+        .sheet h3 { font-size: 18px; font-weight: 600; }
+        .sheet p { margin-top: 8px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+        .sheet .acts { display: flex; gap: 10px; margin-top: 18px; }
+        .sheet .acts .btn { margin: 0; }
+
+        /* ---------- In-app notification (app notification + SMS heads-up) ---------- */
+        .notice { position: absolute; left: 10px; right: 10px; top: 8px; z-index: 40; display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #0B6B3A; color: #fff; box-shadow: 0 8px 26px rgba(0,0,0,0.22); transform: translateY(calc(-100% - 48px)); transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1); cursor: pointer; }
+        .notice.show { transform: none; }
+        .notice .ic { width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; background: rgba(255,255,255,0.16); display: flex; align-items: center; justify-content: center; }
+        .notice .ic svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .notice b { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.8px; opacity: 0.85; }
+        .notice p { font-size: 13px; line-height: 1.35; margin-top: 2px; }
+
+        /* ---------- Toast ---------- */
+        .toast { position: absolute; left: 50%; bottom: 120px; z-index: 50; transform: translateX(-50%) translateY(10px); padding: 10px 16px; border-radius: 20px; background: #1c1c1c; color: #fff; font-size: 12.5px; font-weight: 600; letter-spacing: 0.6px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; white-space: nowrap; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ---------- Android system navigation ---------- */
+        .system-nav { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; justify-items: center; height: 48px; flex-shrink: 0; border-top: 1px solid #f0f0f0; color: #555555; background: #ffffff; }
+        .system-nav svg { width: 22px; height: 22px; }
+    </style>
+    <script src="assets/prototype-mode.js?v=64"></script>
+</head>
+<body>
+
+    <div class="mobile-container">
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span class="time">9:00</span>
+            <div class="status-icons">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29ZM13 5.83l1.88 1.88L13 9.59V5.83Zm1.88 10.46L13 18.17v-3.76l1.88 1.88Z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.1 8.9a14.2 14.2 0 0 1 19.8 0L12.9 20.3a1.1 1.1 0 0 1-1.8 0L2.1 8.9Z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 3.6v16.1c0 .5-.4.9-.9.9H4.6c-.8 0-1.2-1-.6-1.5L19.4 3c.6-.6 1.5-.2 1.5.6Z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.6 1.8h4.8c.5 0 .9.4.9.9v1.1H8.7V2.7c0-.5.4-.9.9-.9Z"/><rect x="6.6" y="4.3" width="10.8" height="17.9" rx="2.2"/></svg>
+            </div>
+        </div>
+
+        <!-- ============ Tab 1: Vouchers (home / browse) ============ -->
+        <section class="step active" id="stepHome">
+            <div class="scroll" id="homeBody"></div>
+        </section>
+
+        <!-- ============ Product details + choose a value ============ -->
+        <section class="step" id="stepProduct">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h1 id="productTitle"></h1>
+                <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>
+            </div>
+            <div class="scroll" id="productBody"></div>
+            <div class="buybar">
+                <button class="btn" id="productGo" onclick="toReview()" disabled>Buy now</button>
+            </div>
+        </section>
+
+        <!-- ============ Review & pay ============ -->
+        <section class="step" id="stepReview">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+                <h1>Review &amp; Pay</h1>
+                <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>
+            </div>
+            <div class="scroll" id="reviewBody"></div>
+            <div class="foot line" id="reviewFoot"></div>
+        </section>
+
+        <!-- ============ M-PESA PIN ============ -->
+        <section class="step" id="stepPin">
+            <button class="icon-btn pin-close" onclick="cancelPin()" aria-label="Close">
+                <svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg>
+            </button>
+            <div class="pin-head">
+                <img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA">
+                <h3>GLOBAL VOUCHERS</h3>
+                <div id="pinSum"></div>
+            </div>
+            <p class="pin-label">ENTER M-PESA PIN:</p>
+            <div class="pin-dots" id="pinDots">
+                <span class="pin-dot"></span><span class="pin-dot"></span>
+                <span class="pin-dot"></span><span class="pin-dot"></span>
+            </div>
+            <p class="pin-err" id="pinErr"></p>
+            <div class="pin-keypad">
+                <button class="key" onclick="pinPress('1')">1</button>
+                <button class="key" onclick="pinPress('2')">2</button>
+                <button class="key" onclick="pinPress('3')">3</button>
+                <button class="key" onclick="pinPress('4')">4</button>
+                <button class="key" onclick="pinPress('5')">5</button>
+                <button class="key" onclick="pinPress('6')">6</button>
+                <button class="key" onclick="pinPress('7')">7</button>
+                <button class="key" onclick="pinPress('8')">8</button>
+                <button class="key" onclick="pinPress('9')">9</button>
+                <span class="key blank" aria-hidden="true"></span>
+                <button class="key" onclick="pinPress('0')">0</button>
+                <button class="key" onclick="pinFill()" aria-label="Fingerprint">
+                    <svg viewBox="0 0 24 24" fill="#5f5f5f"><path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-1.43-2.01-2.64-.69-1.23-1.05-2.73-1.05-4.34 0-2.97 2.54-5.39 5.66-5.39s5.66 2.42 5.66 5.39c0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-2.42-2.09-4.39-4.66-4.39-2.57 0-4.66 1.970-4.66 4.39 0 1.44.32 2.77.93 3.85.64 1.15 1.08 1.64 1.85 2.42.19.2.19.51 0 .71-.11.1-.24.15-.37.15zm7.17-1.850c-1.19 0-2.24-.3-3.1-.89-1.49-1.01-2.38-2.65-2.38-4.39 0-.28.22-.5.5-.5s.5.22.5.5c0 1.41.72 2.74 1.94 3.56.71.48 1.54.71 2.54.71.24 0 .64-.03 1.04-.1.27-.05.53.13.58.41.05.27-.13.53-.41.58-.57.11-1.07.12-1.21.12zM14.91 22c-.04 0-.09-.01-.13-.02-1.59-.44-2.63-1.03-3.72-2.1-1.4-1.39-2.17-3.24-2.17-5.22 0-1.62 1.38-2.94 3.08-2.94 1.7 0 3.08 1.32 3.08 2.94 0 1.07.93 1.94 2.08 1.94s2.08-.87 2.08-1.94c0-3.77-3.25-6.83-7.25-6.83-2.84 0-5.44 1.58-6.61 4.03-.39.81-.59 1.76-.59 2.8 0 .78.07 2.01.67 3.61.1.26-.03.55-.29.64-.26.1-.55-.04-.64-.29-.49-1.31-.73-2.61-.73-3.96 0-1.2.23-2.29.68-3.24 1.33-2.79 4.28-4.6 7.510-4.6 4.55 0 8.25 3.51 8.25 7.83 0 1.62-1.38 2.94-3.08 2.94s-3.08-1.32-3.08-2.94c0-1.07-.93-1.94-2.08-1.94s-2.08.87-2.08 1.94c0 1.71.66 3.31 1.87 4.51.95.94 1.86 1.46 3.27 1.85.27.07.42.35.35.61-.05.23-.26.38-.47.38z"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- ============ Payment + voucher issuance + delivery ============ -->
+
+
+        <!-- ============ Results: voucher ready / payment failed / issuance failed ============ -->
+        <section class="step" id="stepResult">
+            <div class="bar">
+                <button class="icon-btn" onclick="resultClose()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+                <h1 id="resultTitle"></h1>
+                <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>
+            </div>
+            <div class="scroll" id="resultBody"></div>
+            <div class="foot" id="resultFoot"></div>
+        </section>
+
+        <!-- ============ Tab 2: My Vouchers (what I own) ============ -->
+        <section class="step" id="stepMine">
+            <div class="bar">
+                <button class="icon-btn" onclick="goTab('stepHome')" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h1>My Vouchers</h1>
+            <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div></div>
+            <div class="chips" id="mineChips"></div>
+            <div class="scroll" id="mineBody"></div>
+        </section>
+
+        <!-- ============ Voucher details ============ -->
+        <section class="step" id="stepVoucher">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h1>Voucher</h1>
+                <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>
+            </div>
+            <div class="scroll" id="voucherBody"></div>
+            <div class="foot line" id="voucherFoot"></div>
+        </section>
+
+        <!-- ============ Tab 3: Transactions (what I paid for) ============ -->
+        <section class="step" id="stepTx">
+            <div class="bar">
+                <button class="icon-btn" onclick="goTab('stepHome')" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h1>Transactions</h1>
+            <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div></div>
+            <div class="seg" id="txSeg">
+                <button class="on" onclick="setTxFilter('all')">All</button>
+                <button onclick="setTxFilter('success')">Successful</button>
+                <button onclick="setTxFilter('failed')">Failed</button>
+            </div>
+            <div class="scroll" id="txBody"></div>
+        </section>
+
+        <!-- ============ Transaction details ============ -->
+        <section class="step" id="stepTxDetail">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h1>Transaction</h1>
+                <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>
+            </div>
+            <div class="scroll" id="txDetailBody"></div>
+            <div class="foot" id="txDetailFoot"></div>
+        </section>
+
+        <!-- ============ Help ============ -->
+        <section class="step" id="stepHelp">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h1>Help</h1>
+                <div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>
+            </div>
+            <div class="scroll" id="helpBody"></div>
+        </section>
+
+        <!-- Bottom navigation: shown on the three tab roots only -->
+        <nav class="tabs show" id="tabs">
+            <button class="tab on" data-tab="stepHome" onclick="goTab('stepHome')">
+                <svg viewBox="0 0 24 24"><path d="M4 9.5 5.5 4.5h13L20 9.5"/><path d="M4 9.5h16v1.2a2.6 2.6 0 0 1-5.2 0 2.6 2.6 0 0 1-5.2 0 2.6 2.6 0 0 1-5.6 0V9.5Z"/><path d="M5.5 13v6.5h13V13"/><path d="M10 19.5v-4h4v4"/></svg>
+                VOUCHERS
+            </button>
+            <button class="tab" data-tab="stepMine" onclick="goTab('stepMine')">
+                <svg viewBox="0 0 24 24"><path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/></svg>
+                MY VOUCHERS
+                <span class="count" id="mineCount"></span>
+            </button>
+            <button class="tab" data-tab="stepTx" onclick="goTab('stepTx')">
+                <svg viewBox="0 0 24 24"><path d="M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4v-17Z"/><path d="M9 8.5h6M9 12h6M9 15.5h3"/></svg>
+                TRANSACTIONS
+            </button>
+        </nav>
+
+        <!-- Android System Navigation -->
+        <div class="system-nav">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.8 4.8 6 12l8.8 7.2V4.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6.9" stroke="currentColor" stroke-width="1.5"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5.4" y="5.4" width="13.2" height="13.2" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+
+        <!-- Processing, laid over the PIN screen (as in Savings) -->
+        <div class="proc-overlay" id="procOverlay">
+            <div class="spinner"></div>
+            <h3 id="procOverlayTitle"></h3>
+            <div class="proc-line" id="procLine">
+                <span class="b"><svg class="ok" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><svg class="no" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg></span>
+                <span id="procLineText"></span>
+            </div>
+        </div>
+
+        <!-- Confirmation sheet (resend SMS, leave during payment...) -->
+        <div class="sheet-overlay" id="sheet" onclick="if (event.target === this) closeSheet()">
+            <div class="sheet" id="sheetBody"></div>
+        </div>
+
+        <!-- App notification / SMS heads-up -->
+        <div class="notice" id="notice" onclick="hideNotice()">
+            <span class="ic"><svg viewBox="0 0 24 24"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/></svg></span>
+            <div><b id="noticeFrom">M-PESA</b><p id="noticeText"></p></div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        /* ================================================================
+           Catalogue. Per the BRD the initial launch has three products:
+           Netflix, Google Play and PUBG Mobile (the User Journey also shows
+           Spotify, which the BRD does not list, so it is left out).
+           Denominations, ETB prices, the 5 ETB service fee and the expiry
+           period are SAMPLE values: the journey only gives $10 = 1,645 ETB
+           + 5 ETB fee. Live values come from Pincoon / pricing config.
+           ================================================================ */
+        const ETB_PER_USD = 164.5;      // sample, from $10 -> 1,645 ETB
+        const SERVICE_FEE = 5;          // sample, per voucher
+        const EXPIRY_MONTHS = 12;       // sample: shown only when the provider sends an expiry
+        const ME = { name: 'Mikias Dereje', phone: '0911 032 052' };
+
+        const PRODUCTS = {
+            netflix: {
+                name: 'Netflix', category: 'Streaming', prefix: 'NFLX', tagline: 'Watch your favorite shows and movies',
+                desc: 'Pay for your Netflix plan with a gift card to watch your favorite movies.',
+                denoms: [10, 20, 30], unavailable: [30],
+                steps: ['Go to Netflix', 'Sign in to your account', 'Enter your code and enjoy!'],
+                link: ['Netflix Ethiopia - Watch TV Shows Online, Watch Movies Online', 'https://www.netflix.com/et/']
+            },
+            googleplay: {
+                name: 'Google Play', category: 'Apps & games', prefix: 'GPLY', tagline: 'Get your favorite apps and games',
+                desc: 'Top up your Google Play balance with a gift card to get your favorite apps and games.',
+                denoms: [10, 20, 30], unavailable: [],
+                steps: ['Go to Google Play', 'Sign in to your Google account', 'Enter your code and enjoy!'],
+                link: ['Google Play - Redeem a gift code', 'https://play.google.com/redeem']
+            },
+            pubg: {
+                name: 'PUBG Mobile', category: 'Gaming', prefix: 'PUBG', tagline: 'Top up your PUBG',
+                desc: 'Top up your PUBG Mobile account with a gift card to unlock skins, outfits and more.',
+                denoms: [10, 20, 30], unavailable: [],
+                steps: ['Go to the PUBG Mobile redeem page', 'Sign in with your player ID', 'Enter your code and enjoy!'],
+                link: ['Midasbuy - PUBG Mobile redeem', 'https://www.midasbuy.com/']
+            },
+            spotify: {
+                name: 'Spotify', category: 'Music', prefix: 'SPTF', tagline: 'Enjoy endless music',
+                desc: 'Pay for Spotify Premium with a gift card to enjoy endless music.',
+                denoms: [10, 20, 30], unavailable: [],
+                steps: ['Go to Spotify', 'Sign in to your account', 'Enter your code and enjoy!'],
+                link: ['Spotify - Redeem your gift card', 'https://www.spotify.com/redeem/']
+            }
+        };
+        const ORDER = ['netflix', 'googleplay', 'pubg', 'spotify'];
+        const CAPSULE = '<div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>';
+
+        /* brand marks: simple placeholders until the partners' official logos are supplied */
+        const MARK = {
+            netflix: '<svg viewBox="0 0 24 24"><path d="M6.5 2.5h3.6l4 11.5V2.5h3.4v19l-3.6-.5-4-11.4V20.6l-3.4.4Z" fill="#E50914"/></svg>',
+            googleplay: '<svg viewBox="0 0 24 24"><path d="M4.2 2.6 13.6 12l-9.4 9.4c-.3-.2-.5-.6-.5-1.1V3.7c0-.5.2-.9.5-1.1Z" fill="#00C3FF"/><path d="m16.8 8.8-3.2 3.2-9.4-9.4c.3-.2.8-.2 1.2 0Z" fill="#00E676"/><path d="m16.8 15.2-11.4 6.2c-.4.2-.9.2-1.2 0l9.4-9.4Z" fill="#FF3A44"/><path d="M20.3 10.7c.9.6.9 2 0 2.6l-3.5 1.9-3.2-3.2 3.2-3.2Z" fill="#FFD400"/></svg>',
+            spotify: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1DB954"/><path d="M6.8 9.4c3.6-1.1 7.6-.8 10.6.9M7.4 12.4c3-.8 6.2-.5 8.7.9M8 15.2c2.4-.6 4.8-.4 6.8.7" stroke="#000" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
+            pubg: '<svg viewBox="0 0 24 24"><text x="12" y="15.2" text-anchor="middle" font-family="Barlow, sans-serif" font-weight="800" font-size="8.6" fill="#F2A900">PUBG</text></svg>'
+        };
+        const WORD = {
+            netflix: '<span class="gw gw-netflix">NETFLIX</span>',
+            googleplay: '<span class="gw gw-gp">' + MARK.googleplay + 'Google Play</span>',
+            pubg: '<span class="gw gw-pubg">PUBG<small>MOBILE</small></span>',
+            spotify: '<span class="gw gw-spotify">' + MARK.spotify + 'Spotify</span>'
+        };
+        /* the gift card: wordmark, value, M-PESA seal. Scales to any width (container units). */
+        /* cover photos (supplied artwork); products without one keep the drawn card */
+        const COVER = {
+            netflix: ['assets/NETFLIX.jpg', 'center'],
+            spotify: ['assets/SPOTIFY.jpg', 'center 30%'],
+            pubg: ['assets/PUGB.jpg', 'center 20%']
+        };
+
+        function giftCard(key, label, tagline) {
+            const left = tagline != null ? (tagline ? '<span class="gc-tag">' + tagline + '</span>' : '<span></span>')
+                : '<span><small>GIFT CARD</small><b>' + label + '</b></span>';
+            const cover = COVER[key]
+                ? '<img class="cover" src="' + COVER[key][0] + '" alt="" style="object-position:' + COVER[key][1] + '"><span class="shade"></span>'
+                : '<span class="wm">' + MARK[key] + '</span><span class="shine"></span>';
+            return '<div class="gc gc-' + key + (COVER[key] ? ' has-cover' : '') + '" aria-hidden="true">' + cover
+                + WORD[key]
+                + '<div class="gc-bot">' + left
+                + '<span class="mp"><img src="assets/M-PESA-money-icon.svg" alt=""></span></div></div>';
+        }
+
+        function mark(key, size) {
+            return '<span class="mark m-' + key + '" aria-hidden="true"' + (size ? ' style="width:' + size + 'px;height:' + size + 'px"' : '') + '>' + MARK[key] + '</span>';
+        }
+
+        /* ---------- Formatting ---------- */
+        function money(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function whole(n) { return n.toLocaleString('en-US'); }
+        function priceOf(usd) { return Math.round(usd * ETB_PER_USD); }
+        function totalOf(usd) { return priceOf(usd) + SERVICE_FEE; }
+        /* "21 Sep 2026", as elsewhere in the app (browsers differ on "Sep" / "Sept") */
+        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        function fmtDate(d) { return d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); }
+        function fmtTime(d) { return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
+        function addMonths(d, m) { const x = new Date(d); x.setMonth(x.getMonth() + m); return x; }
+        function daysAgo(n, h) { const d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 10, 24, 0, 0); return d; }
+        function rand(n, set) { let s = ''; for (let i = 0; i < n; i++) s += set[Math.floor(Math.random() * set.length)]; return s; }
+        const ALNUM = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        function newRef() { return 'MPV' + rand(8, ALNUM); }                      // unique transaction reference
+        function newCode(p) { return PRODUCTS[p].prefix + '-' + rand(4, ALNUM) + '-' + rand(4, ALNUM); }
+        function maskCode(c) { const parts = c.split('-'); return parts[0] + '-••••-' + parts[2]; }
+        function voucherName(v) { return PRODUCTS[v.product].name + ' $' + v.usd; }
+
+        /* ================================================================
+           State. Demo scenarios come from the sidebar (?gv=...):
+             empty    first visit, nothing bought yet
+             lowbal   wallet below the price (insufficient balance)
+             payfail  the M-PESA payment fails (no debit)
+             issuefail payment taken, voucher not issued -> automatic reversal
+             smsfail  voucher issued, SMS not delivered -> resend
+           A PIN of 0000 is always treated as incorrect.
+           ================================================================ */
+        const STATE_KEY = 'gvState';
+
+        function seedState() {
+            const v1 = daysAgo(15, 14), v2 = daysAgo(53, 9), v3 = daysAgo(399, 18), f1 = daysAgo(8, 11), f2 = daysAgo(26, 20);
+            const vouchers = [
+                { id: 'v1', product: 'netflix', usd: 10, code: 'NFLX-7K2M-9QXA', bought: v1.toISOString(), expires: addMonths(v1, EXPIRY_MONTHS).toISOString(), status: 'active', ref: 'MPV4K7Q2X9A', sms: 'sent' },
+                { id: 'v2', product: 'googleplay', usd: 20, code: 'GPLY-3H8D-QW2L', bought: v2.toISOString(), expires: addMonths(v2, EXPIRY_MONTHS).toISOString(), status: 'redeemed', ref: 'MPV8RT3MZ2C', sms: 'sent' },
+                { id: 'v3', product: 'pubg', usd: 10, code: 'PUBG-9X2C-71MN', bought: v3.toISOString(), expires: addMonths(v3, EXPIRY_MONTHS).toISOString(), status: 'expired', ref: 'MPV2NC6PL8D', sms: 'sent' }
+            ];
+            const tx = vouchers.map(v => ({ ref: v.ref, product: v.product, usd: v.usd, on: v.bought, status: 'success', voucher: v.id }));
+            tx.push({ ref: 'MPV7DQ4KW1E', product: 'pubg', usd: 20, on: f1.toISOString(), status: 'failed', reason: 'payment' });
+            tx.push({ ref: 'MPV5LW9HT3F', product: 'netflix', usd: 20, on: f2.toISOString(), status: 'failed', reason: 'issuance' });
+            return { wallet: 5000, vouchers: vouchers, tx: tx, scenario: 'normal' };
+        }
+
+        function loadState() {
+            try { const s = JSON.parse(sessionStorage.getItem(STATE_KEY)); if (s && s.vouchers) return s; } catch (e) {}
+            return seedState();
+        }
+        function save() { try { sessionStorage.setItem(STATE_KEY, JSON.stringify(S)); } catch (e) {} }
+
+        let S = loadState();
+        const START = new URLSearchParams(location.search);
+        const scenario = START.get('gv');
+        if (scenario) {
+            S = seedState();
+            S.scenario = scenario;
+            if (scenario === 'empty') { S.vouchers = []; S.tx = []; }
+            if (scenario === 'lowbal') S.wallet = 1200;
+        }
+        save();
+
+        /* ================================================================
+           Navigation: a small stack of steps. Tab roots show the bottom
+           navigation; everything inside the purchase flow hides it so the
+           customer is never one tap away from abandoning a payment.
+           ================================================================ */
+        const ROOTS = ['stepHome', 'stepMine', 'stepTx'];
+        let stack = ['stepHome'];
+
+        function show(id) {
+            document.querySelectorAll('.step').forEach(s => s.classList.toggle('active', s.id === id));
+            document.getElementById('tabs').classList.toggle('show', ROOTS.includes(id));
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === id));
+            const sc = document.querySelector('#' + id + ' .scroll');
+            if (sc) sc.scrollTop = 0;
+            note(id);
+        }
+        function go(id) { stack.push(id); show(id); }
+        function back() {
+            if (document.getElementById('sheet').classList.contains('show')) { closeSheet(); return; }
+            if (stack.length <= 1) { leaveApp(); return; }
+            stack.pop();
+            const top = stack[stack.length - 1];
+            if (top === 'stepMine') renderMine();
+            if (top === 'stepTx') renderTx();
+            if (top === 'stepVoucher') renderVoucher();
+            show(top);
+        }
+        function goTab(id) {
+            stack = [id];
+            if (id === 'stepMine') renderMine();
+            if (id === 'stepTx') renderTx();
+            if (id === 'stepHome') renderHome();
+            show(id);
+        }
+        function leaveApp() {
+            if (procBusy) { showToast('Please wait, your payment is in progress'); return; }
+            window.location.href = 'Mini Apps.html';
+        }
+
+        /* the capsule's ••• : the mini app's own menu */
+        function openMore() {
+            const row = (icon, label, act) => '<button class="menu-row" onclick="closeSheet(); ' + act + '"><span class="ic"><svg viewBox="0 0 24 24">' + icon + '</svg></span>' + label + '</button>';
+            document.getElementById('sheetBody').innerHTML = '<div class="grab"></div>'
+                + '<div class="mini-id"><span class="logo"><svg viewBox="0 0 24 24"><path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/></svg></span>'
+                + '<span><b>Global Vouchers</b><small>M-PESA mini app &middot; by Safaricom</small></span></div>'
+                + row('<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6"/><path d="M12 16.8v.1"/>', 'Help &amp; support', 'openHelp()')
+                + row('<path d="m12 3.8 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.9l5.8-.8L12 3.8Z"/>', 'Add to favourites', "showToast('Added to your favourite mini apps')")
+                + row('<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>', 'Share', "showToast('Link copied')");
+            document.getElementById('sheet').classList.add('show');
+        }
+
+        /* developer notes beside the phone, for the screens where a business rule matters */
+        const NOTES = {
+            stepProduct: 'Out-of-stock or unavailable denominations are shown but cannot be selected (BRD: unavailable vouchers are not purchasable). Availability comes from Pincoon.',
+            stepReview: 'Service fee and total must be visible before confirmation (BRD). Wallet balance is validated here, before the PIN, so an insufficient balance never reaches the payment step.',
+            stepPin: 'Payment and voucher issuance are separate stages. A purchase is only successful once Pincoon issues the voucher; if the customer was debited and issuance fails, the amount is reversed automatically.',
+            stepVoucher: 'Codes are masked in lists and only revealed on the voucher screen of the buyer (BRD: codes accessible only to the purchaser). Whether revealing also needs the M-PESA PIN is an open question.',
+            stepTx: 'Transactions = what I paid for (amounts, status, reference). My Vouchers = what I own (codes, expiry, redemption). Codes are not shown in transaction lists.'
+        };
+        function note(id) {
+            if (window.prototypeMode && window.prototypeMode.devNote) window.prototypeMode.devNote(NOTES[id] || '');
+        }
+
+        /* ================================================================
+           Tab 1 - Vouchers home: intro, trust points, catalogue, how it works
+           ================================================================ */
+        let catalogueReady = false;
+
+        let homeCat = 'All';
+
+        function storeTile(key, wide, popular) {
+            const P = PRODUCTS[key];
+            const from = Math.min.apply(null, P.denoms.filter(d => !P.unavailable.includes(d)));
+            return '<button class="tile' + (wide ? ' wide' : '') + '" onclick="openProduct(\'' + key + '\')">' + giftCard(key, null, P.tagline)
+                + '<span class="meta"><span><b>' + P.name + '</b><small>From ' + whole(totalOf(from)) + ' ETB</small></span>'
+                + (popular ? '<span class="tag">POPULAR</span>' : '') + '</span></button>';
+        }
+
+        function setHomeCat(c) { homeCat = c; renderHome(); }
+
+        function renderHome() {
+            const cats = ['All'].concat(ORDER.map(k => PRODUCTS[k].category).filter((c, i, a) => a.indexOf(c) === i));
+            const shown = ORDER.filter(k => homeCat === 'All' || PRODUCTS[k].category === homeCat);
+            document.getElementById('homeBody').innerHTML = '<div class="hero"><img class="pat" src="assets/M-PESA-pattern.svg" alt="">'
+                + '<div class="hero-bar"><button class="icon-btn on-dark" onclick="leaveApp()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button><h1>Global Vouchers</h1>' + CAPSULE.replace('class="capsule"', 'class="capsule light"') + '</div>'
+                + '<div class="hero-in"><div class="hero-txt">'
+                + '<h2>Gift cards for the apps you love</h2><p>Pay with M-PESA.</p></div>'
+                + '<div class="stack">' + giftCard('spotify', null, '') + giftCard('pubg', null, '') + giftCard('netflix', null, '') + '</div></div>'
+                + '</div>'
+                + '<div class="panel">'
+                + '<div class="section" style="margin-top:4px"><h2>Gift cards</h2></div>'
+                + '<div class="chips">' + cats.map(c => '<button class="chip' + (homeCat === c ? ' on' : '') + '" onclick="setHomeCat(\'' + c + '\')">' + c + '</button>').join('') + '</div>'
+                + (catalogueReady
+                    /* the first card is featured (wide, POPULAR); if the rest leave one alone, it goes wide too */
+                    ? '<div class="store">' + shown.map((k, i) => storeTile(k, i === 0 || (shown.length % 2 === 0 && i === shown.length - 1), i === 0 && homeCat === 'All')).join('') + '</div>'
+                    : '<p class="loading-note"><span class="dotspin"></span>Checking availability&hellip;</p><div class="skel" style="height:140px"></div><div class="skel"></div>')
+                + '<div style="height:16px"></div></div>';
+            paintCount();
+        }
+
+        function paintCount() {
+            const n = S.vouchers.filter(v => v.status === 'active').length;
+            document.getElementById('mineCount').textContent = n ? String(n) : '';
+            document.getElementById('mineCount').style.display = n ? '' : 'none';
+        }
+
+        /* ================================================================
+           Product details + denomination
+           ================================================================ */
+        let cur = { product: null, usd: null };
+
+        function openProduct(key) {
+            cur = { product: key, usd: null };
+            /* preselect the first available value so the price is visible straight away */
+            const P = PRODUCTS[key];
+            cur.usd = P.denoms.find(d => !P.unavailable.includes(d)) || null;
+            renderProduct();
+            go('stepProduct');
+        }
+
+        function openGuide(key) {
+            document.getElementById('sheetBody').innerHTML = '<div class="grab"></div>'
+                + '<div class="title-row"><h3>How to redeem</h3>' + mark(key, 34) + '</div>'
+                + '<p>Use your ' + PRODUCTS[key].name + ' voucher code in ' + PRODUCTS[key].steps.length + ' steps:</p>'
+                + guideHtml(key)
+                + '<div class="acts"><button class="btn" onclick="closeSheet()">Got it</button></div>';
+            document.getElementById('sheet').classList.add('show');
+        }
+
+        function guideHtml(key) {
+            const P = PRODUCTS[key];
+            return '<ol class="guide">' + P.steps.map((s, i) => '<li><em>' + (i + 1) + '</em><span>' + s
+                + (i === 0 && P.link ? '<a class="glink" href="' + P.link[1] + '" target="_blank" rel="noopener">' + P.link[0] + '</a>' : '')
+                + '</span></li>').join('') + '</ol>';
+        }
+
+        function renderProduct() {
+            const P = PRODUCTS[cur.product];
+            document.getElementById('productTitle').textContent = P.name;
+            document.getElementById('productBody').innerHTML = '<div class="p-stage">' + giftCard(cur.product, cur.usd ? '$' + cur.usd : '$' + P.denoms[0]) + '</div>'
+                + '<div class="p-hero title-row" style="margin-top:4px"><span><b>' + P.name + ' gift card</b></span>'
+                + '</div>'
+                + '<p class="p-desc" style="margin-top:6px">' + P.desc + '</p>'
+                + '<div class="section"><h2>Choose a value</h2></div>'
+                + '<div class="denoms">' + P.denoms.map(d => {
+                    const off = P.unavailable.includes(d);
+                    return '<button class="denom' + (cur.usd === d ? ' on' : '') + '"' + (off ? ' disabled' : ' onclick="pickDenom(' + d + ')"') + '>'
+                        + '<b>$' + d + '</b><small>' + (off ? 'Unavailable' : whole(priceOf(d)) + ' ETB') + '</small></button>';
+                }).join('') + '</div>'
+                + (cur.usd
+                    ? '<div class="you-pay"><span>$' + cur.usd + ' gift card</span><b>' + money(totalOf(cur.usd)) + ' ETB</b></div>'
+                    : '')
+                + '<div class="section"><h2>Redemption guide</h2></div>' + guideHtml(cur.product)
+                + '<div style="height:16px"></div>';
+            document.getElementById('productGo').disabled = !cur.usd;
+        }
+
+        function pickDenom(d) { cur.usd = d; renderProduct(); }
+
+        /* ================================================================
+           Review & pay (balance validated here, before the PIN)
+           ================================================================ */
+        function toReview() { renderReview(); go('stepReview'); }
+
+        function renderReview() {
+            const P = PRODUCTS[cur.product], price = priceOf(cur.usd), total = totalOf(cur.usd);
+            const short = total - S.wallet;
+            const expires = addMonths(new Date(), EXPIRY_MONTHS);
+            let html = '<div class="card" style="margin-top:6px">'
+                + '<div class="v-sum">' + mark(cur.product) + '<span><b>' + P.name + ' voucher</b><small>Voucher value $' + cur.usd + '.00</small></span></div>'
+                + '<div class="rows">'
+                + '<div class="row"><span>Voucher value</span><b>$' + money(cur.usd) + '</b></div>'
+                + '<div class="row"><span>Voucher price</span><b>' + money(price) + ' ETB</b></div>'
+                + '<div class="row"><span>Service fee</span><b>' + money(SERVICE_FEE) + ' ETB</b></div>'
+                + '<div class="row total"><span>Total to pay</span><b>' + money(total) + ' ETB</b></div>'
+                + '</div></div>';
+            if (short > 0) {
+                html += '<div class="banner err"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg><div>'
+                    + '<b>Not enough money in M-PESA</b>Add money at any M-PESA agent, or choose a lower value.'
+                    + '<div class="short"><div><span>Available balance</span><b>' + money(S.wallet) + ' ETB</b></div>'
+                    + '<div><span>Required</span><b>' + money(total) + ' ETB</b></div>'
+                    + '<div><span>Short by</span><b>' + money(short) + ' ETB</b></div></div></div></div>';
+            }
+            /* payment and delivery: one card per fact */
+            html += '<div class="section"><h2>Payment &amp; delivery</h2></div>'
+                + '<div class="fact-card"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12.5" rx="2"/><path d="M3.5 10h17"/></svg></span>'
+                + '<span class="t"><b>Pay from M-PESA</b><small>Available balance ' + money(S.wallet) + ' ETB</small></span></div>'
+                + '<div class="fact-card"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/></svg></span>'
+                + '<span class="t"><b>Code delivery</b><small>SMS to ' + ME.phone + ' and in My Vouchers</small></span></div>'
+                + '<div class="fact-card"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>'
+                + '<span class="t"><b>Expires ' + fmtDate(expires) + '</b><small>Redeem the code before this date</small></span></div>'
+                + '<div style="height:12px"></div>';
+            document.getElementById('reviewBody').innerHTML = html;
+
+            const P2 = PRODUCTS[cur.product];
+            const lower = P2.denoms.filter(d => d < cur.usd && !P2.unavailable.includes(d) && totalOf(d) <= S.wallet);
+            document.getElementById('reviewFoot').innerHTML = short > 0
+                ? (lower.length
+                    ? '<button class="btn" onclick="pickLower(' + lower[lower.length - 1] + ')">Choose $' + lower[lower.length - 1] + ' instead</button>'
+                    : '<button class="btn" onclick="backToHome()">Back to vouchers</button>')
+                  + '<button class="btn text" onclick="back()">Change value</button>'
+                : '<button class="btn" onclick="toPin()">Pay<svg viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>';
+        }
+
+        function pickLower(d) { cur.usd = d; renderProduct(); renderReview(); }
+        function backToHome() { goTab('stepHome'); }
+
+        /* ================================================================
+           PIN (0000 = incorrect, for the demo)
+           ================================================================ */
+        let pin = '';
+        function toPin() {
+            pin = '';
+            paintPin();
+            document.getElementById('pinErr').textContent = '';
+            document.getElementById('pinSum').innerHTML = '<div class="pin-row"><b>VOUCHER</b>' + PRODUCTS[cur.product].name + ' $' + cur.usd + '</div>'
+                + '<div class="pin-row"><b>AMOUNT</b>' + money(totalOf(cur.usd)) + ' ETB</div>';
+            go('stepPin');
+        }
+        function paintPin() { document.querySelectorAll('#pinDots .pin-dot').forEach((d, i) => d.classList.toggle('filled', i < pin.length)); }
+        function pinPress(d) {
+            if (pin.length >= 4) return;
+            document.getElementById('pinDots').classList.remove('bad');
+            document.getElementById('pinErr').textContent = '';
+            pin += d;
+            paintPin();
+            if (pin.length === 4) setTimeout(checkPin, 180);
+        }
+        function checkPin() {
+            if (pin === '0000') {
+                const dots = document.getElementById('pinDots');
+                dots.classList.remove('bad'); void dots.offsetWidth; dots.classList.add('bad');
+                document.getElementById('pinErr').textContent = 'Incorrect PIN. Please try again.';
+                pin = '';
+                setTimeout(paintPin, 350);
+                return;
+            }
+            startPurchase();
+        }
+        function cancelPin() { pin = ''; back(); }
+        /* the fingerprint stands in for a correct PIN, as in Savings */
+        function pinFill() { pin = '1234'; paintPin(); setTimeout(checkPin, 320); }
+
+        /* ================================================================
+           Payment -> issuance -> delivery. Each stage shows on its own so a
+           failure always names the stage it happened in.
+           ================================================================ */
+        let purchase = null, procBusy = false;
+
+        /* Run steps one at a time on the overlay. Each step: [title, line, ok?, before].
+           A failed step shows a red cross and stops the run. */
+        function procRun(steps, then) {
+            const overlay = document.getElementById('procOverlay');
+            const line = document.getElementById('procLine');
+            const text = document.getElementById('procLineText');
+            const STEP = 1100;
+            procBusy = true;
+            overlay.classList.add('show');
+            steps.forEach((st, i) => {
+                setTimeout(() => {
+                    if (st[3]) st[3]();
+                    document.getElementById('procOverlayTitle').textContent = st[0];
+                    line.classList.add('swap');
+                    setTimeout(() => { text.textContent = st[1]; line.classList.remove('done', 'fail', 'swap'); }, 180);
+                }, STEP * i);
+                setTimeout(() => line.classList.add(st[2] === false ? 'fail' : 'done'), STEP * i + 700);
+            });
+            setTimeout(() => {
+                then();
+                overlay.classList.remove('show');
+                procBusy = false;
+            }, STEP * steps.length + 300);
+        }
+
+        function startPurchase() {
+            purchase = { product: cur.product, usd: cur.usd, total: totalOf(cur.usd), ref: newRef(), on: new Date().toISOString() };
+            const pay = 'Taking ' + whole(purchase.total) + ' ETB from M-PESA';
+            if (S.scenario === 'payfail') {
+                procRun([['Processing payment', pay, false]], paymentFailed);
+                return;
+            }
+            const paid = ['Processing payment', pay, true, () => { S.wallet -= purchase.total; }];
+            if (S.scenario === 'issuefail') {
+                procRun([paid,
+                    ['Creating your voucher', 'The voucher couldn\u2019t be issued', false],
+                    ['Returning your money', 'Refunding ' + whole(purchase.total) + ' ETB to M-PESA', true]], issuanceFailed);
+                return;
+            }
+            procRun([paid,
+                ['Creating your voucher', 'Payment received, creating your code', true],
+                ['Sending your code', 'By SMS and app notification', true]], voucherReady);
+        }
+
+        /* ---------- results ---------- */
+        function factsHtml(rows) {
+            return '<div class="facts">' + rows.map(r => '<div class="fact"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('') + '</div>';
+        }
+        function refRow(ref) { return ['Transaction ID', ref + '<button class="copy-mini" onclick="copyText(\'' + ref + '\', \'Transaction ID copied\')">COPY</button>']; }
+
+        function paymentFailed() {
+            S.tx.push({ ref: purchase.ref, product: purchase.product, usd: purchase.usd, on: purchase.on, status: 'failed', reason: 'payment' });
+            save();
+            const P = PRODUCTS[purchase.product];
+            document.getElementById('resultTitle').textContent = 'Payment failed';
+            document.getElementById('resultBody').innerHTML = '<div class="result">'
+                + '<div class="badge err"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg></div>'
+                + '<h3>Payment didn’t go through</h3>'
+                + '<p>Your ' + P.name + ' $' + purchase.usd + ' voucher wasn’t bought. <b>No money was taken</b> from your M-PESA.</p></div>'
+                + factsHtml([['Amount', money(purchase.total) + ' ETB'], ['Status', '<span class="st failed">Not charged</span>'], ['Date', fmtDate(new Date(purchase.on)) + ', ' + fmtTime(new Date(purchase.on))], refRow(purchase.ref)])
+                + supportLine();
+            document.getElementById('resultFoot').innerHTML = '<button class="btn" onclick="retry()">Try again</button><button class="btn ghost" onclick="backToHome()">Back to vouchers</button>';
+            stack = ['stepHome', 'stepResult'];
+            show('stepResult');
+        }
+
+        function issuanceFailed() {
+            S.wallet += purchase.total;      // automatic reversal
+            S.tx.push({ ref: purchase.ref, product: purchase.product, usd: purchase.usd, on: purchase.on, status: 'failed', reason: 'issuance' });
+            save();
+            const P = PRODUCTS[purchase.product], when = new Date(purchase.on);
+            document.getElementById('resultTitle').textContent = 'Voucher not issued';
+            document.getElementById('resultBody').innerHTML = '<div class="result">'
+                + '<div class="badge warn"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/></svg></div>'
+                + '<h3>Your money has been returned</h3>'
+                + '<p>We took your payment but couldn’t create your ' + P.name + ' $' + purchase.usd + ' voucher, so the full <b>' + money(purchase.total) + ' ETB</b> was returned to your M-PESA.</p></div>'
+                + '<div class="tl">'
+                + '<div class="tl-row g"><i><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4 8-9"/></svg></i><span><b>Payment received</b><small>' + money(purchase.total) + ' ETB &middot; ' + fmtTime(when) + '</small></span></div>'
+                + '<div class="tl-row r"><i><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg></i><span><b>Voucher couldn’t be issued</b><small>The provider didn’t return a code</small></span></div>'
+                + '<div class="tl-row g"><i><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4 8-9"/></svg></i><span><b>Refunded to M-PESA</b><small>' + money(purchase.total) + ' ETB &middot; new balance ' + money(S.wallet) + ' ETB</small></span></div>'
+                + '</div>'
+                + factsHtml([refRow(purchase.ref), ['Date', fmtDate(when) + ', ' + fmtTime(when)]])
+                + supportLine();
+            document.getElementById('resultFoot').innerHTML = '<button class="btn" onclick="backToHome()">Done</button><button class="btn text" onclick="retry()">Try another value</button>';
+            stack = ['stepHome', 'stepResult'];
+            show('stepResult');
+            notify('M-PESA', 'Your ' + money(purchase.total) + ' ETB for ' + P.name + ' $' + purchase.usd + ' was refunded. Ref ' + purchase.ref + '.');
+        }
+
+        function voucherReady() {
+            const smsOk = S.scenario !== 'smsfail';
+            const v = { id: 'v' + Date.now(), product: purchase.product, usd: purchase.usd, code: newCode(purchase.product), bought: purchase.on,
+                expires: addMonths(new Date(purchase.on), EXPIRY_MONTHS).toISOString(), status: 'active', ref: purchase.ref, sms: smsOk ? 'sent' : 'failed' };
+            S.vouchers.unshift(v);
+            S.tx.push({ ref: purchase.ref, product: purchase.product, usd: purchase.usd, on: purchase.on, status: 'success', voucher: v.id });
+            save();
+            paintCount();
+            const P = PRODUCTS[v.product];
+            document.getElementById('resultTitle').textContent = 'Voucher ready';
+            document.getElementById('resultBody').innerHTML = '<div class="result" style="padding-top:0">'
+                + '<div class="badge ok" style="width:60px;height:60px;margin-top:4px"><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4 8-9"/></svg></div>'
+                + '<h3 style="margin-top:12px">Your voucher is ready</h3>'
+                + '<p>Paid ' + money(purchase.total) + ' ETB from M-PESA.</p>'
+                + '</div>'
+                + ticketHtml(v, true)
+                + (smsOk ? '' : '<div class="banner warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg><div><b>We couldn’t send the SMS</b>Your code is safe here and in My Vouchers. <a href="#" onclick="askResend(\'' + v.id + '\');return false;" style="color:inherit;font-weight:700">Resend SMS</a></div></div>')
+                + '<button class="redeem-link" onclick="openGuide(\'' + v.product + '\')"><span>How to redeem<small>' + PRODUCTS[v.product].steps.length + ' quick steps</small></span><span class="info-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M12 11v5"/><circle cx="12" cy="7.9" r="1.1" class="dot"/></svg></span></button>'
+                + factsHtml([refRow(v.ref), ['Paid', money(purchase.total) + ' ETB (incl. ' + SERVICE_FEE + ' ETB fee)']])
+                + '<div style="height:12px"></div>';
+            document.getElementById('resultFoot').innerHTML = '<button class="btn" onclick="backToHome()">Done</button><button class="btn text" onclick="openVoucher(\'' + v.id + '\', true)">View in My Vouchers</button>';
+            stack = ['stepHome', 'stepResult'];
+            show('stepResult');
+            if (smsOk) setTimeout(() => notify('M-PESA', 'Your ' + P.name + ' $' + v.usd + ' voucher code is ' + v.code + '. Expires ' + fmtDate(new Date(v.expires)) + '. Ref ' + v.ref + '.'), 500);
+        }
+
+        function retry() { renderProduct(); stack = ['stepHome', 'stepProduct']; show('stepProduct'); }
+        function resultClose() { backToHome(); }
+        function supportLine() {
+            return '<p style="margin:16px 24px 0 24px;text-align:center;font-size:13px;color:var(--muted)">Need help? <a href="#" onclick="openHelp();return false;" style="color:var(--green-dark);font-weight:600">Contact M-PESA support</a> with your transaction ID.</p>';
+        }
+
+        /* ---------- voucher code component ---------- */
+        let revealed = {};
+        function ticketHtml(v, open) {
+            const P = PRODUCTS[v.product], shown = open || revealed[v.id], live = v.status === 'active';
+            const exp = new Date(v.expires);
+            return '<div class="ticket"><div class="top">' + mark(v.product)
+                + '<span><b>' + P.name + ' $' + v.usd + '</b><small>' + P.category + ' voucher</small></span>'
+                + '<span class="st ' + v.status + '">' + v.status + '</span></div>'
+                + '<div class="perf"></div>'
+                + '<div class="code"><small>YOUR VOUCHER CODE</small>'
+                + '<div class="code-line"><span class="' + (shown ? '' : 'masked') + '">' + (shown ? v.code : maskCode(v.code)) + '</span>'
+                + (shown
+                    ? '<span class="code-acts"><button onclick="copyText(\'' + v.code + '\', \'Code copied\')"><svg viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="12" rx="2"/><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/></svg>COPY CODE</button>' + '<button class="soft" onclick="shareCode(\'' + v.id + '\')"><svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg>SHARE</button></span>'
+                    : '<span class="code-acts"><button class="soft" onclick="reveal(\'' + v.id + '\')"><svg viewBox="0 0 24 24"><path d="M2.6 12S6.4 5.4 12 5.4 21.4 12 21.4 12 17.6 18.6 12 18.6 2.6 12 2.6 12Z"/><circle cx="12" cy="12" r="3"/></svg>SHOW CODE</button>' + '<button class="soft" onclick="shareCode(\'' + v.id + '\')"><svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg>SHARE</button></span>')
+                + '</div>'
+                + '<p class="exp"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>'
+                + (v.status === 'expired' ? 'Expired on <b>' + fmtDate(exp) + '</b>' : v.status === 'redeemed' ? 'Redeemed &middot; was valid until <b>' + fmtDate(exp) + '</b>' : 'Expires on <b>' + fmtDate(exp) + '</b>')
+                + '</p></div></div>';
+        }
+        /* share the code through the phone's share sheet (copies a message where there isn't one) */
+        function shareCode(id) {
+            const v = S.vouchers.find(x => x.id === id);
+            const text = 'My ' + voucherName(v) + ' voucher code: ' + v.code + ' (expires ' + fmtDate(new Date(v.expires)) + ')';
+            if (navigator.share) { navigator.share({ title: voucherName(v) + ' voucher', text: text }).catch(() => {}); return; }
+            copyText(text, 'Code copied to share');
+        }
+
+        function reveal(id) { revealed[id] = true; renderVoucher(); }
+
+        /* ================================================================
+           Tab 2 - My Vouchers: what I own
+           ================================================================ */
+        let mineFilter = 'all';
+        function renderMine() {
+            const owned = ORDER.filter(p => S.vouchers.some(v => v.product === p));
+            document.getElementById('mineChips').innerHTML = S.vouchers.length
+                ? ['all'].concat(owned).map(k => '<button class="chip' + (mineFilter === k ? ' on' : '') + '" onclick="setMineFilter(\'' + k + '\')">' + (k === 'all' ? 'All' : PRODUCTS[k].name) + '</button>').join('')
+                : '';
+            const list = S.vouchers.filter(v => mineFilter === 'all' || v.product === mineFilter);
+            const item = v => '<button class="item' + (v.status === 'active' ? '' : ' dim') + '" onclick="openVoucher(\'' + v.id + '\')">' + mark(v.product)
+                + '<span class="t"><b>' + voucherName(v) + '</b>'
+                + '<small>' + (v.status === 'active' ? 'Expires ' + fmtDate(new Date(v.expires)) : v.status === 'expired' ? 'Expired ' + fmtDate(new Date(v.expires)) : 'Bought ' + fmtDate(new Date(v.bought))) + '</small></span>'
+                + '<span class="r"><span class="st ' + v.status + '">' + v.status + '</span></span></button>';
+            const active = list.filter(v => v.status === 'active'), past = list.filter(v => v.status !== 'active');
+            document.getElementById('mineBody').innerHTML = !S.vouchers.length
+                ? emptyHtml('<path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/>',
+                    'No vouchers yet', 'Vouchers you buy are kept here, with their codes and expiry dates.', '<button class="btn" onclick="backToHome()">Browse vouchers</button>')
+                : (active.length ? '<p class="list-head">Ready to use</p><div class="group-card">' + active.map(item).join('') + '</div>' : '')
+                  + (past.length ? '<p class="list-head" style="margin-top:16px">Used &amp; expired</p><div class="group-card">' + past.map(item).join('') + '</div>' : '')
+                  + '<div style="height:12px"></div>';
+            paintCount();
+        }
+        function setMineFilter(k) { mineFilter = k; renderMine(); }
+
+        /* ---------- voucher details ---------- */
+        let curVoucher = null;
+        function openVoucher(id, fromResult) {
+            curVoucher = id;
+            if (fromResult) { revealed[id] = true; stack = ['stepMine', 'stepVoucher']; renderVoucher(); show('stepVoucher'); return; }
+            renderVoucher();
+            go('stepVoucher');
+        }
+        function renderVoucher() {
+            const v = S.vouchers.find(x => x.id === curVoucher);
+            if (!v) return;
+            const tx = S.tx.find(t => t.ref === v.ref);
+            document.getElementById('voucherBody').innerHTML = ticketHtml(v, false)
+                + (v.sms === 'failed' && v.status === 'active' ? '<div class="banner warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg><div><b>SMS not delivered</b>Your code is safe here. You can resend it by SMS below.</div></div>' : '')
+                + '<button class="redeem-link" onclick="openGuide(\'' + v.product + '\')"><span>How to redeem<small>' + PRODUCTS[v.product].steps.length + ' quick steps</small></span><span class="info-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M12 11v5"/><circle cx="12" cy="7.9" r="1.1" class="dot"/></svg></span></button>'
+                + factsHtml([['Voucher value', '$' + money(v.usd)], ['Paid', money(totalOf(v.usd)) + ' ETB'], ['Bought', fmtDate(new Date(v.bought)) + ', ' + fmtTime(new Date(v.bought))], refRow(v.ref)])
+                + (tx ? '<p style="margin:12px 16px 0 16px;text-align:center"><a href="#" onclick="openTx(\'' + tx.ref + '\');return false;" style="font-size:13px;color:var(--green-dark);font-weight:600">View payment details</a></p>' : '')
+                + '<div style="height:12px"></div>';
+            document.getElementById('voucherFoot').innerHTML = v.status === 'active'
+                ? '<button class="btn ghost" onclick="askResend(\'' + v.id + '\')"><svg viewBox="0 0 24 24" style="stroke:currentColor"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/></svg>Resend SMS</button>'
+                : '<button class="btn ghost" onclick="openProduct(\'' + v.product + '\')">Buy another ' + PRODUCTS[v.product].name + ' voucher</button>';
+        }
+
+        /* ---------- resend SMS: confirm -> sending -> sent / failed ---------- */
+        let resendTries = 0;
+        function askResend(id) {
+            const v = S.vouchers.find(x => x.id === id);
+            document.getElementById('sheetBody').innerHTML = '<div class="grab"></div><h3>Resend voucher SMS?</h3>'
+                + '<p>We’ll send the code for your <b>' + voucherName(v) + '</b> voucher to <b>' + ME.phone + '</b>, your M-PESA number.</p>'
+                + '<div class="acts"><button class="btn ghost" onclick="closeSheet()">Cancel</button><button class="btn" id="resendGo" onclick="doResend(\'' + id + '\')">Resend</button></div>';
+            document.getElementById('sheet').classList.add('show');
+        }
+        function doResend(id) {
+            const btn = document.getElementById('resendGo');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spin"></span>Sending';
+            setTimeout(() => {
+                const v = S.vouchers.find(x => x.id === id);
+                /* the SMS-failure demo fails the first resend too, to show the retry */
+                const fail = S.scenario === 'smsfail' && resendTries === 0;
+                resendTries++;
+                if (fail) {
+                    document.getElementById('sheetBody').innerHTML = '<div class="grab"></div><h3>SMS couldn’t be sent</h3>'
+                        + '<p>The network didn’t accept the message. Your code is still safe in My Vouchers.</p>'
+                        + '<div class="acts"><button class="btn ghost" onclick="closeSheet()">Close</button><button class="btn" id="resendGo" onclick="doResend(\'' + id + '\')">Try again</button></div>';
+                    return;
+                }
+                v.sms = 'sent';
+                save();
+                closeSheet();
+                if (document.getElementById('stepVoucher').classList.contains('active')) renderVoucher();
+                showToast('SMS sent to ' + ME.phone);
+                setTimeout(() => notify('SMS', 'Your ' + voucherName(v) + ' voucher code is ' + v.code + '. Expires ' + fmtDate(new Date(v.expires)) + '.'), 400);
+            }, 1300);
+        }
+
+        /* ================================================================
+           Tab 3 - Transactions: what I paid for (no codes here)
+           ================================================================ */
+        let txFilter = 'all';
+        function setTxFilter(f) {
+            txFilter = f;
+            document.querySelectorAll('#txSeg button').forEach((b, i) => b.classList.toggle('on', ['all', 'success', 'failed'][i] === f));
+            renderTx();
+        }
+        function txStatus(t) {
+            if (t.status === 'success') return ['success', 'Successful'];
+            if (t.reason === 'issuance') return ['refunded', 'Refunded'];
+            return ['failed', 'Failed'];
+        }
+        function renderTx() {
+            const list = S.tx.slice().sort((a, b) => new Date(b.on) - new Date(a.on))
+                .filter(t => txFilter === 'all' || (txFilter === 'success' ? t.status === 'success' : t.status !== 'success'));
+            const month = d => d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+            const months = [];
+            list.forEach(t => {
+                const m = month(new Date(t.on)), g = months[months.length - 1];
+                if (g && g.m === m) g.rows.push(t); else months.push({ m: m, rows: [t] });
+            });
+            const row = t => {
+                    const d = new Date(t.on);
+                    const s = txStatus(t);
+                    return '<button class="item" onclick="openTx(\'' + t.ref + '\')">' + mark(t.product)
+                        + '<span class="t"><b>' + PRODUCTS[t.product].name + ' $' + t.usd + '</b><small>' + fmtDate(d) + ', ' + fmtTime(d) + '</small></span>'
+                        + '<span class="r"><b>' + (t.status === 'success' ? '-' : '') + whole(totalOf(t.usd)) + ' ETB</b><span class="st ' + s[0] + '">' + s[1] + '</span></span></button>';
+                };
+            document.getElementById('txBody').innerHTML = list.length
+                ? months.map((g, i) => '<p class="list-head"' + (i ? ' style="margin-top:16px"' : '') + '>' + g.m + '</p>'
+                    + '<div class="group-card">' + g.rows.map(row).join('') + '</div>').join('') + '<div style="height:12px"></div>'
+                : (S.tx.length
+                    ? emptyHtml('<path d="M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4v-17Z"/><path d="M9 8.5h6M9 12h6"/>', txFilter === 'failed' ? 'No failed payments' : 'No successful payments', 'Nothing matches this filter.', '')
+                    : emptyHtml('<path d="M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4v-17Z"/><path d="M9 8.5h6M9 12h6M9 15.5h3"/>', 'No transactions yet', 'Your voucher payments will show here.', '<button class="btn" onclick="backToHome()">Browse vouchers</button>'));
+        }
+
+        function openTx(ref) {
+            const t = S.tx.find(x => x.ref === ref);
+            const d = new Date(t.on), s = txStatus(t), P = PRODUCTS[t.product];
+            const head = t.status === 'success'
+                ? ['ok', '<path d="m6 12.5 4 4 8-9"/>', 'Payment successful', 'Your voucher was issued.']
+                : t.reason === 'issuance'
+                    ? ['warn', '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/>', 'Refunded', 'The voucher couldn’t be issued, so your payment was returned in full.']
+                    : ['err', '<path d="M7 7l10 10M17 7 7 17"/>', 'Payment failed', 'The payment didn’t go through. No money was taken.'];
+            document.getElementById('txDetailBody').innerHTML = '<div class="result"><div class="badge ' + head[0] + '"><svg viewBox="0 0 24 24">' + head[1] + '</svg></div>'
+                + '<h3>' + head[2] + '</h3><p>' + head[3] + '</p></div>'
+                + '<div class="card" style="margin-top:18px"><div class="v-sum">' + mark(t.product) + '<span><b>' + P.name + ' voucher</b><small>Voucher value $' + t.usd + '.00</small></span></div>'
+                + '<div class="rows"><div class="row"><span>Voucher price</span><b>' + money(priceOf(t.usd)) + ' ETB</b></div>'
+                + '<div class="row"><span>Service fee</span><b>' + money(SERVICE_FEE) + ' ETB</b></div>'
+                + '<div class="row total"><span>' + (t.status === 'success' ? 'Total paid' : t.reason === 'issuance' ? 'Paid, then refunded' : 'Total (not charged)') + '</span><b>' + money(totalOf(t.usd)) + ' ETB</b></div></div></div>'
+                + factsHtml([['Status', '<span class="st ' + s[0] + '">' + s[1] + '</span>'], ['Date', fmtDate(d) + ', ' + fmtTime(d)], ['Paid from', 'M-PESA &middot; ' + ME.phone], refRow(t.ref)]
+                    .concat(t.reason === 'issuance' ? [['Refund', money(totalOf(t.usd)) + ' ETB returned']] : []))
+                + (t.status === 'success' ? '' : supportLine())
+                + '<div style="height:12px"></div>';
+            document.getElementById('txDetailFoot').innerHTML = t.status === 'success' && t.voucher && S.vouchers.some(v => v.id === t.voucher)
+                ? '<button class="btn ghost" onclick="openVoucher(\'' + t.voucher + '\')">View voucher</button>'
+                : t.status === 'success' ? '' : '<button class="btn" onclick="openProduct(\'' + t.product + '\')">Try again</button>';
+            go('stepTxDetail');
+        }
+
+        /* ================================================================
+           Help (from the ? in the header)
+           ================================================================ */
+        function openHelp() {
+            const faq = (q, a) => '<details class="faq"><summary>' + q + '<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary><p>' + a + '</p></details>';
+            document.getElementById('helpBody').innerHTML = '<p class="p-desc" style="margin-top:4px">Global Vouchers is an official M-PESA service. Buy vouchers for global apps and games with your M-PESA wallet, and get your code straight away.</p>'
+                + '<div class="section"><h2>How to redeem</h2></div>'
+                + ORDER.map(k => '<details class="fold" style="margin-bottom:8px"><summary><span style="display:flex;align-items:center;gap:10px">' + mark(k, 30) + PRODUCTS[k].name + '</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary>' + guideHtml(k) + '</details>').join('')
+                + '<div class="section"><h2>Common questions</h2></div>'
+                + faq('Where can I find my voucher code?', 'On screen right after you pay, in the SMS we send to your M-PESA number, and any time in My Vouchers.')
+                + faq('Money was taken but I got no voucher', 'If a voucher can’t be issued after you pay, the full amount is returned to your M-PESA automatically. You’ll see it as Refunded in Transactions.')
+                + faq('I didn’t get the SMS', 'Open the voucher in My Vouchers and tap Resend SMS. Your code is always kept there.')
+                + faq('What do the fees cover?', 'Each voucher has a fixed service fee, shown on the review screen before you pay.')
+                + '<div class="section"><h2>Contact us</h2></div>'
+                + '<button class="contact" onclick="showToast(\'Calling M-PESA Call Center\')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 4.5h3.5l1.5 4-2 1.3a10 10 0 0 0 6.2 6.2l1.3-2 4 1.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 6.1 1.5 1.5 0 0 1 5 4.5Z"/></svg></span><span><b>M-PESA Call Center</b><small>Have your transaction ID ready</small></span></button>'
+                + '<button class="contact" onclick="showToast(\'Opening email\')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/></svg></span><span><b>Email support</b><small>Replies within one working day</small></span></button>'
+                + '<div style="height:16px"></div>';
+            go('stepHelp');
+        }
+
+        /* ================================================================
+           Shared bits
+           ================================================================ */
+        function emptyHtml(icon, title, text, action) {
+            return '<div class="empty"><span class="art"><svg viewBox="0 0 24 24">' + icon + '</svg></span><b>' + title + '</b><p>' + text + '</p>' + action + '</div>';
+        }
+        function copyText(text, msg) {
+            try { navigator.clipboard.writeText(text).catch(() => {}); } catch (e) {}
+            showToast(msg);
+        }
+        function closeSheet() { document.getElementById('sheet').classList.remove('show'); }
+
+        let noticeTimer;
+        function notify(from, text) {
+            document.getElementById('noticeFrom').textContent = from;
+            document.getElementById('noticeText').textContent = text;
+            document.getElementById('notice').classList.add('show');
+            clearTimeout(noticeTimer);
+            noticeTimer = setTimeout(hideNotice, 6000);
+        }
+        function hideNotice() { document.getElementById('notice').classList.remove('show'); }
+
+        let toastTimer;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+
+        /* ---------- Start ---------- */
+        renderHome();
+        note('stepHome');
+        /* the catalogue and availability come from the provider: a short loading state */
+        setTimeout(() => { catalogueReady = true; if (document.getElementById('stepHome').classList.contains('active')) renderHome(); }, 700);
+        const openTab = START.get('tab');
+        if (openTab === 'mine') goTab('stepMine');
+        if (openTab === 'tx') goTab('stepTx');
+    </script>
+</body>
+</html>

@@ -325,6 +325,17 @@
 
         .ad .for-you svg { width: 15px; height: 15px; display: block; }
 
+        /* drawn banner ads: picture on top, a line of copy at the foot */
+        .ad .copy { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 9px 9px 9px; text-align: left; font-family: 'Barlow', sans-serif; font-size: 10.5px; line-height: 1.25; color: rgba(255,255,255,0.9); background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.72) 55%); }
+        .ad .copy b { display: block; font-size: 12.5px; font-weight: 700; color: #ffffff; margin-bottom: 2px; }
+        .ad-gv { background: radial-gradient(120% 80% at 100% 0%, #22B262 0%, rgba(34,178,98,0) 60%), linear-gradient(170deg, #0A5A31 0%, #0d2a1a 100%); }
+        .ad-gv .gv-stack { position: absolute; left: 0; right: 0; top: 30px; height: 80px; }
+        .ad-gv .c { position: absolute; width: 66px; height: 42px; border-radius: 7px; padding: 6px 7px; font-family: 'Barlow', sans-serif; font-size: 9px; font-weight: 800; letter-spacing: 0.4px; display: flex; align-items: flex-start; gap: 3px; box-shadow: 0 6px 12px rgba(0,0,0,0.35); }
+        .ad-gv .c-sp { right: 8px; top: 0; transform: rotate(12deg); background: radial-gradient(120% 100% at 100% 0%, rgba(29,185,84,0.6), rgba(29,185,84,0) 60%), #151515; color: #ffffff; }
+        .ad-gv .c-sp i { width: 9px; height: 9px; border-radius: 50%; background: #1DB954; flex-shrink: 0; }
+        .ad-gv .c-pb { right: 20px; top: 18px; transform: rotate(-3deg); background: radial-gradient(120% 100% at 100% 0%, rgba(242,169,0,0.65), rgba(242,169,0,0) 60%), #1b1c1f; color: #F2A900; }
+        .ad-gv .c-nf { right: 30px; top: 36px; transform: rotate(-14deg); background: radial-gradient(120% 100% at 100% 0%, #9B0B14, rgba(155,11,20,0) 62%), #0b0b0b; color: #E50914; }
+
         /* ---------- Frequents and transactions ---------- */
         .sec-head {
             display: flex;
@@ -588,7 +599,7 @@
 
         .masked { letter-spacing: 3px; }
     </style>
-    <script src="assets/prototype-mode.js?v=63"></script>
+    <script src="assets/prototype-mode.js?v=64"></script>
 </head>
 <body>
 
@@ -750,6 +761,32 @@
             <div class="suggest">
                 <button class="ad" onclick="showToast('DALA STUDIO')" aria-label="Dala Studio: Pay in Birr, imagine and build">
                     <img class="art" src="assets/Dala-Banner-156-by-104-px.jpg" alt="">
+                    <span class="for-you">
+                        <svg viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4.5 20.5c.6-4.2 3.6-6.6 7.5-6.6s6.9 2.4 7.5 6.6Z"/>
+                        </svg>
+                    </span>
+                </button>
+                <!-- Global Vouchers: drawn in HTML, so the gift cards match the mini app -->
+                <button class="ad ad-gv" onclick="window.location.href='Global Vouchers.html'" aria-label="Global Vouchers: gift cards for Netflix, Spotify and more">
+                    <span class="gv-stack" aria-hidden="true">
+                        <span class="c c-sp"><i></i>Spotify</span>
+                        <span class="c c-pb">PUBG</span>
+                        <span class="c c-nf">NETFLIX</span>
+                    </span>
+                    <span class="copy"><b>Global Vouchers</b>Netflix, Spotify &amp; more.</span>
+                    <span class="for-you">
+                        <svg viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4.5 20.5c.6-4.2 3.6-6.6 7.5-6.6s6.9 2.4 7.5 6.6Z"/>
+                        </svg>
+                    </span>
+                </button>
+                <!-- M-PESA Saving -->
+                <button class="ad ad-save" onclick="window.location.href='Savings.html'" aria-label="M-PESA Saving: save and earn interest">
+                    <img class="art" src="assets/savings-optin1.jpg" alt="">
+                    <span class="copy"><b>M-PESA Saving</b>Save and earn up to 10% a year.</span>
                     <span class="for-you">
                         <svg viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
                             <circle cx="12" cy="8" r="4"/>

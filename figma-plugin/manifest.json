@@ -1,0 +1,12 @@
+{
+  "name": "Import M-PESA JSON",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["*"],
+    "reason": "The exported JSON points at the images the screens use (local files, cdnjs and GitHub Pages). The plugin fetches them with createImageAsync to fill image layers."
+  }
+}

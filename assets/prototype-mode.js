@@ -51,6 +51,8 @@
             sessionStorage.removeItem('railMpesaOpen');
             sessionStorage.removeItem('railDemoOpen');
             sessionStorage.removeItem('railSavingOpen');
+            sessionStorage.removeItem('railVouchersOpen');
+            sessionStorage.removeItem('gvState');
             sessionStorage.removeItem('railSendOpen');
             sessionStorage.removeItem('savingsReturn');
             sessionStorage.setItem(RUN_KEY, '1');
@@ -600,7 +602,18 @@
             + '<a class="proto-home" href="Savings.html?demo=c3"><span>SARA T &ndash; MEMBER</span></a>'
             /* whoever you invited: the invitation as Daniel sees it */
             + '<a class="proto-home" href="Savings.html?invite=c4"><span>DANIEL B &ndash; INVITED</span></a>'
-            + '</div></div></div></div></div></div>';
+            + '</div></div></div></div>'
+            /* Global Vouchers: the happy path and each exception path */
+            + '<div class="proto-fold" data-key="railVouchersOpen" data-open="1">'
+            + '<button class="proto-home proto-label" type="button" aria-expanded="false">GLOBAL VOUCHERS</button>'
+            + '<div class="proto-sub2">'
+            + '<a class="proto-home" href="Global Vouchers.html?gv=normal"><span>BUY A VOUCHER</span></a>'
+            + '<a class="proto-home" href="Global Vouchers.html?gv=empty"><span>FIRST VISIT</span></a>'
+            + '<a class="proto-home" href="Global Vouchers.html?gv=lowbal"><span>LOW BALANCE</span></a>'
+            + '<a class="proto-home" href="Global Vouchers.html?gv=payfail"><span>PAYMENT FAILS</span></a>'
+            + '<a class="proto-home" href="Global Vouchers.html?gv=issuefail"><span>ISSUE FAILS &ndash; REFUND</span></a>'
+            + '<a class="proto-home" href="Global Vouchers.html?gv=smsfail"><span>SMS FAILS</span></a>'
+            + '</div></div></div></div>';
 
         /* each group stays as left while moving between screens; a new run
            starts with the main menus and M-PESA Saving open, Group Saving Demo closed */
@@ -688,21 +701,35 @@
         return fontCss;
     }
 
+    /* html-to-image reads every image back through fetch(). A page opened
+       from the file system cannot fetch its own assets, and a resource that
+       cannot be read leaves the clone's src empty: its error event then
+       rejects the whole export, which used to surface as "Failed to fetch"
+       or, worse, "undefined". Give it a transparent pixel to fall back on,
+       so one unreadable logo cannot sink the screen, and name the cause. */
+    var BLANK_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
     function downloadPng(btn) {
         var frame = phoneFrame();
         if (!frame) return;
+        if (location.protocol === 'file:') {
+            console.warn('PNG export: a file:// page cannot fetch its own images, so they will come out blank. '
+                + 'Serve the prototype over http (e.g. "python -m http.server 5500") to include them.');
+        }
         btn.disabled = true;
         Promise.all([loadHtmlToImage(), embeddedFontCss()]).then(function (r) {
             return r[0].toBlob(frame, {
                 pixelRatio: EXPORT_SCALE,
                 fontEmbedCSS: r[1],
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                imagePlaceholder: BLANK_PIXEL
             });
         }).then(function (blob) {
+            if (!blob || !blob.size) throw new Error('the exporter returned an empty image');
             saveBlob(blob, exportName() + '.png');
         }).catch(function (e) {
             console.error(e);
-            alert('PNG export failed: ' + e.message);
+            alert('PNG export failed: ' + String((e && (e.message || e.type || e)) || e));
         }).then(function () { btn.disabled = false; });
     }
 

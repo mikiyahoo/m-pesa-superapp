@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Import M-PESA JSON</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Barlow', -apple-system, 'Segoe UI', sans-serif;
+        background: #ffffff;
+        color: #1B2320;
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    header { padding: 16px 18px 14px 18px; border-bottom: 1px solid #ECEFF0; }
+    header h1 { font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #12492C; }
+    header p { margin-top: 3px; color: #7A8480; font-size: 12px; }
+
+    main { padding: 16px 18px 18px 18px; }
+
+    /* ---------- drop zone ---------- */
+    .drop {
+        border: 1.5px dashed #C9D4CE;
+        border-radius: 10px;
+        background: #FAFCFB;
+        padding: 22px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .drop:hover, .drop.over { border-color: #2FC56D; background: #F2FAF5; }
+    .drop.filled { border-style: solid; border-color: #2FC56D; background: #F2FAF5; }
+    .drop .glyph {
+        width: 30px; height: 30px; margin: 0 auto 8px auto;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 8px; background: #E4F5EA;
+    }
+    .drop .glyph svg {
+        width: 17px; height: 17px; fill: none; stroke: #2FC56D;
+        stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .drop strong { display: block; font-size: 13px; font-weight: 600; }
+    .drop span.hint { display: block; margin-top: 3px; font-size: 11.5px; color: #7A8480; }
+
+    .files { margin-top: 10px; }
+    .file {
+        display: flex; align-items: center; gap: 8px;
+        padding: 7px 10px; margin-top: 6px;
+        border: 1px solid #E6EBE8; border-radius: 7px; background: #FBFCFB;
+    }
+    .file .name { flex: 1; font-weight: 600; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file .size { color: #9AA4A0; font-size: 11px; }
+    .file .drop-x {
+        border: none; background: none; color: #9AA4A0; cursor: pointer;
+        font-size: 15px; line-height: 1; padding: 2px 5px; border-radius: 4px;
+    }
+    .file .drop-x:hover { color: #D64545; background: #FDEEEE; }
+/* ---------- options ---------- */
+    .options {
+        margin-top: 14px; padding: 12px 14px;
+        border: 1px solid #ECEFF0; border-radius: 10px;
+        display: flex; flex-direction: column; gap: 10px;
+    }
+    .row { display: flex; align-items: center; gap: 10px; }
+    .row .label { flex: 1; font-weight: 500; }
+    .row .label small { display: block; color: #9AA4A0; font-size: 11px; font-weight: 400; }
+    .row select {
+        font: inherit; font-size: 12px; font-weight: 600;
+        color: #12492C; padding: 5px 7px;
+        border: 1px solid #DDE3E0; border-radius: 7px; background: #ffffff;
+    }
+    .switch { position: relative; width: 34px; height: 20px; flex-shrink: 0; }
+    .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .switch .track {
+        position: absolute; inset: 0; border-radius: 999px;
+        background: #D8DEDB; transition: background 0.16s ease;
+    }
+    .switch .track::after {
+        content: ''; position: absolute; top: 2px; left: 2px;
+        width: 16px; height: 16px; border-radius: 50%; background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.16s ease;
+    }
+    .switch input:checked + .track { background: #2FC56D; }
+    .switch input:checked + .track::after { transform: translateX(14px); }
+
+    /* ---------- action ---------- */
+    .actions { margin-top: 14px; display: flex; gap: 8px; }
+    button.primary {
+        flex: 1; font: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: 0.8px;
+        color: #ffffff; background: #2FC56D; border: none; border-radius: 8px;
+        padding: 11px 14px; cursor: pointer;
+    }
+    button.primary:hover { background: #28B061; }
+    button.primary:disabled { background: #C6D9CE; cursor: not-allowed; }
+    button.ghost {
+        font: inherit; font-size: 12.5px; font-weight: 600;
+        color: #5C6763; background: #ffffff; border: 1px solid #DDE3E0;
+        border-radius: 8px; padding: 11px 14px; cursor: pointer;
+    }
+    button.ghost:hover { background: #F6F8F7; }
+
+    .status { margin-top: 12px; font-size: 12px; color: #5C6763; display: none; align-items: center; gap: 8px; }
+    .status.show { display: flex; }
+    .spinner {
+        width: 13px; height: 13px; flex-shrink: 0;
+        border: 2px solid #D8E6DE; border-top-color: #2FC56D; border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .alert { margin-top: 12px; padding: 10px 12px; border-radius: 8px; display: none; font-size: 12px; }
+    .alert.show { display: block; }
+    .alert.error { background: #FDEEEE; border: 1px solid #F3CDCD; color: #8F2A2A; }
+
+    /* ---------- report ---------- */
+    .report { margin-top: 12px; display: none; }
+    .report.show { display: block; }
+    .report h2 { font-size: 11.5px; font-weight: 700; letter-spacing: 1px; color: #12492C; text-transform: uppercase; }
+    .counts { margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .count {
+        border: 1px solid #ECEFF0; border-radius: 8px; padding: 7px 10px;
+        display: flex; align-items: baseline; justify-content: space-between;
+    }
+    .count b { font-size: 15px; color: #12492C; }
+    .count span { color: #7A8480; font-size: 11px; }
+
+    .notes { margin-top: 10px; }
+    .notes .group {
+        border: 1px solid #F0E6C9; background: #FFFCF2;
+        border-radius: 8px; padding: 9px 11px; margin-top: 6px;
+    }
+    .notes .group.info { border-color: #E3ECE6; background: #F7FAF8; }
+    .notes .group h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.6px; color: #8A6D1F; text-transform: uppercase; }
+    .notes .group.info h3 { color: #4C6B5A; }
+    .notes ul { margin-top: 5px; padding-left: 16px; }
+    .notes li { font-size: 11.5px; color: #6B6455; margin-top: 2px; }
+    .notes .group.info li { color: #5C6763; }
+
+    footer { padding: 10px 18px 14px 18px; border-top: 1px solid #ECEFF0; color: #9AA4A0; font-size: 11px; }
+    footer code { font-family: Consolas, monospace; font-size: 10.5px; color: #7A8480; }
+</style>
+</head>
+<body>
+<header>
+    <h1>IMPORT M-PESA JSON</h1>
+    <p>Rebuild a prototype screen as editable Figma layers.</p>
+</header>
+
+<main>
+    <div class="drop" id="drop">
+        <div class="glyph">
+            <svg viewBox="0 0 24 24"><path d="M12 16V5"/><path d="m7.5 9.5 4.5-4.5 4.5 4.5"/><path d="M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16"/></svg>
+        </div>
+        <strong id="dropTitle">Drop .figma.json files here</strong>
+        <span class="hint" id="dropHint">or click to pick them — one file per screen</span>
+    </div>
+    <input type="file" id="file" accept=".json,application/json" multiple hidden>
+    <div class="files" id="files"></div>
+
+    <div class="options">
+        <div class="row">
+            <span class="label">Scale
+                <small>Applied after the screen is built</small>
+            </span>
+            <select id="scale">
+                <option value="1" selected>1× — 360 × 808</option>
+                <option value="2">2×</option>
+                <option value="1.5">1.5×</option>
+                <option value="0.5">0.5×</option>
+            </select>
+        </div>
+        <div class="row">
+            <span class="label">Gradients
+                <small>Real gradient fills, not a flat colour</small>
+            </span>
+            <span class="switch"><input type="checkbox" id="gradients" checked><span class="track"></span></span>
+        </div>
+        <div class="row">
+            <span class="label">Shadows
+                <small>box-shadow → drop shadow</small>
+            </span>
+            <span class="switch"><input type="checkbox" id="effects" checked><span class="track"></span></span>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button type="button" class="primary" id="import" disabled>IMPORT</button>
+        <button type="button" class="ghost" id="close">CLOSE</button>
+    </div>
+
+    <div class="status" id="status">
+        <span class="spinner"></span><span id="statusText">Working…</span>
+    </div>
+
+    <div class="alert error" id="alert"></div>
+
+    <div class="report" id="report">
+        <h2>Imported</h2>
+        <div class="counts" id="counts"></div>
+        <div class="notes" id="notes"></div>
+    </div>
+</main>
+
+<footer>
+    Export the file with the prototype's <code>FIGMA JSON</code> button.
+    Anything the plugin had to approximate is listed above.
+</footer>
+
+<script>
+    /* UI ↔ plugin. The plugin owns the document; this page only picks files,
+       hands over their text and draws the summary that comes back. */
+    var files = [];
+    var queue = [];
+    var done = 0;
+
+    var drop = document.getElementById('drop');
+    var input = document.getElementById('file');
+    var list = document.getElementById('files');
+    var importBtn = document.getElementById('import');
+    var status = document.getElementById('status');
+    var statusText = document.getElementById('statusText');
+    var alertBox = document.getElementById('alert');
+    var report = document.getElementById('report');
+    var counts = document.getElementById('counts');
+    var notes = document.getElementById('notes');
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    function options() {
+        return {
+            scale: parseFloat(document.getElementById('scale').value) || 1,
+            gradients: document.getElementById('gradients').checked,
+            effects: document.getElementById('effects').checked
+        };
+    }
+
+    /* Options are pushed as they change, so the plugin is never out of step. */
+    function sendOptions() {
+        parent.postMessage({ pluginMessage: { type: 'options', options: options() } }, '*');
+    }
+
+    function render() {
+        list.innerHTML = '';
+        files.forEach(function (entry, index) {
+            var row = document.createElement('div');
+            row.className = 'file';
+
+            var name = document.createElement('span');
+            name.className = 'name';
+            name.textContent = entry.name;
+
+            var size = document.createElement('span');
+            size.className = 'size';
+            size.textContent = formatSize(entry.size);
+
+            var remove = document.createElement('button');
+            remove.className = 'drop-x';
+            remove.type = 'button';
+            remove.textContent = '×';
+            remove.title = 'Remove';
+            remove.onclick = function () {
+                files.splice(index, 1);
+                render();
+            };
+
+            row.appendChild(name);
+            row.appendChild(size);
+            row.appendChild(remove);
+            list.appendChild(row);
+        });
+
+        drop.classList.toggle('filled', files.length > 0);
+        document.getElementById('dropTitle').textContent = files.length
+            ? files.length + (files.length === 1 ? ' file ready' : ' files ready')
+            : 'Drop .figma.json files here';
+        importBtn.disabled = files.length === 0;
+    }
+
+    function addFiles(fileList) {
+        Array.prototype.forEach.call(fileList, function (file) {
+            files.push({ name: file.name, size: file.size, file: file });
+        });
+        render();
+    }
+
+    drop.onclick = function () { input.click(); };
+    input.onchange = function () { addFiles(input.files); input.value = ''; };
+
+    ['dragenter', 'dragover'].forEach(function (type) {
+        drop.addEventListener(type, function (e) {
+            e.preventDefault();
+            drop.classList.add('over');
+        });
+    });
+    ['dragleave', 'drop'].forEach(function (type) {
+        drop.addEventListener(type, function (e) {
+            e.preventDefault();
+            drop.classList.remove('over');
+        });
+    });
+    drop.addEventListener('drop', function (e) {
+        if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+    });
+
+    document.getElementById('scale').onchange = sendOptions;
+    document.getElementById('gradients').onchange = sendOptions;
+    document.getElementById('effects').onchange = sendOptions;
+    document.getElementById('close').onclick = function () {
+        parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+    };
+</script>
+<script>
+    function readFile(entry) {
+        return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () { resolve(String(reader.result)); };
+            reader.onerror = function () { reject(new Error('Could not read ' + entry.name)); };
+            reader.readAsText(entry.file);
+        });
+    }
+
+    function showError(message) {
+        alertBox.textContent = message;
+        alertBox.className = 'alert error show';
+    }
+
+    function count(label, value) {
+        var box = document.createElement('div');
+        box.className = 'count';
+        var b = document.createElement('b');
+        b.textContent = value;
+        var span = document.createElement('span');
+        span.textContent = label;
+        box.appendChild(b);
+        box.appendChild(span);
+        return box;
+    }
+
+    function noteGroup(title, items, isInfo) {
+        if (!items || !items.length) return null;
+        var box = document.createElement('div');
+        box.className = 'group' + (isInfo ? ' info' : '');
+        var heading = document.createElement('h3');
+        heading.textContent = title;
+        var ul = document.createElement('ul');
+        items.forEach(function (text) {
+            var li = document.createElement('li');
+            li.textContent = text;
+            ul.appendChild(li);
+        });
+        box.appendChild(heading);
+        box.appendChild(ul);
+        return box;
+    }
+
+    function renderReport(r) {
+        counts.innerHTML = '';
+        counts.appendChild(count('Frames', r.frames));
+        counts.appendChild(count('Text layers', r.texts));
+        counts.appendChild(count('Images', r.images));
+        counts.appendChild(count('Vectors', r.svgs));
+        counts.appendChild(count('Gradients', r.gradients));
+        counts.appendChild(count('Shadows', r.effects));
+
+        notes.innerHTML = '';
+
+        var familyNames = Object.keys(r.fonts || {});
+        if (familyNames.length) {
+            var listed = familyNames.map(function (f) { return f + ' ×' + r.fonts[f]; });
+            var fonts = noteGroup(r.fallbackFonts
+                ? 'Fonts (' + r.fallbackFonts + ' substituted)' : 'Fonts', listed, true);
+            if (fonts) notes.appendChild(fonts);
+        }
+
+        var warnings = noteGroup('Needs a look', r.warnings, false);
+        if (warnings) notes.appendChild(warnings);
+
+        var approximated = noteGroup('Approximated', r.notes, false);
+        if (approximated) notes.appendChild(approximated);
+
+        report.className = 'report show';
+    }
+
+    /* The plugin builds one screen at a time, so the page walks the list and
+       sends the next file only once the previous one reports back. */
+    function nextInQueue() {
+        if (done >= queue.length) {
+            status.classList.remove('show');
+            importBtn.disabled = files.length === 0;
+            return;
+        }
+        var entry = queue[done];
+        statusText.textContent = 'Importing ' + entry.name
+            + (queue.length > 1 ? '  (' + (done + 1) + ' of ' + queue.length + ')' : '');
+        readFile(entry).then(function (json) {
+            parent.postMessage({ pluginMessage: { type: 'import', json: json } }, '*');
+        }).catch(function (e) {
+            showError(e.message);
+            status.classList.remove('show');
+            importBtn.disabled = false;
+        });
+    }
+
+    importBtn.onclick = function () {
+        if (!files.length) return;
+        queue = files.slice();
+        done = 0;
+        alertBox.className = 'alert error';
+        report.className = 'report';
+        status.classList.add('show');
+        importBtn.disabled = true;
+        nextInQueue();
+    };
+
+    window.onmessage = function (event) {
+        var msg = event.data.pluginMessage;
+        if (!msg) return;
+
+        if (msg.type === 'progress') {
+            statusText.textContent = msg.message;
+            status.classList.add('show');
+            return;
+        }
+        if (msg.type === 'error') {
+            status.classList.remove('show');
+            showError(msg.message);
+            importBtn.disabled = files.length === 0;
+            return;
+        }
+        if (msg.type === 'done') {
+            done++;
+            renderReport(msg.report);
+            if (done >= queue.length) {
+                status.classList.remove('show');
+                importBtn.disabled = files.length === 0;
+            }
+            nextInQueue();
+        }
+    };
+
+    render();
+    sendOptions();
+</script>
+</body>
+</html>
