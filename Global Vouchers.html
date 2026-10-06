@@ -1387,7 +1387,6 @@
             document.getElementById('resultBody').innerHTML = '<div class="result" style="padding-top:0">'
                 + '<div class="badge ok" style="width:60px;height:60px;margin-top:4px"><svg viewBox="0 0 24 24"><path d="m6 12.5 4 4 8-9"/></svg></div>'
                 + '<h3 style="margin-top:12px">Your Voucher Is Ready</h3>'
-                + '<p>Paid ' + money(purchase.total) + ' ETB from M-PESA.</p>'
                 + '</div>'
                 + ticketHtml(v, true)
                 + (smsOk ? '' : '<div class="banner warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg><div><b>We Couldn’t Send the SMS</b>Your code is safe here and in My Vouchers. <a href="#" onclick="askResend(\'' + v.id + '\');return false;" style="color:inherit;font-weight:700">Resend SMS</a></div></div>')
