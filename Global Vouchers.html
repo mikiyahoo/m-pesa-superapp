@@ -522,7 +522,8 @@
         .fact { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; font-size: 13px; color: var(--muted); }
         .fact + .fact { border-top: 1px solid #E8ECEA; }
         .fact b { font-size: 13.5px; font-weight: 600; color: var(--ink); text-align: right; }
-        .copy-mini { border: 0; background: none; color: var(--green-dark); font-weight: 700; font-size: 12px; letter-spacing: 0.6px; cursor: pointer; margin-left: 6px; }
+        .copy-mini { border: 0; background: none; padding: 2px; margin-right: 6px; cursor: pointer; vertical-align: middle; display: inline-flex; }
+        .copy-mini svg { width: 16px; height: 16px; stroke: var(--green-dark); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
         /* refund timeline on the issuance-failed screen */
         .tl { margin: 18px 16px 0 16px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); text-align: left; }
@@ -1332,7 +1333,7 @@
         function factsHtml(rows) {
             return '<div class="facts">' + rows.map(r => '<div class="fact"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('') + '</div>';
         }
-        function refRow(ref) { return ['Transaction ID', ref + '<button class="copy-mini" onclick="copyText(\'' + ref + '\', \'Transaction ID copied\')">COPY</button>']; }
+        function refRow(ref) { return ['Transaction ID', '<button class="copy-mini" onclick="copyText(\'' + ref + '\', \'Transaction ID copied\')" aria-label="Copy transaction ID"><svg viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="12" rx="2"/><path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/></svg></button>' + ref]; }
 
         function paymentFailed() {
             S.tx.push({ ref: purchase.ref, product: purchase.product, usd: purchase.usd, on: purchase.on, status: 'failed', reason: 'payment' });

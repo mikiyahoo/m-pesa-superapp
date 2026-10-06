@@ -463,11 +463,20 @@
             <div class="highlights">
                 <div class="feature" onclick="openPocketMoney()">
                     <div class="art">
-                        <img class="photo" src="assets/savings-optin.jpg" alt="">
+                        <img class="photo" src="assets/savings-optin1.jpg" alt="" style="object-position:center 28%">
                     </div>
                     <div class="info">
                         <span class="logo" style="background:#1E5BD8"><svg viewBox="0 0 24 24"><rect x="3.5" y="6.5" width="17" height="12" rx="2.5"/><path d="M15.5 12.5h5"/><path d="M6 6.5 15.5 3.5l1 3"/></svg></span>
                         <span><b>M-PESA SAVING <em class="rate">&middot; UP TO 14% FIXED</em></b><small>Lock your savings at a fixed rate with M-PESA</small></span>
+                    </div>
+                </div>
+                <div class="feature" onclick="window.location.href='Global Vouchers.html'">
+                    <div class="art">
+                        <img class="photo" src="assets/NETFLIX.jpg" alt="" style="object-position:center 40%">
+                    </div>
+                    <div class="info">
+                        <span class="logo" style="background:#0A8F45"><svg viewBox="0 0 24 24"><path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/></svg></span>
+                        <span><b>GLOBAL VOUCHERS <em class="rate">&middot; NEW</em></b><small>Netflix, Spotify, PUBG &amp; more, paid with M-PESA</small></span>
                     </div>
                 </div>
                 <div class="feature" onclick="showToast('RIDE')">
@@ -536,6 +545,21 @@
     </div>
 
     <script>
+        /* Highlighted: scrolls itself, one card at a time; a touch pauses it for a while */
+        (function () {
+            const row = document.querySelector('.highlights');
+            if (!row) return;
+            let pausedUntil = 0;
+            ['pointerdown', 'wheel', 'touchstart'].forEach(t => row.addEventListener(t, () => { pausedUntil = Date.now() + 6000; }, { passive: true }));
+            setInterval(() => {
+                if (Date.now() < pausedUntil) return;
+                const cards = row.querySelectorAll('.feature');
+                const step = cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : row.clientWidth;
+                const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+                row.scrollTo({ left: atEnd ? 0 : row.scrollLeft + step, behavior: 'smooth' });
+            }, 3500);
+        })();
+
         /* Partner apps are shown as plain lettered marks; M-PESA Saving is
            ours and opens the savings screen. */
         const ICONS = {
