@@ -7,6 +7,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            let t = null;
+            try { t = localStorage.getItem('portalTheme'); } catch (e) {}
+            if (!t) t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <style>
         /* Global Vouchers web portal: the Voucher Payment Report.
            Desktop first; collapses to one column on small screens. */
@@ -23,6 +31,42 @@
             --card: #ffffff;
             --red: #D7263D;
             --amber: #B26A00;
+            --accent: #0A7A3C;          /* green text and icons */
+            --btn: #0A7A3C;             /* green buttons */
+            --c-red: #0A7A3C;           /* chart: redeemed (validated pair, light) */
+            --c-un: #5CC28A;            /* chart: not yet redeemed */
+            --c-col: #0A7A3C;           /* chart: daily columns */
+            --tip: #1c1c1c;
+            --tip-ink: #ffffff;
+            --ok-bg: #DDF5E6; --ok-ink: #136B37;
+            --ref-bg: #FFF2DC;
+            --bad-bg: #FDE7EA;
+            --shadow: rgba(0, 0, 0, 0.18);
+            color-scheme: light;
+        }
+        /* dark: its own steps, the chart pair validated against the dark card */
+        :root[data-theme="dark"] {
+            --green-tint: rgba(66, 170, 113, 0.16);
+            --ink: #ECEFED;
+            --ink-2: #C3C9C5;
+            --muted: #8E9691;
+            --line: #2A302D;
+            --surface: #111413;
+            --card: #1A1E1C;
+            --red: #FF6B7D;
+            --amber: #F2B54A;
+            --accent: #5ED394;
+            --btn: #128A47;
+            --c-red: #137A40;
+            --c-un: #42AA71;
+            --c-col: #42AA71;
+            --tip: #ECEFED;
+            --tip-ink: #111413;
+            --ok-bg: rgba(66, 170, 113, 0.18); --ok-ink: #7FE0AA;
+            --ref-bg: rgba(242, 181, 74, 0.16);
+            --bad-bg: rgba(255, 107, 125, 0.16);
+            --shadow: rgba(0, 0, 0, 0.6);
+            color-scheme: dark;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Barlow', sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
@@ -31,56 +75,72 @@
         .app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
 
         /* ---------- side navigation ---------- */
-        .side { background: #ffffff; border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+        .side { background: var(--card); border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
         .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 22px 8px; }
         .brand img { width: 78px; }
+        :root[data-theme="dark"] .brand img { background: #ffffff; border-radius: 6px; padding: 3px 6px; box-sizing: content-box; }
         .brand span { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.6px; border-left: 1px solid var(--line); padding-left: 10px; }
         .side h6 { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--muted); padding: 10px 10px 8px 10px; }
         .nav { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; border: 0; border-radius: 10px; background: none; text-align: left; font-weight: 500; color: var(--ink-2); cursor: pointer; text-decoration: none; }
         .nav svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
         .nav:hover { background: var(--surface); }
-        .nav.on { background: var(--green-tint); color: var(--green-dark); font-weight: 600; }
+        .nav.on { background: var(--green-tint); color: var(--accent); font-weight: 600; }
         .side .spacer { flex: 1; }
         .side .back { font-size: 13px; color: var(--muted); }
 
         /* ---------- main ---------- */
-        main { padding: 26px 32px 48px 32px; min-width: 0; }
+        main { padding: 0 32px 48px 32px; min-width: 0; }
+        /* title, filters and totals stay in view while the report scrolls */
+        .pinned { position: sticky; top: 0; z-index: 20; background: var(--surface); padding: 26px 0 2px 0; margin-bottom: 0; }
+        .pinned.stuck { box-shadow: 0 10px 14px -12px var(--shadow); }
+        .pinned .filters { margin-bottom: 16px; }
+        #txCard { scroll-margin-top: 190px; }
         .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
         .head h1 { font-size: 26px; font-weight: 700; }
         .head p { color: var(--muted); margin-top: 2px; }
-        .user { display: flex; align-items: center; gap: 10px; background: #ffffff; border: 1px solid var(--line); border-radius: 24px; padding: 5px 14px 5px 5px; white-space: nowrap; }
-        .user i { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dark); color: #ffffff; font-style: normal; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .head-r { display: flex; align-items: center; gap: 10px; }
+        .theme { display: inline-flex; padding: 3px; border-radius: 22px; background: var(--card); border: 1px solid var(--line); }
+        .theme button { width: 34px; height: 32px; border: 0; border-radius: 18px; background: none; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .theme button svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .theme button.on { background: var(--green-tint); color: var(--accent); }
+        .user { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 5px 14px 5px 5px; white-space: nowrap; }
+        .user i { width: 30px; height: 30px; border-radius: 50%; background: var(--btn); color: #ffffff; font-style: normal; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
         .user b { display: block; font-size: 13px; }
         .user small { display: block; font-size: 11.5px; color: var(--muted); }
 
         /* filters: one row above everything they control */
-        .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 18px; }
-        .field { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; }
+        .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 18px; }
+        .field { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
         .field svg { width: 16px; height: 16px; stroke: var(--muted); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
         .field select, .field input { border: 0; outline: none; background: none; height: 36px; font-weight: 500; }
         .field input[type=date] { width: 128px; }
         .range-text { font-weight: 600; }
         .seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
         .seg button { border: 0; background: none; height: 30px; padding: 0 14px; border-radius: 8px; font-weight: 600; color: var(--muted); cursor: pointer; }
-        .seg button.on { background: #ffffff; color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .seg button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
         .filters .grow { flex: 1; }
-        .filters.inner { border: 0; background: var(--surface); margin: 0 0 14px 0; }
-        .btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--green-dark); color: #ffffff; font-weight: 600; cursor: pointer; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--btn); color: #ffffff; font-weight: 600; cursor: pointer; }
         .btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .btn.ghost { background: #ffffff; color: var(--ink); border: 1px solid var(--line); }
+        .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
 
         /* KPI tiles */
         .kpis { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
-        .kpi { background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+        .kpi { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+        .kpi .ki { position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border-radius: 50%; background: var(--green-tint); display: flex; align-items: center; justify-content: center; }
+        .kpi .ki svg { width: 19px; height: 19px; stroke: var(--accent); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .kpi .ki.warn { background: var(--ref-bg); }
+        .kpi .ki.warn svg { stroke: var(--amber); }
+        .kpi.hero .ki { background: rgba(255, 255, 255, 0.2); }
+        .kpi.hero .ki svg { stroke: #ffffff; }
         .kpi small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 500; }
         .kpi b { display: block; font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -0.2px; font-variant-numeric: tabular-nums; }
-        .kpi b em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--muted); margin-right: 4px; }
+        .kpi b em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--muted); margin-left: 5px; }
         .kpi span { display: block; margin-top: 4px; font-size: 12.5px; color: var(--ink-2); }
-        .kpi.hero { background: linear-gradient(180deg, #0E7A38 0%, #26A652 52%, #43CB74 100%); border: 0; color: #ffffff; }
+        .kpi.hero { background: linear-gradient(90deg, #0E7A38 0%, #26A652 52%, #43CB74 100%); border: 0; color: #ffffff; }
         .kpi.hero small, .kpi.hero span, .kpi.hero b em { color: rgba(255, 255, 255, 0.82); }
         .kpi.hero b { font-size: 32px; }
 
-        .card { background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+        .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
         .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
         .card-head h2 { font-size: 17px; font-weight: 700; }
         .card-head p { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
@@ -98,7 +158,8 @@
         .types tr.total td:first-child { border-radius: 10px 0 0 10px; }
         .types tr.total td:last-child { border-radius: 0 10px 10px 0; }
         .vt { display: flex; align-items: center; gap: 12px; }
-        .vt b { font-weight: 600; }
+        .vt b { font-weight: 600; white-space: nowrap; }
+        .vt small { white-space: nowrap; }
         .vt small { display: block; color: var(--muted); font-size: 12px; }
         .mark { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
         .mark svg { width: 24px; height: 24px; }
@@ -109,8 +170,8 @@
         .m-pubg svg { width: 34px; height: 34px; }
         .bar { display: flex; gap: 2px; height: 12px; min-width: 160px; }
         .bar i { display: block; height: 100%; border-radius: 4px; cursor: default; }
-        .bar .r { background: var(--green-dark); }
-        .bar .u { background: var(--green-mid); }
+        .bar .r { background: var(--c-red); }
+        .bar .u { background: var(--c-un); }
         .bar-cell { width: 34%; }
         .bar-cell small { display: block; margin-top: 5px; font-size: 12px; color: var(--ink-2); }
         .share { font-weight: 600; }
@@ -120,10 +181,10 @@
         .chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
         .chart .grid line { stroke: var(--line); stroke-width: 1; }
         .chart .grid text, .chart .xaxis text { fill: var(--muted); font-size: 11px; font-family: 'Barlow', sans-serif; }
-        .chart rect.col { fill: var(--green-dark); }
+        .chart rect.col { fill: var(--c-col); }
         .chart rect.col.dim { opacity: 0.35; }
         .chart rect.hit { fill: transparent; cursor: default; }
-        .tip { position: fixed; pointer-events: none; background: #1c1c1c; color: #ffffff; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; line-height: 1.35; opacity: 0; transition: opacity 0.1s; z-index: 50; white-space: nowrap; }
+        .tip { position: fixed; pointer-events: none; background: var(--tip); color: var(--tip-ink); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; line-height: 1.35; opacity: 0; transition: opacity 0.1s; z-index: 50; white-space: nowrap; }
         .tip b { display: block; font-size: 13.5px; }
         .tip.show { opacity: 1; }
 
@@ -142,26 +203,27 @@
         .tx td.id { font-weight: 600; letter-spacing: 0.3px; }
         .st { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 12px; font-size: 12px; font-weight: 600; }
         .st svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .st.ok { background: #DDF5E6; color: #136B37; }
-        .st.ref { background: #FFF2DC; color: var(--amber); }
-        .st.bad { background: #FDE7EA; color: var(--red); }
+        .st.ok { background: var(--ok-bg); color: var(--ok-ink); }
+        .st.ref { background: var(--ref-bg); color: var(--amber); }
+        .st.bad { background: var(--bad-bg); color: var(--red); }
         .rd { font-size: 12.5px; color: var(--ink-2); }
         .rd.no { color: var(--muted); }
         .pager { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; color: var(--muted); font-size: 13px; }
         .pager div { display: flex; gap: 8px; }
-        .pager button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: #ffffff; cursor: pointer; font-weight: 600; }
+        .pager button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font-weight: 600; }
         .pager button:disabled { opacity: 0.4; cursor: default; }
         .empty { padding: 36px 10px; text-align: center; color: var(--muted); }
         .scroll-x { overflow-x: auto; }
 
-        .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(10px); background: #1c1c1c; color: #ffffff; padding: 10px 16px; border-radius: 10px; font-weight: 500; opacity: 0; transition: all 0.2s; pointer-events: none; }
+        .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(10px); background: var(--tip); color: var(--tip-ink); padding: 10px 16px; border-radius: 10px; font-weight: 500; opacity: 0; transition: all 0.2s; pointer-events: none; }
         .toast.show { opacity: 1; transform: translateX(-50%); }
 
         @media (max-width: 1100px) { .kpis { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 900px) {
             .app { grid-template-columns: 1fr; }
             .side { display: none; }
-            main { padding: 18px 16px 40px 16px; }
+            main { padding: 0 16px 40px 16px; }
+            .pinned { position: static; padding-top: 18px; }
             .user { display: none; }
             .search { width: 100%; }
         }
@@ -186,25 +248,33 @@
     </aside>
 
     <main id="top">
+        <div class="pinned">
         <div class="head">
             <div>
                 <h1>Voucher Payment Report</h1>
                 <p>Global Vouchers &middot; sales and redemption by voucher type</p>
             </div>
+            <div class="head-r">
+            <div class="theme" role="group" aria-label="Theme">
+                <button data-t="light" onclick="setTheme('light')" aria-label="Light theme" title="Light"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg></button>
+                <button data-t="dark" onclick="setTheme('dark')" aria-label="Dark theme" title="Dark"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg></button>
+            </div>
             <div class="user"><i>OP</i><span><b>Partner Operations</b><small>M-PESA Ethiopia</small></span></div>
+            </div>
         </div>
 
-        <!-- filters (the same bar repeats above the transaction list) -->
+        <!-- filters -->
         <div class="filters" data-filters></div>
 
         <!-- KPIs -->
+        </div>
         <div class="kpis" id="kpis"></div>
 
         <!-- purchase by voucher type -->
         <div class="card">
             <div class="card-head">
                 <div><h2>Purchase by Voucher Type</h2><p id="rangeLabel"></p></div>
-                <div class="legend"><span><i style="background:var(--green-dark)"></i>Redeemed</span><span><i style="background:var(--green-mid)"></i>Not yet redeemed</span></div>
+                <div class="legend"><span><i style="background:var(--c-red)"></i>Redeemed</span><span><i style="background:var(--c-un)"></i>Not yet redeemed</span></div>
             </div>
             <div class="scroll-x"><table class="types" id="types"></table></div>
         </div>
@@ -226,7 +296,6 @@
                     <input id="q" placeholder="Search transaction ID or phone" oninput="state.page = 0; renderTx()">
                 </label>
             </div>
-            <div class="filters inner" data-filters></div>
             <div class="scroll-x"><table class="tx" id="tx"></table></div>
             <div class="pager" id="pager"></div>
         </div>
@@ -286,7 +355,7 @@
     const state = { from: null, to: null, preset: 'last', type: 'all', measure: 'amount', page: 0 };
     const PAGE = 10;
     const fmt = n => Math.round(n).toLocaleString('en-US');
-    const etb = n => '<em>ETB</em>' + fmt(n);
+    const etb = n => fmt(n) + '<em>ETB</em>';
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const fmtDate = d => MONTHS[d.getMonth()] + ' ' + String(d.getDate()).padStart(2, '0') + ', ' + d.getFullYear();
     const fmtShort = d => MONTHS[d.getMonth()] + ' ' + d.getDate();
@@ -294,7 +363,7 @@
     const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const val = (t) => state.measure === 'amount' ? t.total : 1;
-    const show = n => state.measure === 'amount' ? 'ETB ' + fmt(n) : fmt(n) + (n === 1 ? ' transaction' : ' transactions');
+    const show = n => state.measure === 'amount' ? fmt(n) + ' ETB' : fmt(n) + (n === 1 ? ' transaction' : ' transactions');
 
     function inRange() {
         const end = new Date(state.to.getFullYear(), state.to.getMonth(), state.to.getDate() + 1);
@@ -374,10 +443,10 @@
         const red = ok.filter(t => t.redeemed), refunds = list.filter(t => t.status === 'refunded'), failed = list.filter(t => t.status === 'failed');
         const rate = ok.length ? Math.round(red.length / ok.length * 100) : 0;
         document.getElementById('kpis').innerHTML =
-              '<div class="kpi hero"><small>Total purchase</small><b>' + etb(sum(ok)) + '</b><span>' + fmt(ok.length) + ' successful transactions &middot; ETB ' + fmt(ok.length * FEE) + ' in fees</span></div>'
-            + '<div class="kpi"><small>Redeemed</small><b>' + etb(sum(red)) + '</b><span>' + fmt(red.length) + ' vouchers &middot; ' + rate + '% of purchases</span></div>'
-            + '<div class="kpi"><small>Not yet redeemed</small><b>' + etb(sum(ok) - sum(red)) + '</b><span>' + fmt(ok.length - red.length) + ' vouchers</span></div>'
-            + '<div class="kpi"><small>Refunded &amp; failed</small><b>' + etb(sum(refunds)) + '</b><span>' + fmt(refunds.length) + ' refunded &middot; ' + fmt(failed.length) + ' payments failed</span></div>';
+              '<div class="kpi hero">' + '<span class="ki"><svg viewBox="0 0 24 24"><path d="M3 4h2.2l2.2 10.5h10.2L19.8 7H6.3"/><circle cx="9" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg></span>' + '<small>Total purchase</small><b>' + etb(sum(ok)) + '</b><span>' + fmt(ok.length) + ' successful transactions &middot; ' + fmt(ok.length * FEE) + ' ETB in fees</span></div>'
+            + '<div class="kpi">' + '<span class="ki"><svg viewBox="0 0 24 24"><path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="m9 12 2 2 4-4"/></svg></span>' + '<small>Redeemed</small><b>' + etb(sum(red)) + '</b><span>' + fmt(red.length) + ' vouchers &middot; ' + rate + '% of purchases</span></div>'
+            + '<div class="kpi">' + '<span class="ki"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>' + '<small>Not yet redeemed</small><b>' + etb(sum(ok) - sum(red)) + '</b><span>' + fmt(ok.length - red.length) + ' vouchers</span></div>'
+            + '<div class="kpi">' + '<span class="ki warn"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/></svg></span>' + '<small>Refunded &amp; failed</small><b>' + etb(sum(refunds)) + '</b><span>' + fmt(refunds.length) + ' refunded &middot; ' + fmt(failed.length) + ' payments failed</span></div>';
     }
 
     function renderTypes(ok) {
@@ -436,7 +505,7 @@
         svg += '</g>';
         buckets.forEach((b, i) => {
             const x = L + slot * i + (slot - bw) / 2, h = Math.max(0, y(0) - y(b.v));
-            if (h > 0) svg += '<path class="colp" d="' + roundTop(x, y(b.v), bw, h, Math.min(4, bw / 2)) + '" fill="var(--green-dark)" data-i="' + i + '"/>';
+            if (h > 0) svg += '<path class="colp" d="' + roundTop(x, y(b.v), bw, h, Math.min(4, bw / 2)) + '" fill="var(--c-col)" data-i="' + i + '"/>';
             const label = weekly ? fmtShort(b.s) + ' – ' + fmtShort(new Date(b.e - 864e5)) : fmtDate(b.s);
             svg += '<rect class="hit" x="' + (L + slot * i) + '" y="' + T + '" width="' + slot + '" height="' + (H - T - B) + '" data-tip="' + label + '|' + show(b.v) + '|' + (state.measure === 'amount' ? fmt(b.n) + ' transactions' : '') + '" data-i="' + i + '"/>';
         });
@@ -465,7 +534,7 @@
               '<tr><th>Date &amp; time</th><th>Transaction ID</th><th>Voucher</th><th>Customer</th><th class="num">Amount</th><th>Status</th><th>Redemption</th></tr>'
             + (rows.length ? rows.map(t => '<tr><td>' + fmtDate(t.on) + ', ' + fmtTime(t.on) + '</td><td class="id">' + t.ref + '</td>'
                 + '<td><div class="vt">' + mark(t.product) + '<span>' + PRODUCTS[t.product].name + ' ' + PRODUCTS[t.product].plans[t.usd] + '</span></div></td>'
-                + '<td>' + t.phone + '</td><td class="num">ETB ' + fmt(t.total) + '</td><td>' + ST[t.status] + '</td>'
+                + '<td>' + t.phone + '</td><td class="num">' + fmt(t.total) + ' ETB</td><td>' + ST[t.status] + '</td>'
                 + '<td>' + (t.status !== 'success' ? '<span class="rd no">&ndash;</span>' : t.redeemed ? '<span class="rd">Redeemed</span>' : '<span class="rd no">Not yet</span>') + '</td></tr>').join('')
               : '<tr><td colspan="7" class="empty">No transactions match.</td></tr>');
         document.getElementById('pager').innerHTML = '<span>' + (list.length ? (state.page * PAGE + 1) + '–' + Math.min(list.length, (state.page + 1) * PAGE) + ' of ' + fmt(list.length) : '') + '</span>'
@@ -508,6 +577,15 @@
     let toastT;
     function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1600); }
     let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => renderChart(inRange().filter(t => t.status === 'success')), 120); });
+
+    function setTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        try { localStorage.setItem('portalTheme', t); } catch (e) {}
+        document.querySelectorAll('.theme button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    }
+    setTheme(document.documentElement.getAttribute('data-theme'));
+
+    window.addEventListener('scroll', () => document.querySelector('.pinned').classList.toggle('stuck', window.scrollY > 4), { passive: true });
 
     applyPreset('last');
 </script>

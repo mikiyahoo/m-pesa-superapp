@@ -54,6 +54,7 @@
             sessionStorage.removeItem('railVouchersOpen');
             sessionStorage.removeItem('gvState');
             sessionStorage.removeItem('railSendOpen');
+            sessionStorage.removeItem('railPortalOpen');
             sessionStorage.removeItem('savingsReturn');
             sessionStorage.setItem(RUN_KEY, '1');
         } catch (e) {}
@@ -546,7 +547,7 @@
 
         /* Quick navigation between the prototype's screens. Only the
            root items carry an icon; each opens a closed-by-default group. */
-        rail.innerHTML = '<div class="proto-group" data-key="railHomeOpen" data-open="1">'
+        rail.innerHTML = '<div class="proto-group" data-key="railHomeOpen">'
             + '<div class="proto-row"><a class="proto-home" href="index.html">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<path d="M3.4 10.4 12 3.6l8.6 6.8V20a1 1 0 0 1-1 1h-5v-6h-5.2v6h-5a1 1 0 0 1-1-1v-9.6Z"/>'
@@ -555,7 +556,7 @@
             + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
             + '<div class="proto-sub">'
             /* two ways into sending to a bank */
-            + '<div class="proto-fold" data-key="railSendOpen" data-open="1">'
+            + '<div class="proto-fold" data-key="railSendOpen">'
             + '<button class="proto-home proto-label" type="button" aria-expanded="false">SEND TO BANK</button>'
             + '<div class="proto-sub2">'
             /* from the M-PESA tab or the home tile, unlinked (the name is just a label) */
@@ -566,7 +567,7 @@
             + '<a class="proto-home" href="Buy Packages.html"><span>BUY PACKAGE</span></a>'
             + '</div></div>'
             /* the M-PESA tab of the bottom nav, which also offers withdrawing */
-            + '<div class="proto-group" data-key="railMpesaOpen" data-open="1">'
+            + '<div class="proto-group" data-key="railMpesaOpen">'
             + '<div class="proto-row"><a class="proto-home" href="Home Screen.html">'
             + '<img src="assets/M-PESA%20Icon.svg" alt=""><span>M-PESA</span></a>'
             + '<button class="proto-toggle" type="button" aria-label="Show M-PESA flows" aria-expanded="false">'
@@ -576,7 +577,7 @@
             + '<a class="proto-home" href="Send to Bank.html"><span>SEND TO BANK</span></a>'
             + '<a class="proto-home" href="Buy Packages.html"><span>BUY PACKAGE</span></a>'
             + '</div></div>'
-            + '<div class="proto-group" data-key="railAppsOpen" data-open="1">'
+            + '<div class="proto-group" data-key="railAppsOpen">'
             + '<div class="proto-row"><a class="proto-home" href="Mini Apps.html">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<rect x="2.9" y="3.1" width="7.6" height="7.6" rx="1.5"/>'
@@ -586,7 +587,7 @@
             + '<button class="proto-toggle" type="button" aria-label="Show mini app flows" aria-expanded="false">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
             + '<div class="proto-sub">'
-            + '<div class="proto-fold" data-key="railSavingOpen" data-open="1">'
+            + '<div class="proto-fold" data-key="railSavingOpen">'
             + '<button class="proto-home proto-label" type="button" aria-expanded="false">M-PESA SAVING</button>'
             + '<div class="proto-sub2">'
             /* always starts from the activation screen */
@@ -604,7 +605,7 @@
             + '<a class="proto-home" href="Savings.html?invite=c4"><span>DANIEL B &ndash; INVITED</span></a>'
             + '</div></div></div></div>'
             /* Global Vouchers: the happy path and each exception path */
-            + '<div class="proto-fold" data-key="railVouchersOpen" data-open="1">'
+            + '<div class="proto-fold" data-key="railVouchersOpen">'
             + '<button class="proto-home proto-label" type="button" aria-expanded="false">GLOBAL VOUCHERS</button>'
             + '<div class="proto-sub2">'
             + '<a class="proto-home" href="Global Vouchers.html?gv=normal"><span>BUY A VOUCHER</span></a>'
@@ -615,7 +616,7 @@
             + '<a class="proto-home" href="Global Vouchers.html?gv=smsfail"><span>SMS FAILS</span></a>'
             + '</div></div></div></div>'
             /* the web portal behind the mini apps (desktop pages) */
-            + '<div class="proto-group" data-key="railPortalOpen" data-open="1">'
+            + '<div class="proto-group" data-key="railPortalOpen">'
             + '<div class="proto-row"><a class="proto-home" href="Voucher Portal.html">'
             + '<svg viewBox="0 0 24 24" aria-hidden="true">'
             + '<rect x="2.8" y="4" width="18.4" height="12.5" rx="1.8"/><path d="M8.5 20.5h7M12 16.5v4"/>'
@@ -627,7 +628,7 @@
             + '</div></div>';
 
         /* each group stays as left while moving between screens; a new run
-           starts with the main menus and M-PESA Saving open, Group Saving Demo closed */
+           starts with every menu closed */
         Array.prototype.forEach.call(rail.querySelectorAll('.proto-group, .proto-fold'), function (group) {
             var key = group.getAttribute('data-key');
             var toggle = group.querySelector(':scope > .proto-row > .proto-toggle, :scope > .proto-label');
