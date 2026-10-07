@@ -216,7 +216,7 @@
         .st.bad { background: var(--bad-bg); color: var(--red); }
         .rd { font-size: 12.5px; color: var(--ink-2); }
         .rd.no { color: var(--muted); }
-        .pager { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; color: var(--ink); font-size: 13.5px; font-weight: 700; }
+        .pager { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 14px; color: var(--ink); font-size: 13.5px; font-weight: 700; }
         .pager div { display: flex; gap: 8px; }
         .pager button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font-weight: 700; color: var(--ink); }
         .pager button:disabled { opacity: 0.4; cursor: default; }
@@ -583,10 +583,10 @@
                 + '<td>' + t.phone + '</td><td class="num">' + fmt(t.total) + ' ETB</td><td>' + ST[t.status] + '</td>'
                 + '<td>' + (t.status !== 'success' ? '<span class="rd no">&ndash;</span>' : t.redeemed ? '<span class="rd">Redeemed</span>' : '<span class="rd no">Not yet</span>') + '</td></tr>').join('')
               : '<tr><td colspan="7" class="empty">No transactions match.</td></tr>');
-        /* Previous on the left, the count in the middle, Next on the right */
-        document.getElementById('pager').innerHTML = '<button ' + (state.page === 0 ? 'disabled' : '') + ' onclick="state.page--; renderTx()">Previous</button>'
-            + '<span>' + (list.length ? (state.page * PAGE + 1) + '–' + Math.min(list.length, (state.page + 1) * PAGE) + ' of ' + fmt(list.length) : '') + '</span>'
-            + '<button ' + (state.page >= pages - 1 ? 'disabled' : '') + ' onclick="state.page++; renderTx()">Next</button>';
+        /* the count, then Previous and Next, all on the right */
+        document.getElementById('pager').innerHTML = '<span>' + (list.length ? (state.page * PAGE + 1) + '–' + Math.min(list.length, (state.page + 1) * PAGE) + ' of ' + fmt(list.length) : '') + '</span>'
+            + '<div><button ' + (state.page === 0 ? 'disabled' : '') + ' onclick="state.page--; renderTx()">Previous</button>'
+            + '<button ' + (state.page >= pages - 1 ? 'disabled' : '') + ' onclick="state.page++; renderTx()">Next</button></div>';
     }
 
     /* ================================================================
