@@ -132,6 +132,14 @@
         .kpi .ki.warn svg { stroke: var(--amber); }
         .kpi.hero .ki { background: rgba(255, 255, 255, 0.2); }
         .kpi.hero .ki svg { stroke: #ffffff; }
+        /* change vs the previous period, bottom right: arrow + signed number; the period shows on hover */
+        .kpi { padding-bottom: 36px; }
+        .dl { position: absolute; right: 16px; bottom: 14px; display: inline-flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; cursor: default; }
+        .dl svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .dl.good { color: var(--ok-ink); }
+        .dl.bad { color: var(--red); }
+        .dl.flat { color: var(--muted); }
+        .kpi.hero .dl { color: #ffffff; }
         .kpi small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 500; }
         .kpi b { display: block; font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -0.2px; font-variant-numeric: tabular-nums; }
         .kpi b em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--muted); margin-left: 5px; }
@@ -208,9 +216,9 @@
         .st.bad { background: var(--bad-bg); color: var(--red); }
         .rd { font-size: 12.5px; color: var(--ink-2); }
         .rd.no { color: var(--muted); }
-        .pager { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; color: var(--muted); font-size: 13px; }
+        .pager { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; color: var(--ink); font-size: 13.5px; font-weight: 700; }
         .pager div { display: flex; gap: 8px; }
-        .pager button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font-weight: 600; }
+        .pager button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; font-weight: 700; color: var(--ink); }
         .pager button:disabled { opacity: 0.4; cursor: default; }
         .empty { padding: 36px 10px; text-align: center; color: var(--muted); }
         .scroll-x { overflow-x: auto; }
@@ -365,9 +373,24 @@
     const val = (t) => state.measure === 'amount' ? t.total : 1;
     const show = n => state.measure === 'amount' ? fmt(n) + ' ETB' : fmt(n) + (n === 1 ? ' transaction' : ' transactions');
 
-    function inRange() {
-        const end = new Date(state.to.getFullYear(), state.to.getMonth(), state.to.getDate() + 1);
-        return TX.filter(t => t.on >= state.from && t.on < end && (state.type === 'all' || t.product === state.type));
+    function txBetween(from, to) {
+        const end = new Date(to.getFullYear(), to.getMonth(), to.getDate() + 1);
+        return TX.filter(t => t.on >= from && t.on < end && (state.type === 'all' || t.product === state.type));
+    }
+    function inRange() { return txBetween(state.from, state.to); }
+    /* month ranges compare month on month (the same days of the month before);
+       any other range compares with the same number of days just before it */
+    function prevRange() {
+        if (state.preset === 'month' || state.preset === 'last') {
+            const f = new Date(state.from.getFullYear(), state.from.getMonth() - 1, 1);
+            const last = new Date(f.getFullYear(), f.getMonth() + 1, 0).getDate();
+            /* a whole month compares with the whole month before; month to date with the same days */
+            const t = new Date(f.getFullYear(), f.getMonth(), state.preset === 'last' ? last : Math.min(state.to.getDate(), last));
+            return { from: f, to: t, label: 'vs last month' };
+        }
+        const days = Math.round((state.to - state.from) / 864e5) + 1;
+        return { from: new Date(state.from.getFullYear(), state.from.getMonth(), state.from.getDate() - days), to: new Date(state.from.getFullYear(), state.from.getMonth(), state.from.getDate() - 1),
+            label: days === 1 ? 'vs yesterday' : 'vs previous ' + days + ' days' };
     }
 
     /* ================================================================
@@ -440,13 +463,36 @@
 
     function renderKpis(list, ok) {
         const sum = a => a.reduce((s, t) => s + t.total, 0);
+        const parts = (l) => { const o = l.filter(t => t.status === 'success'), r = o.filter(t => t.redeemed);
+            return { total: sum(o), red: sum(r), open: sum(o) - sum(r), back: sum(l.filter(t => t.status === 'refunded')) }; };
+        const now = parts(list), pr = prevRange(), was = parts(txBetween(pr.from, pr.to));
         const red = ok.filter(t => t.redeemed), refunds = list.filter(t => t.status === 'refunded'), failed = list.filter(t => t.status === 'failed');
         const rate = ok.length ? Math.round(red.length / ok.length * 100) : 0;
+        const tipRange = fmtDate(pr.from) + ' \u2013 ' + fmtDate(pr.to);
+        /* up is good for sales and redemptions, bad for refunds, neutral for open vouchers */
+        const delta = (a, b, sense) => {
+            const label = pr.label.replace(/^vs /, '').replace(/^./, c => c.toUpperCase());
+            if (!b) return '<span class="dl flat" data-tip="' + label + '|No data for ' + tipRange + '">&ndash;</span>';
+            const c = (a - b) / b * 100, up = c >= 0, txt = Math.abs(c) > 999 ? (up ? '>+999%' : '<\u2212999%') : (up ? '+' : '\u2212') + Math.abs(c).toFixed(Math.abs(c) < 10 ? 1 : 0) + '%';
+            const tone = Math.abs(c) < 0.05 || !sense ? 'flat' : (up === (sense > 0) ? 'good' : 'bad');
+            return '<span class="dl ' + tone + '" data-tip="' + label + '|' + tipRange + '|' + fmt(b) + ' ETB">'
+                + '<svg viewBox="0 0 24 24"><path d="' + (up ? 'M12 19V5M6 11l6-6 6 6' : 'M12 5v14M6 13l6 6 6-6') + '"/></svg>'
+                + txt + '</span>';
+        };
+        const ki = (cls, path) => '<span class="ki' + cls + '"><svg viewBox="0 0 24 24">' + path + '</svg></span>';
         document.getElementById('kpis').innerHTML =
-              '<div class="kpi hero">' + '<span class="ki"><svg viewBox="0 0 24 24"><path d="M3 4h2.2l2.2 10.5h10.2L19.8 7H6.3"/><circle cx="9" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg></span>' + '<small>Total purchase</small><b>' + etb(sum(ok)) + '</b><span>' + fmt(ok.length) + ' successful transactions &middot; ' + fmt(ok.length * FEE) + ' ETB in fees</span></div>'
-            + '<div class="kpi">' + '<span class="ki"><svg viewBox="0 0 24 24"><path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="m9 12 2 2 4-4"/></svg></span>' + '<small>Redeemed</small><b>' + etb(sum(red)) + '</b><span>' + fmt(red.length) + ' vouchers &middot; ' + rate + '% of purchases</span></div>'
-            + '<div class="kpi">' + '<span class="ki"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>' + '<small>Not yet redeemed</small><b>' + etb(sum(ok) - sum(red)) + '</b><span>' + fmt(ok.length - red.length) + ' vouchers</span></div>'
-            + '<div class="kpi">' + '<span class="ki warn"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/></svg></span>' + '<small>Refunded &amp; failed</small><b>' + etb(sum(refunds)) + '</b><span>' + fmt(refunds.length) + ' refunded &middot; ' + fmt(failed.length) + ' payments failed</span></div>';
+              '<div class="kpi hero">' + ki('', '<path d="M3 4h2.2l2.2 10.5h10.2L19.8 7H6.3"/><circle cx="9" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/>')
+            + '<small>Total purchase</small><b>' + etb(now.total) + '</b><span>' + fmt(ok.length) + ' successful transactions &middot; ' + fmt(ok.length * FEE) + ' ETB in fees</span>'
+            + delta(now.total, was.total, 1) + '</div>'
+            + '<div class="kpi">' + ki('', '<path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="m9 12 2 2 4-4"/>')
+            + '<small>Redeemed</small><b>' + etb(now.red) + '</b><span>' + fmt(red.length) + ' vouchers &middot; ' + rate + '% of purchases</span>'
+            + delta(now.red, was.red, 1) + '</div>'
+            + '<div class="kpi">' + ki('', '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>')
+            + '<small>Not yet redeemed</small><b>' + etb(now.open) + '</b><span>' + fmt(ok.length - red.length) + ' vouchers</span>'
+            + delta(now.open, was.open, 0) + '</div>'
+            + '<div class="kpi">' + ki(' warn', '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/>')
+            + '<small>Refunded &amp; failed</small><b>' + etb(now.back) + '</b><span>' + fmt(refunds.length) + ' refunded &middot; ' + fmt(failed.length) + ' payments failed</span>'
+            + delta(now.back, was.back, -1) + '</div>';
     }
 
     function renderTypes(ok) {
@@ -537,8 +583,10 @@
                 + '<td>' + t.phone + '</td><td class="num">' + fmt(t.total) + ' ETB</td><td>' + ST[t.status] + '</td>'
                 + '<td>' + (t.status !== 'success' ? '<span class="rd no">&ndash;</span>' : t.redeemed ? '<span class="rd">Redeemed</span>' : '<span class="rd no">Not yet</span>') + '</td></tr>').join('')
               : '<tr><td colspan="7" class="empty">No transactions match.</td></tr>');
-        document.getElementById('pager').innerHTML = '<span>' + (list.length ? (state.page * PAGE + 1) + '–' + Math.min(list.length, (state.page + 1) * PAGE) + ' of ' + fmt(list.length) : '') + '</span>'
-            + '<div><button ' + (state.page === 0 ? 'disabled' : '') + ' onclick="state.page--; renderTx()">Previous</button><button ' + (state.page >= pages - 1 ? 'disabled' : '') + ' onclick="state.page++; renderTx()">Next</button></div>';
+        /* Previous on the left, the count in the middle, Next on the right */
+        document.getElementById('pager').innerHTML = '<button ' + (state.page === 0 ? 'disabled' : '') + ' onclick="state.page--; renderTx()">Previous</button>'
+            + '<span>' + (list.length ? (state.page * PAGE + 1) + '–' + Math.min(list.length, (state.page + 1) * PAGE) + ' of ' + fmt(list.length) : '') + '</span>'
+            + '<button ' + (state.page >= pages - 1 ? 'disabled' : '') + ' onclick="state.page++; renderTx()">Next</button>';
     }
 
     /* ================================================================
