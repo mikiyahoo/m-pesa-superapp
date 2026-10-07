@@ -346,7 +346,7 @@
                 const on = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7 + Math.floor(r() * 15), Math.floor(r() * 60));
                 if (on > TODAY) continue;
                 const product = pick(), P = PRODUCTS[product], usd = P.denoms[Math.floor(r() * P.denoms.length)];
-                const x = r(), status = x < 0.94 ? 'success' : x < 0.97 ? 'refunded' : 'failed';
+                const x = r(), status = x < 0.95 ? 'success' : 'failed';
                 const age = (TODAY - on) / 864e5;
                 const redeemed = status === 'success' && r() < Math.min(0.92, 0.15 + age / 18);
                 let ref = 'MPV'; for (let j = 0; j < 8; j++) ref += AZ[Math.floor(r() * AZ.length)];
@@ -464,12 +464,12 @@
     function renderKpis(list, ok) {
         const sum = a => a.reduce((s, t) => s + t.total, 0);
         const parts = (l) => { const o = l.filter(t => t.status === 'success'), r = o.filter(t => t.redeemed);
-            return { total: sum(o), red: sum(r), open: sum(o) - sum(r), back: sum(l.filter(t => t.status === 'refunded')) }; };
+            return { total: sum(o), red: sum(r), open: sum(o) - sum(r), fail: sum(l.filter(t => t.status === 'failed')) }; };
         const now = parts(list), pr = prevRange(), was = parts(txBetween(pr.from, pr.to));
-        const red = ok.filter(t => t.redeemed), refunds = list.filter(t => t.status === 'refunded'), failed = list.filter(t => t.status === 'failed');
+        const red = ok.filter(t => t.redeemed), failed = list.filter(t => t.status === 'failed');
         const rate = ok.length ? Math.round(red.length / ok.length * 100) : 0;
         const tipRange = fmtDate(pr.from) + ' \u2013 ' + fmtDate(pr.to);
-        /* up is good for sales and redemptions, bad for refunds, neutral for open vouchers */
+        /* up is good for sales and redemptions, bad for failed payments, neutral for open vouchers */
         const delta = (a, b, sense) => {
             const label = pr.label.replace(/^vs /, '').replace(/^./, c => c.toUpperCase());
             if (!b) return '<span class="dl flat" data-tip="' + label + '|No data for ' + tipRange + '">&ndash;</span>';
@@ -491,8 +491,8 @@
             + '<small>Not yet redeemed</small><b>' + etb(now.open) + '</b><span>' + fmt(ok.length - red.length) + ' vouchers</span>'
             + delta(now.open, was.open, 0) + '</div>'
             + '<div class="kpi">' + ki(' warn', '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/>')
-            + '<small>Refunded &amp; failed</small><b>' + etb(now.back) + '</b><span>' + fmt(refunds.length) + ' refunded &middot; ' + fmt(failed.length) + ' payments failed</span>'
-            + delta(now.back, was.back, -1) + '</div>';
+            + '<small>Failed payments</small><b>' + etb(now.fail) + '</b><span>' + fmt(failed.length) + ' payments failed &middot; not charged</span>'
+            + delta(now.fail, was.fail, -1) + '</div>';
     }
 
     function renderTypes(ok) {
@@ -572,7 +572,6 @@
         const rows = list.slice(state.page * PAGE, state.page * PAGE + PAGE);
         const ST = {
             success: '<span class="st ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Success</span>',
-            refunded: '<span class="st ref"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/></svg>Refunded</span>',
             failed: '<span class="st bad"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg>Failed</span>'
         };
         document.getElementById('txCount').textContent = fmt(list.length) + ' transactions in range';
