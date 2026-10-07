@@ -320,10 +320,10 @@
        ================================================================ */
     const ETB_PER_USD = 164.5, FEE = 5;
     const PRODUCTS = {
-        netflix: { name: 'Netflix', cat: 'Streaming', plans: { 10: 'Basic', 20: 'Standard', 30: 'Premium' }, denoms: [10, 20], weight: 0.25 },
-        googleplay: { name: 'Google Play', cat: 'Apps & games', plans: { 10: 'Mini', 20: 'Plus', 30: 'Max' }, denoms: [10, 20, 30], weight: 0.15 },
-        pubg: { name: 'PUBG Mobile', cat: 'Gaming', plans: { 10: '60 UC', 20: '325 UC', 30: '660 UC' }, denoms: [10, 20, 30], weight: 0.3 },
-        spotify: { name: 'Spotify', cat: 'Music', plans: { 10: 'Individual', 20: 'Duo', 30: 'Family' }, denoms: [10, 20, 30], weight: 0.3 }
+        netflix: { name: 'Netflix', cat: 'Streaming', packs: [['Mobile', 15], ['Basic', 15], ['Standard', 30], ['Premium', 30]], weight: 0.25 },
+        googleplay: { name: 'Google Play', cat: 'Apps & games', packs: [['Mini', 10], ['Plus', 20], ['Max', 30]], weight: 0.15 },
+        pubg: { name: 'PUBG Mobile', cat: 'Gaming', packs: [['60 UC', 10], ['325 UC', 20], ['660 UC', 30]], weight: 0.3 },
+        spotify: { name: 'Spotify', cat: 'Music', packs: [['Individual', 10], ['Duo', 20], ['Family', 30]], weight: 0.3 }
     };
     const ORDER = ['netflix', 'googleplay', 'pubg', 'spotify'];
     const MARK = {
@@ -345,12 +345,12 @@
             for (let i = 0; i < n; i++) {
                 const on = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7 + Math.floor(r() * 15), Math.floor(r() * 60));
                 if (on > TODAY) continue;
-                const product = pick(), P = PRODUCTS[product], usd = P.denoms[Math.floor(r() * P.denoms.length)];
+                const product = pick(), P = PRODUCTS[product], pack = Math.floor(r() * P.packs.length), usd = P.packs[pack][1];
                 const x = r(), status = x < 0.95 ? 'success' : 'failed';
                 const age = (TODAY - on) / 864e5;
                 const redeemed = status === 'success' && r() < Math.min(0.92, 0.15 + age / 18);
                 let ref = 'MPV'; for (let j = 0; j < 8; j++) ref += AZ[Math.floor(r() * AZ.length)];
-                out.push({ on, product, usd, total: Math.round(usd * ETB_PER_USD) + FEE, status, redeemed, ref,
+                out.push({ on, product, pack, usd, total: Math.round(usd * ETB_PER_USD) + FEE, status, redeemed, ref,
                     phone: '09' + (10 + Math.floor(r() * 89)) + ' ••• ' + String(Math.floor(r() * 1000)).padStart(3, '0') });
             }
         }
@@ -578,7 +578,7 @@
         document.getElementById('tx').innerHTML =
               '<tr><th>Date &amp; time</th><th>Transaction ID</th><th>Voucher</th><th>Customer</th><th class="num">Amount</th><th>Status</th><th>Redemption</th></tr>'
             + (rows.length ? rows.map(t => '<tr><td>' + fmtDate(t.on) + ', ' + fmtTime(t.on) + '</td><td class="id">' + t.ref + '</td>'
-                + '<td><div class="vt">' + mark(t.product) + '<span>' + PRODUCTS[t.product].name + ' ' + PRODUCTS[t.product].plans[t.usd] + '</span></div></td>'
+                + '<td><div class="vt">' + mark(t.product) + '<span>' + PRODUCTS[t.product].name + ' ' + PRODUCTS[t.product].packs[t.pack][0] + '</span></div></td>'
                 + '<td>' + t.phone + '</td><td class="num">' + fmt(t.total) + ' ETB</td><td>' + ST[t.status] + '</td>'
                 + '<td>' + (t.status !== 'success' ? '<span class="rd no">&ndash;</span>' : t.redeemed ? '<span class="rd">Redeemed</span>' : '<span class="rd no">Not yet</span>') + '</td></tr>').join('')
               : '<tr><td colspan="7" class="empty">No transactions match.</td></tr>');
@@ -609,7 +609,7 @@
        ================================================================ */
     function exportCsv() {
         const rows = [['Date', 'Time', 'Transaction ID', 'Voucher type', 'Package', 'Customer', 'Amount (ETB)', 'Status', 'Redeemed']]
-            .concat(inRange().map(t => [iso(t.on), fmtTime(t.on), t.ref, PRODUCTS[t.product].name, PRODUCTS[t.product].plans[t.usd], t.phone, t.total, t.status, t.status === 'success' ? (t.redeemed ? 'yes' : 'no') : '']));
+            .concat(inRange().map(t => [iso(t.on), fmtTime(t.on), t.ref, PRODUCTS[t.product].name, PRODUCTS[t.product].packs[t.pack][0], t.phone, t.total, t.status, t.status === 'success' ? (t.redeemed ? 'yes' : 'no') : '']));
         const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
