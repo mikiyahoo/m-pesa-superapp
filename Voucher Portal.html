@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Global Vouchers web portal: the Voucher Payment Report.
+           Desktop first; collapses to one column on small screens. */
+        :root {
+            --green: #2FC56D;
+            --green-dark: #0A7A3C;     /* redeemed, single-series columns */
+            --green-mid: #5CC28A;      /* not yet redeemed (validated pair with green-dark) */
+            --green-tint: #E8F7EE;
+            --ink: #1c1c1c;
+            --ink-2: #4a4a4a;
+            --muted: #7b807d;
+            --line: #E7EAE8;
+            --surface: #F4F6F5;
+            --card: #ffffff;
+            --red: #D7263D;
+            --amber: #B26A00;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Barlow', sans-serif; background: var(--surface); color: var(--ink); font-size: 14px; }
+        button, input, select { font-family: inherit; font-size: inherit; color: inherit; }
+
+        .app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+        /* ---------- side navigation ---------- */
+        .side { background: #ffffff; border-right: 1px solid var(--line); padding: 22px 14px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+        .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 22px 8px; }
+        .brand img { width: 78px; }
+        .brand span { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.6px; border-left: 1px solid var(--line); padding-left: 10px; }
+        .side h6 { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--muted); padding: 10px 10px 8px 10px; }
+        .nav { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; border: 0; border-radius: 10px; background: none; text-align: left; font-weight: 500; color: var(--ink-2); cursor: pointer; text-decoration: none; }
+        .nav svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+        .nav:hover { background: var(--surface); }
+        .nav.on { background: var(--green-tint); color: var(--green-dark); font-weight: 600; }
+        .side .spacer { flex: 1; }
+        .side .back { font-size: 13px; color: var(--muted); }
+
+        /* ---------- main ---------- */
+        main { padding: 26px 32px 48px 32px; min-width: 0; }
+        .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+        .head h1 { font-size: 26px; font-weight: 700; }
+        .head p { color: var(--muted); margin-top: 2px; }
+        .user { display: flex; align-items: center; gap: 10px; background: #ffffff; border: 1px solid var(--line); border-radius: 24px; padding: 5px 14px 5px 5px; white-space: nowrap; }
+        .user i { width: 30px; height: 30px; border-radius: 50%; background: var(--green-dark); color: #ffffff; font-style: normal; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .user b { display: block; font-size: 13px; }
+        .user small { display: block; font-size: 11.5px; color: var(--muted); }
+
+        /* filters: one row above everything they control */
+        .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 18px; }
+        .field { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; }
+        .field svg { width: 16px; height: 16px; stroke: var(--muted); stroke-width: 1.9; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .field select, .field input { border: 0; outline: none; background: none; height: 36px; font-weight: 500; }
+        .field input[type=date] { width: 128px; }
+        .range-text { font-weight: 600; }
+        .seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+        .seg button { border: 0; background: none; height: 30px; padding: 0 14px; border-radius: 8px; font-weight: 600; color: var(--muted); cursor: pointer; }
+        .seg button.on { background: #ffffff; color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .filters .grow { flex: 1; }
+        .filters.inner { border: 0; background: var(--surface); margin: 0 0 14px 0; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--green-dark); color: #ffffff; font-weight: 600; cursor: pointer; }
+        .btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .btn.ghost { background: #ffffff; color: var(--ink); border: 1px solid var(--line); }
+
+        /* KPI tiles */
+        .kpis { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+        .kpi { background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+        .kpi small { display: block; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+        .kpi b { display: block; font-size: 26px; font-weight: 700; margin-top: 6px; letter-spacing: -0.2px; font-variant-numeric: tabular-nums; }
+        .kpi b em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--muted); margin-right: 4px; }
+        .kpi span { display: block; margin-top: 4px; font-size: 12.5px; color: var(--ink-2); }
+        .kpi.hero { background: linear-gradient(180deg, #0E7A38 0%, #26A652 52%, #43CB74 100%); border: 0; color: #ffffff; }
+        .kpi.hero small, .kpi.hero span, .kpi.hero b em { color: rgba(255, 255, 255, 0.82); }
+        .kpi.hero b { font-size: 32px; }
+
+        .card { background: #ffffff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+        .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+        .card-head h2 { font-size: 17px; font-weight: 700; }
+        .card-head p { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+        .legend { display: flex; gap: 16px; font-size: 12.5px; color: var(--ink-2); }
+        .legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+        /* purchase by voucher type */
+        .types { width: 100%; border-collapse: collapse; }
+        .types th { text-align: left; font-size: 11.5px; font-weight: 600; letter-spacing: 0.6px; color: var(--muted); text-transform: uppercase; padding: 0 10px 10px 10px; border-bottom: 1px solid var(--line); }
+        .types th.num, .types td.num { text-align: right; }
+        .types td { padding: 12px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; vertical-align: middle; }
+        .types tr:last-child td { border-bottom: 0; }
+        .types tr.total td { font-weight: 700; background: var(--surface); }
+        .types tr.total td:first-child { border-radius: 10px 0 0 10px; }
+        .types tr.total td:last-child { border-radius: 0 10px 10px 0; }
+        .vt { display: flex; align-items: center; gap: 12px; }
+        .vt b { font-weight: 600; }
+        .vt small { display: block; color: var(--muted); font-size: 12px; }
+        .mark { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+        .mark svg { width: 24px; height: 24px; }
+        .m-netflix { background: radial-gradient(110% 110% at 100% 0%, #7E0911 0%, rgba(126, 9, 17, 0) 65%), #141414; }
+        .m-googleplay { background: #ffffff; border: 1px solid var(--line); }
+        .m-spotify { background: #121212; }
+        .m-pubg { background: radial-gradient(110% 110% at 100% 0%, rgba(242, 169, 0, 0.55) 0%, rgba(242, 169, 0, 0) 60%), #1b1c1f; }
+        .m-pubg svg { width: 34px; height: 34px; }
+        .bar { display: flex; gap: 2px; height: 12px; min-width: 160px; }
+        .bar i { display: block; height: 100%; border-radius: 4px; cursor: default; }
+        .bar .r { background: var(--green-dark); }
+        .bar .u { background: var(--green-mid); }
+        .bar-cell { width: 34%; }
+        .bar-cell small { display: block; margin-top: 5px; font-size: 12px; color: var(--ink-2); }
+        .share { font-weight: 600; }
+
+        /* daily chart */
+        .chart { position: relative; height: 240px; }
+        .chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
+        .chart .grid line { stroke: var(--line); stroke-width: 1; }
+        .chart .grid text, .chart .xaxis text { fill: var(--muted); font-size: 11px; font-family: 'Barlow', sans-serif; }
+        .chart rect.col { fill: var(--green-dark); }
+        .chart rect.col.dim { opacity: 0.35; }
+        .chart rect.hit { fill: transparent; cursor: default; }
+        .tip { position: fixed; pointer-events: none; background: #1c1c1c; color: #ffffff; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; line-height: 1.35; opacity: 0; transition: opacity 0.1s; z-index: 50; white-space: nowrap; }
+        .tip b { display: block; font-size: 13.5px; }
+        .tip.show { opacity: 1; }
+
+        /* transactions table */
+        .search { width: 260px; }
+        .search input { width: 100%; }
+        .tx { width: 100%; border-collapse: collapse; }
+        .tx th { text-align: left; font-size: 11.5px; font-weight: 600; letter-spacing: 0.6px; color: var(--muted); text-transform: uppercase; padding: 10px; background: var(--surface); }
+        .tx th:first-child { border-radius: 10px 0 0 10px; }
+        .tx th:last-child { border-radius: 0 10px 10px 0; }
+        .tx td { padding: 11px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .tx td.num, .tx th.num { text-align: right; }
+        .tx .vt .mark { width: 28px; height: 28px; border-radius: 8px; }
+        .tx .vt .mark svg { width: 18px; height: 18px; }
+        .tx .vt .m-pubg svg { width: 26px; height: 26px; }
+        .tx td.id { font-weight: 600; letter-spacing: 0.3px; }
+        .st { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .st svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .st.ok { background: #DDF5E6; color: #136B37; }
+        .st.ref { background: #FFF2DC; color: var(--amber); }
+        .st.bad { background: #FDE7EA; color: var(--red); }
+        .rd { font-size: 12.5px; color: var(--ink-2); }
+        .rd.no { color: var(--muted); }
+        .pager { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; color: var(--muted); font-size: 13px; }
+        .pager div { display: flex; gap: 8px; }
+        .pager button { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: #ffffff; cursor: pointer; font-weight: 600; }
+        .pager button:disabled { opacity: 0.4; cursor: default; }
+        .empty { padding: 36px 10px; text-align: center; color: var(--muted); }
+        .scroll-x { overflow-x: auto; }
+
+        .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(10px); background: #1c1c1c; color: #ffffff; padding: 10px 16px; border-radius: 10px; font-weight: 500; opacity: 0; transition: all 0.2s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%); }
+
+        @media (max-width: 1100px) { .kpis { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 900px) {
+            .app { grid-template-columns: 1fr; }
+            .side { display: none; }
+            main { padding: 18px 16px 40px 16px; }
+            .user { display: none; }
+            .search { width: 100%; }
+        }
+        @media (max-width: 560px) { .kpis { grid-template-columns: 1fr; } .bar-cell { min-width: 170px; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="side">
+        <div class="brand"><img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"><span>VOUCHER PORTAL</span></div>
+        <h6>REPORTS</h6>
+        <button class="nav on" onclick="scrollToId('top')">
+            <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Payment report
+        </button>
+        <button class="nav" onclick="scrollToId('txCard')">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Transactions
+        </button>
+        <div class="spacer"></div>
+        <a class="nav back" href="index.html">
+            <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>Back to app prototype
+        </a>
+    </aside>
+
+    <main id="top">
+        <div class="head">
+            <div>
+                <h1>Voucher Payment Report</h1>
+                <p>Global Vouchers &middot; sales and redemption by voucher type</p>
+            </div>
+            <div class="user"><i>OP</i><span><b>Partner Operations</b><small>M-PESA Ethiopia</small></span></div>
+        </div>
+
+        <!-- filters (the same bar repeats above the transaction list) -->
+        <div class="filters" data-filters></div>
+
+        <!-- KPIs -->
+        <div class="kpis" id="kpis"></div>
+
+        <!-- purchase by voucher type -->
+        <div class="card">
+            <div class="card-head">
+                <div><h2>Purchase by Voucher Type</h2><p id="rangeLabel"></p></div>
+                <div class="legend"><span><i style="background:var(--green-dark)"></i>Redeemed</span><span><i style="background:var(--green-mid)"></i>Not yet redeemed</span></div>
+            </div>
+            <div class="scroll-x"><table class="types" id="types"></table></div>
+        </div>
+
+        <!-- daily purchases -->
+        <div class="card">
+            <div class="card-head">
+                <div><h2 id="dailyTitle">Daily Purchases</h2><p>Successful purchases per day</p></div>
+            </div>
+            <div class="chart" id="chart"></div>
+        </div>
+
+        <!-- transactions -->
+        <div class="card" id="txCard">
+            <div class="card-head">
+                <div><h2>Transactions</h2><p id="txCount"></p></div>
+                <label class="field search">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+                    <input id="q" placeholder="Search transaction ID or phone" oninput="state.page = 0; renderTx()">
+                </label>
+            </div>
+            <div class="filters inner" data-filters></div>
+            <div class="scroll-x"><table class="tx" id="tx"></table></div>
+            <div class="pager" id="pager"></div>
+        </div>
+    </main>
+</div>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+    /* ================================================================
+       Sample data: generated with a fixed seed so the numbers stay the
+       same on every load. Prices follow the mini app: $1 = 164.5 ETB,
+       plus a 5 ETB service fee per voucher.
+       ================================================================ */
+    const ETB_PER_USD = 164.5, FEE = 5;
+    const PRODUCTS = {
+        netflix: { name: 'Netflix', cat: 'Streaming', plans: { 10: 'Basic', 20: 'Standard', 30: 'Premium' }, denoms: [10, 20], weight: 0.25 },
+        googleplay: { name: 'Google Play', cat: 'Apps & games', plans: { 10: 'Mini', 20: 'Plus', 30: 'Max' }, denoms: [10, 20, 30], weight: 0.15 },
+        pubg: { name: 'PUBG Mobile', cat: 'Gaming', plans: { 10: '60 UC', 20: '325 UC', 30: '660 UC' }, denoms: [10, 20, 30], weight: 0.3 },
+        spotify: { name: 'Spotify', cat: 'Music', plans: { 10: 'Individual', 20: 'Duo', 30: 'Family' }, denoms: [10, 20, 30], weight: 0.3 }
+    };
+    const ORDER = ['netflix', 'googleplay', 'pubg', 'spotify'];
+    const MARK = {
+        netflix: '<svg viewBox="0 0 24 24"><path d="M6.5 2.5h3.6l4 11.5V2.5h3.4v19l-3.6-.5-4-11.4V20.6l-3.4.4Z" fill="#E50914"/></svg>',
+        googleplay: '<svg viewBox="0 0 24 24"><path d="M4.2 2.6 13.6 12l-9.4 9.4c-.3-.2-.5-.6-.5-1.1V3.7c0-.5.2-.9.5-1.1Z" fill="#00C3FF"/><path d="m16.8 8.8-3.2 3.2-9.4-9.4c.3-.2.8-.2 1.2 0Z" fill="#00E676"/><path d="m16.8 15.2-11.4 6.2c-.4.2-.9.2-1.2 0l9.4-9.4Z" fill="#FF3A44"/><path d="M20.3 10.7c.9.6.9 2 0 2.6l-3.5 1.9-3.2-3.2 3.2-3.2Z" fill="#FFD400"/></svg>',
+        spotify: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1DB954"/><path d="M6.8 9.4c3.6-1.1 7.6-.8 10.6.9M7.4 12.4c3-.8 6.2-.5 8.7.9M8 15.2c2.4-.6 4.8-.4 6.8.7" stroke="#000" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
+        pubg: '<svg viewBox="0 0 24 24"><text x="12" y="15.2" text-anchor="middle" font-family="Barlow, sans-serif" font-weight="800" font-size="8.6" fill="#F2A900">PUBG</text></svg>'
+    };
+    const mark = k => '<span class="mark m-' + k + '">' + MARK[k] + '</span>';
+
+    const TODAY = new Date(2026, 9, 7, 18, 0);   // the prototype's "now"
+    function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+    const TX = (function () {
+        const r = rng(20260907), out = [];
+        const pick = () => { let x = r(), acc = 0; for (const k of ORDER) { acc += PRODUCTS[k].weight; if (x < acc) return k; } return 'spotify'; };
+        const AZ = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        for (let d = new Date(2026, 6, 1); d <= TODAY; d.setDate(d.getDate() + 1)) {
+            const n = 4 + Math.floor(r() * 9);
+            for (let i = 0; i < n; i++) {
+                const on = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7 + Math.floor(r() * 15), Math.floor(r() * 60));
+                if (on > TODAY) continue;
+                const product = pick(), P = PRODUCTS[product], usd = P.denoms[Math.floor(r() * P.denoms.length)];
+                const x = r(), status = x < 0.94 ? 'success' : x < 0.97 ? 'refunded' : 'failed';
+                const age = (TODAY - on) / 864e5;
+                const redeemed = status === 'success' && r() < Math.min(0.92, 0.15 + age / 18);
+                let ref = 'MPV'; for (let j = 0; j < 8; j++) ref += AZ[Math.floor(r() * AZ.length)];
+                out.push({ on, product, usd, total: Math.round(usd * ETB_PER_USD) + FEE, status, redeemed, ref,
+                    phone: '09' + (10 + Math.floor(r() * 89)) + ' ••• ' + String(Math.floor(r() * 1000)).padStart(3, '0') });
+            }
+        }
+        return out.sort((a, b) => b.on - a.on);
+    })();
+
+    /* ================================================================
+       State, formatting
+       ================================================================ */
+    const state = { from: null, to: null, preset: 'last', type: 'all', measure: 'amount', page: 0 };
+    const PAGE = 10;
+    const fmt = n => Math.round(n).toLocaleString('en-US');
+    const etb = n => '<em>ETB</em>' + fmt(n);
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const fmtDate = d => MONTHS[d.getMonth()] + ' ' + String(d.getDate()).padStart(2, '0') + ', ' + d.getFullYear();
+    const fmtShort = d => MONTHS[d.getMonth()] + ' ' + d.getDate();
+    const fmtTime = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const val = (t) => state.measure === 'amount' ? t.total : 1;
+    const show = n => state.measure === 'amount' ? 'ETB ' + fmt(n) : fmt(n) + (n === 1 ? ' transaction' : ' transactions');
+
+    function inRange() {
+        const end = new Date(state.to.getFullYear(), state.to.getMonth(), state.to.getDate() + 1);
+        return TX.filter(t => t.on >= state.from && t.on < end && (state.type === 'all' || t.product === state.type));
+    }
+
+    /* ================================================================
+       Filters
+       ================================================================ */
+    function applyPreset(p) {
+        const t = dayStart(TODAY);
+        if (p === 'today') { state.from = t; state.to = t; }
+        else if (p === '7' || p === '30') { state.from = new Date(t.getFullYear(), t.getMonth(), t.getDate() - (+p - 1)); state.to = t; }
+        else if (p === 'month') { state.from = new Date(t.getFullYear(), t.getMonth(), 1); state.to = t; }
+        else if (p === 'last') { state.from = new Date(t.getFullYear(), t.getMonth() - 1, 1); state.to = new Date(t.getFullYear(), t.getMonth(), 0); }
+        else { state.preset = 'custom'; syncFilters(); return; }
+        state.preset = p;
+        state.page = 0;
+        render();
+    }
+    function customRange(el) {
+        const bar = el.closest('[data-filters]');
+        const f = bar.querySelector('.f-from').value, t = bar.querySelector('.f-to').value;
+        if (!f || !t) return;
+        let a = new Date(f + 'T00:00'), b = new Date(t + 'T00:00');
+        if (a > b) [a, b] = [b, a];
+        state.from = a; state.to = b; state.page = 0;
+        state.preset = 'custom';
+        render();
+    }
+    function setMeasure(m) {
+        state.measure = m;
+        render();
+    }
+    const FILTERS = '<label class="field">'
+        + '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>'
+        + '<select class="f-preset" onchange="applyPreset(this.value)" aria-label="Date range">'
+        + [['today', 'Today'], ['7', 'Last 7 days'], ['30', 'Last 30 days'], ['month', 'This month'], ['last', 'Last month'], ['custom', 'Custom']].map(o => '<option value="' + o[0] + '">' + o[1] + '</option>').join('')
+        + '</select></label>'
+        + '<label class="field"><input type="date" class="f-from" onchange="customRange(this)" aria-label="From"></label>'
+        + '<span style="color:var(--muted)">&ndash;</span>'
+        + '<label class="field"><input type="date" class="f-to" onchange="customRange(this)" aria-label="To"></label>'
+        + '<label class="field">'
+        + '<svg viewBox="0 0 24 24"><path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/></svg>'
+        + '<select class="f-type" onchange="state.type = this.value; state.page = 0; render()" aria-label="Voucher type"><option value="all">All voucher types</option>'
+        + ORDER.map(k => '<option value="' + k + '">' + PRODUCTS[k].name + '</option>').join('') + '</select></label>'
+        + '<span class="grow"></span>'
+        + '<div class="seg" role="tablist" aria-label="Measure">'
+        + '<button data-m="amount" onclick="setMeasure(\'amount\')">Amount</button>'
+        + '<button data-m="count" onclick="setMeasure(\'count\')">Transactions</button></div>'
+        + '<button class="btn" onclick="exportCsv()"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Export CSV</button>';
+    document.querySelectorAll('[data-filters]').forEach(el => { el.innerHTML = FILTERS; });
+    /* every copy of the bar shows the same state */
+    function syncFilters() {
+        document.querySelectorAll('.f-preset').forEach(e => { e.value = state.preset; });
+        document.querySelectorAll('.f-from').forEach(e => { e.value = iso(state.from); });
+        document.querySelectorAll('.f-to').forEach(e => { e.value = iso(state.to); });
+        document.querySelectorAll('.f-type').forEach(e => { e.value = state.type; });
+        document.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.m === state.measure));
+    }
+
+    /* ================================================================
+       Render
+       ================================================================ */
+    function render() {
+        syncFilters();
+        const list = inRange(), ok = list.filter(t => t.status === 'success');
+        document.getElementById('rangeLabel').textContent = fmtDate(state.from) + ' – ' + fmtDate(state.to);
+        renderKpis(list, ok);
+        renderTypes(ok);
+        renderChart(ok);
+        renderTx();
+    }
+
+    function renderKpis(list, ok) {
+        const sum = a => a.reduce((s, t) => s + t.total, 0);
+        const red = ok.filter(t => t.redeemed), refunds = list.filter(t => t.status === 'refunded'), failed = list.filter(t => t.status === 'failed');
+        const rate = ok.length ? Math.round(red.length / ok.length * 100) : 0;
+        document.getElementById('kpis').innerHTML =
+              '<div class="kpi hero"><small>Total purchase</small><b>' + etb(sum(ok)) + '</b><span>' + fmt(ok.length) + ' successful transactions &middot; ETB ' + fmt(ok.length * FEE) + ' in fees</span></div>'
+            + '<div class="kpi"><small>Redeemed</small><b>' + etb(sum(red)) + '</b><span>' + fmt(red.length) + ' vouchers &middot; ' + rate + '% of purchases</span></div>'
+            + '<div class="kpi"><small>Not yet redeemed</small><b>' + etb(sum(ok) - sum(red)) + '</b><span>' + fmt(ok.length - red.length) + ' vouchers</span></div>'
+            + '<div class="kpi"><small>Refunded &amp; failed</small><b>' + etb(sum(refunds)) + '</b><span>' + fmt(refunds.length) + ' refunded &middot; ' + fmt(failed.length) + ' payments failed</span></div>';
+    }
+
+    function renderTypes(ok) {
+        const keys = state.type === 'all' ? ORDER : [state.type];
+        const rows = keys.map(k => {
+            const a = ok.filter(t => t.product === k), r = a.filter(t => t.redeemed);
+            return { k, all: a.reduce((s, t) => s + val(t), 0), red: r.reduce((s, t) => s + val(t), 0), n: a.length };
+        });
+        const grand = rows.reduce((s, x) => s + x.all, 0), grandRed = rows.reduce((s, x) => s + x.red, 0);
+        const max = Math.max(1, ...rows.map(x => x.all));
+        const unit = state.measure === 'amount' ? ' (ETB)' : ' (count)';
+        document.getElementById('types').innerHTML =
+              '<tr><th>Voucher type</th><th class="num">Total purchase' + unit + '</th><th class="num">Redeemed' + unit + '</th><th class="num">Not yet redeemed' + unit + '</th><th>Redemption</th><th class="num">Share</th></tr>'
+            + rows.map(x => {
+                const P = PRODUCTS[x.k], rw = x.all / max * 100, rr = x.all ? x.red / x.all : 0;
+                const pct = x.all ? Math.round(rr * 100) : 0;
+                return '<tr><td><div class="vt">' + mark(x.k) + '<span><b>' + P.name + '</b><small>' + P.cat + '</small></span></div></td>'
+                    + '<td class="num"><b>' + fmt(x.all) + '</b></td><td class="num">' + fmt(x.red) + '</td><td class="num">' + fmt(x.all - x.red) + '</td>'
+                    + '<td class="bar-cell"><div class="bar" style="width:' + Math.max(rw, 2) + '%">'
+                    + (x.red ? '<i class="r" style="flex:' + x.red + '" data-tip="' + P.name + '|Redeemed|' + show(x.red) + '"></i>' : '')
+                    + (x.all - x.red ? '<i class="u" style="flex:' + (x.all - x.red) + '" data-tip="' + P.name + '|Not yet redeemed|' + show(x.all - x.red) + '"></i>' : '')
+                    + '</div><small>' + pct + '% redeemed</small></td>'
+                    + '<td class="num share">' + (grand ? Math.round(x.all / grand * 100) : 0) + '%</td></tr>';
+            }).join('')
+            + '<tr class="total"><td>Total purchase</td><td class="num">' + fmt(grand) + '</td><td class="num">' + fmt(grandRed) + '</td><td class="num">' + fmt(grand - grandRed) + '</td><td>' + (grand ? Math.round(grandRed / grand * 100) : 0) + '% redeemed</td><td class="num">100%</td></tr>';
+    }
+
+    /* one column per day (per week past 62 days); hover for the value */
+    function renderChart(ok) {
+        const el = document.getElementById('chart');
+        const days = Math.round((state.to - state.from) / 864e5) + 1;
+        const weekly = days > 62;
+        const buckets = [];
+        for (let i = 0; i < days; i += weekly ? 7 : 1) {
+            const s = new Date(state.from.getFullYear(), state.from.getMonth(), state.from.getDate() + i);
+            const e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + (weekly ? 7 : 1));
+            const a = ok.filter(t => t.on >= s && t.on < e);
+            buckets.push({ s, e, v: a.reduce((x, t) => x + val(t), 0), n: a.length });
+        }
+        document.getElementById('dailyTitle').textContent = weekly ? 'Weekly Purchases' : 'Daily Purchases';
+        const W = el.clientWidth || 800, H = el.clientHeight || 240, L = 54, R = 8, T = 10, B = 26;
+        const max = Math.max(1, ...buckets.map(b => b.v));
+        const step = niceStep(max / 4), top = Math.ceil(max / step) * step;
+        const y = v => T + (H - T - B) * (1 - v / top);
+        const slot = (W - L - R) / buckets.length, bw = Math.max(2, Math.min(28, slot - 2));
+        let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Purchases per ' + (weekly ? 'week' : 'day') + '"><g class="grid">';
+        for (let v = 0; v <= top + 1e-9; v += step) {
+            svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '"/>'
+                + '<text x="' + (L - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + (state.measure === 'amount' ? short(v) : fmt(v)) + '</text>';
+        }
+        svg += '</g><g class="xaxis">';
+        const every = Math.ceil(buckets.length / 8);
+        buckets.forEach((b, i) => {
+            if (i % every === 0) svg += '<text x="' + (L + slot * i + slot / 2) + '" y="' + (H - 6) + '" text-anchor="middle">' + fmtShort(b.s) + '</text>';
+        });
+        svg += '</g>';
+        buckets.forEach((b, i) => {
+            const x = L + slot * i + (slot - bw) / 2, h = Math.max(0, y(0) - y(b.v));
+            if (h > 0) svg += '<path class="colp" d="' + roundTop(x, y(b.v), bw, h, Math.min(4, bw / 2)) + '" fill="var(--green-dark)" data-i="' + i + '"/>';
+            const label = weekly ? fmtShort(b.s) + ' – ' + fmtShort(new Date(b.e - 864e5)) : fmtDate(b.s);
+            svg += '<rect class="hit" x="' + (L + slot * i) + '" y="' + T + '" width="' + slot + '" height="' + (H - T - B) + '" data-tip="' + label + '|' + show(b.v) + '|' + (state.measure === 'amount' ? fmt(b.n) + ' transactions' : '') + '" data-i="' + i + '"/>';
+        });
+        el.innerHTML = svg + '</svg>';
+    }
+    function roundTop(x, y, w, h, r) {
+        r = Math.min(r, h);
+        return 'M' + x + ',' + (y + h) + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + h) + 'Z';
+    }
+    function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(Math.max(raw, 1)))); const m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+    function short(v) { return v >= 1e6 ? (v / 1e6).toFixed(v % 1e6 ? 1 : 0) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(v % 1e3 ? 1 : 0) + 'K' : String(v); }
+
+    function renderTx() {
+        const q = document.getElementById('q').value.trim().toLowerCase().replace(/\s/g, '');
+        const list = inRange().filter(t => !q || t.ref.toLowerCase().includes(q) || t.phone.replace(/\s/g, '').includes(q));
+        const pages = Math.max(1, Math.ceil(list.length / PAGE));
+        state.page = Math.min(state.page, pages - 1);
+        const rows = list.slice(state.page * PAGE, state.page * PAGE + PAGE);
+        const ST = {
+            success: '<span class="st ok"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Success</span>',
+            refunded: '<span class="st ref"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5V9h4.5"/></svg>Refunded</span>',
+            failed: '<span class="st bad"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/></svg>Failed</span>'
+        };
+        document.getElementById('txCount').textContent = fmt(list.length) + ' transactions in range';
+        document.getElementById('tx').innerHTML =
+              '<tr><th>Date &amp; time</th><th>Transaction ID</th><th>Voucher</th><th>Customer</th><th class="num">Amount</th><th>Status</th><th>Redemption</th></tr>'
+            + (rows.length ? rows.map(t => '<tr><td>' + fmtDate(t.on) + ', ' + fmtTime(t.on) + '</td><td class="id">' + t.ref + '</td>'
+                + '<td><div class="vt">' + mark(t.product) + '<span>' + PRODUCTS[t.product].name + ' ' + PRODUCTS[t.product].plans[t.usd] + '</span></div></td>'
+                + '<td>' + t.phone + '</td><td class="num">ETB ' + fmt(t.total) + '</td><td>' + ST[t.status] + '</td>'
+                + '<td>' + (t.status !== 'success' ? '<span class="rd no">&ndash;</span>' : t.redeemed ? '<span class="rd">Redeemed</span>' : '<span class="rd no">Not yet</span>') + '</td></tr>').join('')
+              : '<tr><td colspan="7" class="empty">No transactions match.</td></tr>');
+        document.getElementById('pager').innerHTML = '<span>' + (list.length ? (state.page * PAGE + 1) + '–' + Math.min(list.length, (state.page + 1) * PAGE) + ' of ' + fmt(list.length) : '') + '</span>'
+            + '<div><button ' + (state.page === 0 ? 'disabled' : '') + ' onclick="state.page--; renderTx()">Previous</button><button ' + (state.page >= pages - 1 ? 'disabled' : '') + ' onclick="state.page++; renderTx()">Next</button></div>';
+    }
+
+    /* ================================================================
+       Hover tooltip (bars and chart columns)
+       ================================================================ */
+    const tip = document.getElementById('tip');
+    document.addEventListener('mousemove', e => {
+        const t = e.target.closest('[data-tip]');
+        document.querySelectorAll('#chart .colp').forEach(c => c.style.opacity = '');
+        if (!t) { tip.classList.remove('show'); return; }
+        const p = t.dataset.tip.split('|');
+        tip.innerHTML = '<b>' + p[0] + '</b>' + p.slice(1).filter(Boolean).join('<br>');
+        tip.style.left = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8) + 'px';
+        tip.style.top = (e.clientY + 14) + 'px';
+        tip.classList.add('show');
+        if (t.dataset.i != null && t.classList.contains('hit')) document.querySelectorAll('#chart .colp').forEach(c => { if (c.dataset.i !== t.dataset.i) c.style.opacity = '0.4'; });
+    });
+
+    /* ================================================================
+       Export, misc
+       ================================================================ */
+    function exportCsv() {
+        const rows = [['Date', 'Time', 'Transaction ID', 'Voucher type', 'Package', 'Customer', 'Amount (ETB)', 'Status', 'Redeemed']]
+            .concat(inRange().map(t => [iso(t.on), fmtTime(t.on), t.ref, PRODUCTS[t.product].name, PRODUCTS[t.product].plans[t.usd], t.phone, t.total, t.status, t.status === 'success' ? (t.redeemed ? 'yes' : 'no') : '']));
+        const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = 'voucher-payments-' + iso(state.from) + '-to-' + iso(state.to) + '.csv';
+        a.click();
+        toast('CSV exported');
+    }
+    function scrollToId(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.side .nav').forEach(n => n.classList.toggle('on', (n.getAttribute('onclick') || '').includes(id)));
+    }
+    let toastT;
+    function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1600); }
+    let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => renderChart(inRange().filter(t => t.status === 'success')), 120); });
+
+    applyPreset('last');
+</script>
+</body>
+</html>

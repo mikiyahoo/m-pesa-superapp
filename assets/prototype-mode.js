@@ -613,7 +613,18 @@
             + '<a class="proto-home" href="Global Vouchers.html?gv=payfail"><span>PAYMENT FAILS</span></a>'
             + '<a class="proto-home" href="Global Vouchers.html?gv=issuefail"><span>ISSUE FAILS &ndash; REFUND</span></a>'
             + '<a class="proto-home" href="Global Vouchers.html?gv=smsfail"><span>SMS FAILS</span></a>'
-            + '</div></div></div></div>';
+            + '</div></div></div></div>'
+            /* the web portal behind the mini apps (desktop pages) */
+            + '<div class="proto-group" data-key="railPortalOpen" data-open="1">'
+            + '<div class="proto-row"><a class="proto-home" href="Voucher Portal.html">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true">'
+            + '<rect x="2.8" y="4" width="18.4" height="12.5" rx="1.8"/><path d="M8.5 20.5h7M12 16.5v4"/>'
+            + '</svg><span>PORTAL</span></a>'
+            + '<button class="proto-toggle" type="button" aria-label="Show portal pages" aria-expanded="false">'
+            + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
+            + '<div class="proto-sub">'
+            + '<a class="proto-home" href="Voucher Portal.html"><span>VOUCHER PAYMENT REPORT</span></a>'
+            + '</div></div>';
 
         /* each group stays as left while moving between screens; a new run
            starts with the main menus and M-PESA Saving open, Group Saving Demo closed */
