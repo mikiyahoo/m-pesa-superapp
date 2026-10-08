@@ -152,12 +152,14 @@
         .gc-googleplay { background: radial-gradient(90% 90% at 100% 100%, rgba(0, 195, 255, 0.26), rgba(0, 195, 255, 0) 62%), radial-gradient(80% 80% at 0% 0%, rgba(255, 212, 0, 0.3), rgba(255, 212, 0, 0) 60%), #ffffff; color: #1c1c1c; border: 1px solid #EEF0EF; }
         .gc-googleplay .shine { display: none; }
         .gc-pubg { background: radial-gradient(120% 100% at 100% 0%, rgba(242, 169, 0, 0.6) 0%, rgba(242, 169, 0, 0) 58%), linear-gradient(160deg, #2a2c30 0%, #0f1012 100%); }
+        .gc-freefire { background: radial-gradient(120% 100% at 100% 0%, rgba(255, 115, 0, 0.65) 0%, rgba(255, 115, 0, 0) 58%), linear-gradient(160deg, #28201a 0%, #101010 100%); }
         .gw { position: relative; display: flex; align-items: center; gap: 3cqw; font-size: 11cqw; font-weight: 800; letter-spacing: 0.5cqw; line-height: 1; }
         .gw-netflix { color: #E50914; }
         .gw-gp { color: #1c1c1c; font-size: 9.5cqw; font-weight: 600; letter-spacing: 0; }
         .gw-gp svg { width: 11cqw; height: 11cqw; }
         .gw-pubg { color: #F2A900; flex-direction: column; align-items: flex-start; gap: 1cqw; }
         .gw-pubg small { font-size: 4.8cqw; letter-spacing: 1.4cqw; color: #ffffff; opacity: 0.85; }
+        .gw-freefire { color: #FF7A00; font-size: 9.5cqw; font-weight: 800; letter-spacing: 0; }
         .gc-bot { position: relative; display: flex; align-items: flex-end; justify-content: space-between; }
         .gc-bot .gc-tag { display: block; max-width: 74%; font-size: 7.4cqw; font-weight: 600; line-height: 1.18; }
         .tile.wide .gc-bot .gc-tag { font-size: 4.4cqw; max-width: 52%; }   /* the tagline on two lines */
@@ -333,6 +335,7 @@
         .mark.m-googleplay { background: #ffffff; border: 1px solid var(--line); }
         .mark.m-spotify { background: #121212; }
         .mark.m-pubg { background: radial-gradient(110% 110% at 100% 0%, rgba(242, 169, 0, 0.55) 0%, rgba(242, 169, 0, 0) 60%), #1b1c1f; }
+        .mark.m-freefire { background: #FF6A00; }
 
         /* ---------- Cards and sections ---------- */
         .section { margin: 22px 16px 10px 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -412,7 +415,8 @@
             cursor: pointer;
         }
         .denom b { display: block; font-size: 16px; font-weight: 600; white-space: nowrap; color: var(--ink); }
-        .denom small { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
+        .denom .price { display: block; margin-top: 5px; font-size: 18px; font-weight: 700; color: var(--green-dark); }
+        .denom:disabled .price { color: #9a9a9a; }
         .denom.on { border-color: var(--green); background: #F3FBF6; box-shadow: 0 0 0 3px rgba(47, 197, 109, 0.14); }
         .denom.on::after {
             content: '';
@@ -432,12 +436,18 @@
         .pk-sum { margin: 14px 16px 0 16px; }
         .pk-top { display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
         .pk-top b { font-weight: 700; color: var(--ink); }
+        .pk-top .price { font-size: 21px; color: var(--green-dark); }
         .pk-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .pk-boxes.single { grid-template-columns: 1fr; }
         .pk-box { border-radius: 12px; background: var(--surface); padding: 10px 12px; text-align: center; }
         .pk-box small { display: block; font-size: 12px; color: var(--muted); }
         .pk-box b { display: block; margin-top: 2px; font-size: 20px; font-weight: 700; color: var(--ink); }
+        .pk-box .pk-sub { display: block; margin-top: 1px; font-size: 12px; font-weight: 500; color: var(--muted); }
+        .pk-box.get b, .pk-box.get .pk-sub { display: inline; font-size: 20px; font-weight: 700; }
+        .pk-box.get .pk-sub { margin-left: 4px; }
         .pk-box.get { background: var(--green-tint); }
         .pk-box.get small, .pk-box.get b { color: var(--green-dark); }
+        .pk-box.get .pk-sub { color: var(--green-dark); }
         .perks { list-style: none; margin: 12px 0 0 0; }
         .perks li { display: flex; align-items: center; gap: 10px; padding: 3px 0; font-size: 13px; color: var(--ink-2); }
         .perks svg { width: 17px; height: 17px; flex-shrink: 0; stroke: var(--ink-2); stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
@@ -904,9 +914,8 @@
 
     <script>
         /* ================================================================
-           Catalogue. Per the BRD the initial launch has three products:
-           Netflix, Google Play and PUBG Mobile (the User Journey also shows
-           Spotify, which the BRD does not list, so it is left out).
+           Catalogue. The voucher home offers Netflix, Spotify, PUBG Mobile,
+           Free Fire and Google Play.
            Denominations, ETB prices, the 5 ETB service fee and the expiry
            period are SAMPLE values: the journey only gives $10 = 1,645 ETB
            + 5 ETB fee. Live values come from Pincoon / pricing config.
@@ -952,6 +961,7 @@
             },
             pubg: {
                 short: 'UC and in-game items', name: 'PUBG Mobile', category: 'Gaming', prefix: 'PUBG', tagline: 'Top up your PUBG',
+                showVoucherValue: false,
                 desc: 'Top up your PUBG Mobile account with a voucher to unlock skins, outfits and more.',
                 packs: [
                     { name: '60 UC', usd: 10, get: '60 UC', perks: [['game', 'Skins, outfits and Royale Pass']] },
@@ -971,6 +981,17 @@
                 ],
                 steps: ['Go to spotify.com/redeem', 'Sign in to your account', 'Enter your code and enjoy!'],
                 link: ['spotify.com/redeem', 'https://www.spotify.com/redeem/'], linkAt: 0
+            },
+            freefire: {
+                short: 'Diamonds for skins and passes', name: 'Free Fire', category: 'Gaming', prefix: 'FFIR', tagline: 'Gear up with Diamonds',
+                showVoucherValue: false,
+                desc: 'Use a Free Fire voucher to top up Diamonds for skins, passes and more.',
+                packs: [
+                    { name: 'Starter', usd: 10, get: '$10', getSubtitle: 'game credit', perks: [['game', 'Diamonds and in-game items']] },
+                    { name: 'Plus', usd: 20, get: '$20', getSubtitle: 'game credit', perks: [['game', 'Diamonds and in-game items']] },
+                    { name: 'Max', usd: 30, get: '$30', getSubtitle: 'game credit', perks: [['game', 'Diamonds and in-game items']] }
+                ],
+                steps: ['Open Free Fire and sign in to your account', 'Open the supported voucher redemption page', 'Enter your code and follow the instructions to claim your Diamonds']
             }
         };
         const PERK_ICON = {
@@ -981,7 +1002,8 @@
             game: '<path d="M7 9h10a4 4 0 0 1 3.9 4.8l-.5 2.4a2.4 2.4 0 0 1-4.1 1.1L14.5 15h-5l-1.8 2.3a2.4 2.4 0 0 1-4.1-1.1l-.5-2.4A4 4 0 0 1 7 9Z"/><path d="M8 11.5v2.5M6.8 12.7h2.5"/>',
             music: '<path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>'
         };
-        const ORDER = ['netflix', 'googleplay', 'pubg', 'spotify'];
+        const ORDER = ['netflix', 'spotify', 'pubg', 'freefire', 'googleplay'];
+        const HOME_ORDER = ['googleplay', 'netflix', 'spotify', 'pubg', 'freefire'];
         const CAPSULE = '<div class="capsule"><button onclick="openMore()" aria-label="More options"><svg viewBox="0 0 24 24" class="dots"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.2"/><circle cx="18.5" cy="12" r="1.7"/></svg></button><i></i><button onclick="leaveApp()" aria-label="Close mini app"><svg viewBox="0 0 24 24" class="ring"><circle cx="12" cy="12" r="7.6"/><circle cx="12" cy="12" r="2.6" class="core"/></svg></button></div>';
 
         /* brand marks: simple placeholders until the partners' official logos are supplied */
@@ -989,13 +1011,15 @@
             netflix: '<svg viewBox="0 0 24 24"><path d="M6.5 2.5h3.6l4 11.5V2.5h3.4v19l-3.6-.5-4-11.4V20.6l-3.4.4Z" fill="#E50914"/></svg>',
             googleplay: '<svg viewBox="0 0 24 24"><path d="M4.2 2.6 13.6 12l-9.4 9.4c-.3-.2-.5-.6-.5-1.1V3.7c0-.5.2-.9.5-1.1Z" fill="#00C3FF"/><path d="m16.8 8.8-3.2 3.2-9.4-9.4c.3-.2.8-.2 1.2 0Z" fill="#00E676"/><path d="m16.8 15.2-11.4 6.2c-.4.2-.9.2-1.2 0l9.4-9.4Z" fill="#FF3A44"/><path d="M20.3 10.7c.9.6.9 2 0 2.6l-3.5 1.9-3.2-3.2 3.2-3.2Z" fill="#FFD400"/></svg>',
             spotify: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1DB954"/><path d="M6.8 9.4c3.6-1.1 7.6-.8 10.6.9M7.4 12.4c3-.8 6.2-.5 8.7.9M8 15.2c2.4-.6 4.8-.4 6.8.7" stroke="#000" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>',
-            pubg: '<svg viewBox="0 0 24 24"><text x="12" y="15.2" text-anchor="middle" font-family="Barlow, sans-serif" font-weight="800" font-size="8.6" fill="#F2A900">PUBG</text></svg>'
+            pubg: '<svg viewBox="0 0 24 24"><text x="12" y="15.2" text-anchor="middle" font-family="Barlow, sans-serif" font-weight="800" font-size="8.6" fill="#F2A900">PUBG</text></svg>',
+            freefire: '<svg viewBox="0 0 24 24"><path d="M13.8 2.5c.6 4.1-2.8 5.3-1.6 8.4 1.1-.5 2-1.7 2.4-3.2 3.1 2.1 5 5 4.4 8.2-.6 3.3-3.3 5.6-7 5.6s-6.5-2.6-6.5-6.2c0-2.7 1.6-5.3 4.6-7.9-.2 2.1.4 3.2 1.3 3.7-.2-3.2 2.7-4.5 2.4-8.6Z" fill="#FF7A00"/></svg>'
         };
         const WORD = {
             netflix: '<span class="gw gw-netflix">NETFLIX</span>',
             googleplay: '<span class="gw gw-gp">' + MARK.googleplay + 'Google Play</span>',
             pubg: '<span class="gw gw-pubg">PUBG<small>MOBILE</small></span>',
-            spotify: '<span class="gw gw-spotify">' + MARK.spotify + 'Spotify</span>'
+            spotify: '<span class="gw gw-spotify">' + MARK.spotify + 'Spotify</span>',
+            freefire: '<span class="gw gw-freefire">FREE FIRE</span>'
         };
         /* the voucher card: wordmark, value, M-PESA seal. Scales to any width (container units). */
         /* cover photos (supplied artwork); products without one keep the drawn card */
@@ -1059,11 +1083,11 @@
         const STATE_KEY = 'gvState';
 
         function seedState() {
-            const v1 = daysAgo(15, 14), v2 = daysAgo(53, 9), v3 = daysAgo(399, 18), f1 = daysAgo(8, 11);
+            const v1 = daysAgo(15, 14), v2 = daysAgo(53, 9), v3 = daysAgo(90, 18), f1 = daysAgo(8, 11);
             const vouchers = [
                 { id: 'v1', product: 'netflix', pack: 1, usd: 15, code: 'NFLX-7K2M-9QXA', bought: v1.toISOString(), expires: addMonths(v1, EXPIRY_MONTHS).toISOString(), status: 'active', ref: 'MPV4K7Q2X9A', sms: 'sent' },
-                { id: 'v2', product: 'googleplay', pack: 1, usd: 20, code: 'GPLY-3H8D-QW2L', bought: v2.toISOString(), expires: addMonths(v2, EXPIRY_MONTHS).toISOString(), status: 'redeemed', ref: 'MPV8RT3MZ2C', sms: 'sent' },
-                { id: 'v3', product: 'pubg', pack: 0, usd: 10, code: 'PUBG-9X2C-71MN', bought: v3.toISOString(), expires: addMonths(v3, EXPIRY_MONTHS).toISOString(), status: 'redeemed', ref: 'MPV2NC6PL8D', sms: 'sent' }
+                { id: 'v2', product: 'googleplay', pack: 1, usd: 20, code: 'GPLY-3H8D-QW2L', bought: v2.toISOString(), expires: addMonths(v2, EXPIRY_MONTHS).toISOString(), status: 'active', ref: 'MPV8RT3MZ2C', sms: 'sent' },
+                { id: 'v3', product: 'pubg', pack: 0, usd: 10, code: 'PUBG-9X2C-71MN', bought: v3.toISOString(), expires: addMonths(v3, EXPIRY_MONTHS).toISOString(), status: 'active', ref: 'MPV2NC6PL8D', sms: 'sent' }
             ];
             const tx = vouchers.map(v => ({ ref: v.ref, product: v.product, pack: v.pack, usd: v.usd, on: v.bought, status: 'success', voucher: v.id }));
             tx.push({ ref: 'MPV7DQ4KW1E', product: 'pubg', pack: 1, usd: 20, on: f1.toISOString(), status: 'failed', reason: 'payment' });
@@ -1071,7 +1095,13 @@
         }
 
         function loadState() {
-            try { const s = JSON.parse(sessionStorage.getItem(STATE_KEY)); if (s && s.vouchers) return s; } catch (e) {}
+            try {
+                const s = JSON.parse(sessionStorage.getItem(STATE_KEY));
+                if (s && s.vouchers) {
+                    s.vouchers.forEach(v => { if (v.status === 'redeemed') v.status = 'active'; });
+                    return s;
+                }
+            } catch (e) {}
             return seedState();
         }
         function save() { try { sessionStorage.setItem(STATE_KEY, JSON.stringify(S)); } catch (e) {} }
@@ -1190,8 +1220,8 @@
         function setHomeCat(c) { homeCat = c; renderHome(); }
 
         function renderHome() {
-            const cats = ['All'].concat(ORDER.map(k => PRODUCTS[k].category).filter((c, i, a) => a.indexOf(c) === i));
-            const shown = ORDER.filter(k => homeCat === 'All' || PRODUCTS[k].category === homeCat);
+            const cats = ['All'].concat(HOME_ORDER.map(k => PRODUCTS[k].category).filter((c, i, a) => a.indexOf(c) === i));
+            const shown = HOME_ORDER.filter(k => homeCat === 'All' || PRODUCTS[k].category === homeCat);
             document.getElementById('homeBody').innerHTML = '<div class="hero"><img class="pat" src="assets/M-PESA-pattern.svg" alt="">'
                 + '<div class="hero-bar"><button class="icon-btn on-dark" onclick="leaveApp()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button><h1>Global Vouchers</h1>' + CAPSULE.replace('class="capsule"', 'class="capsule light"') + '</div>'
                 + '<div class="hero-in"><div class="hero-txt">'
@@ -1201,8 +1231,8 @@
                 + '<div class="chips" style="margin-top:4px">' + cats.map(c => '<button class="chip' + (homeCat === c ? ' on' : '') + '" onclick="setHomeCat(\'' + c + '\')">' + c + '</button>').join('') + '</div>'
                 + (catalogueReady
                     /* banners for every brand above the grid, on All: they slide on their own */
-                    ? (homeCat === 'All' ? '<div class="bwrap"><div class="banners" id="banners">' + ORDER.map(k => '<button class="tile wide bslide" onclick="openProduct(\'' + k + '\')" aria-label="' + PRODUCTS[k].name + '">' + giftCard(k, null, PRODUCTS[k].tagline) + '</button>').join('') + '</div>'
-                        + '<div class="bdots" id="bdots">' + ORDER.map((k, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div></div>' : '')
+                    ? (homeCat === 'All' ? '<div class="bwrap"><div class="banners" id="banners">' + HOME_ORDER.map(k => '<button class="tile wide bslide" onclick="openProduct(\'' + k + '\')" aria-label="' + PRODUCTS[k].name + '">' + giftCard(k, null, PRODUCTS[k].tagline) + '</button>').join('') + '</div>'
+                        + '<div class="bdots" id="bdots">' + HOME_ORDER.map((k, i) => '<i' + (i ? '' : ' class="on"') + '></i>').join('') + '</div></div>' : '')
                       + '<div class="store">' + shown.map(k => storeTile(k)).join('') + '</div>'
                     : '<p class="loading-note"><span class="dotspin"></span>Checking availability&hellip;</p><div class="skel" style="height:140px"></div><div class="skel"></div>')
                 + '<div style="height:16px"></div></div>';
@@ -1276,11 +1306,11 @@
                 + '<div class="section"><h2>Choose a package</h2></div>'
                 + '<div class="denoms' + (P.packs.length % 3 ? ' two' : '') + '">' + P.packs.map((x, i) =>
                     '<button class="denom' + (cur.pack === i ? ' on' : '') + '"' + (x.off ? ' disabled' : ' onclick="pickPack(' + i + ')"') + '>'
-                    + '<b>' + x.name + '</b><small>' + (x.off ? 'Unavailable' : whole(priceOf(x.usd)) + ' ETB') + '</small></button>').join('') + '</div>'
+                    + '<b>' + x.name + '</b><span class="price">' + (x.off ? 'Unavailable' : whole(priceOf(x.usd)) + ' ETB') + '</span></button>').join('') + '</div>'
                 /* the chosen package: price, what the voucher is worth, what it buys, its features */
-                + (K ? '<div class="pk-sum"><div class="pk-top"><b>' + P.name + ' ' + K.name + '</b><b>' + whole(priceOf(K.usd)) + ' ETB</b></div>'
-                    + '<div class="pk-boxes"><div class="pk-box"><small>Voucher value</small><b>$' + K.usd + '</b></div>'
-                    + '<div class="pk-box get"><small>You get</small><b>' + K.get + '</b></div></div>'
+                + (K ? '<div class="pk-sum"><div class="pk-top"><b>' + P.name + ' ' + K.name + '</b><b class="price">' + whole(priceOf(K.usd)) + ' ETB</b></div>'
+                    + '<div class="pk-boxes' + (P.showVoucherValue === false ? ' single' : '') + '">' + (P.showVoucherValue !== false ? '<div class="pk-box"><small>Voucher value</small><b>$' + K.usd + '</b></div>' : '')
+                    + '<div class="pk-box get"><small>You get</small><b>' + K.get + '</b>' + (K.getSubtitle ? '<span class="pk-sub">' + K.getSubtitle + '</span>' : '') + '</div></div>'
                     + (K.perks ? '<ul class="perks">' + K.perks.map(f => '<li><svg viewBox="0 0 24 24">' + PERK_ICON[f[0]] + '</svg>' + f[1] + '</li>').join('') + '</ul>' : '')
                     + '</div>' : '')
                 + '<div class="section"><h2>Redemption guide</h2></div>' + guideHtml(cur.product, cur.pack)
@@ -1548,17 +1578,14 @@
                 ? ['all'].concat(owned).map(k => '<button class="chip' + (mineFilter === k ? ' on' : '') + '" onclick="setMineFilter(\'' + k + '\')">' + (k === 'all' ? 'All' : PRODUCTS[k].name) + '</button>').join('')
                 : '';
             const list = S.vouchers.filter(v => mineFilter === 'all' || v.product === mineFilter);
-            const item = v => '<button class="item' + (v.status === 'active' ? '' : ' dim') + '" onclick="openVoucher(\'' + v.id + '\')">' + mark(v.product)
+            const item = v => '<button class="item' + (v.status === 'expired' ? ' dim' : '') + '" onclick="openVoucher(\'' + v.id + '\')">' + mark(v.product)
                 + '<span class="t"><b>' + voucherName(v) + '</b>'
                 + '<small>' + 'Purchased on ' + fmtDate(new Date(v.bought)) + '</small></span>'
-                + '<span class="r"><span class="st ' + v.status + '">' + (v.status === 'redeemed' ? 'used' : v.status) + '</span></span></button>';
-            const active = list.filter(v => v.status === 'active'), past = list.filter(v => v.status !== 'active');
+                + (v.status === 'expired' ? '<span class="r"><span class="st expired">expired</span></span>' : '') + '</button>';
             document.getElementById('mineBody').innerHTML = !S.vouchers.length
                 ? emptyHtml('<path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/>',
                     'No Vouchers Yet', 'Vouchers you buy are kept here, with their codes and purchase dates.', '<button class="btn" onclick="backToHome()">Browse vouchers</button>')
-                : (active.length ? '<p class="list-head">Ready to use</p><div class="group-card">' + active.map(item).join('') + '</div>' : '')
-                  + (past.length ? '<p class="list-head" style="margin-top:16px">Used codes</p><div class="group-card">' + past.map(item).join('') + '</div>' : '')
-                  + '<div style="height:12px"></div>';
+                : '<div class="group-card">' + list.map(item).join('') + '</div><div style="height:12px"></div>';
             paintCount();
         }
         function setMineFilter(k) { mineFilter = k; renderMine(); }
@@ -1584,7 +1611,7 @@
                 + '<div style="height:12px"></div>';
             document.getElementById('voucherFoot').innerHTML = v.status === 'active'
                 ? '<button class="btn ghost" onclick="askResend(\'' + v.id + '\')"><svg viewBox="0 0 24 24" style="stroke:currentColor"><path d="M4.5 5.5h15a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4.5 3.5v-3.5h-1a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z"/></svg>Resend SMS</button>'
-                : '<button class="btn ghost" onclick="openProduct(\'' + v.product + '\')">Buy another ' + PRODUCTS[v.product].name + ' voucher</button>';
+                : '<button class="btn" onclick="backToHome()">Done</button><button class="btn text" onclick="goTab(\'stepMine\')">View in My Vouchers</button>';
         }
 
         /* ---------- resend SMS: confirm -> sending -> sent / failed ---------- */
@@ -1739,6 +1766,8 @@
         const openTab = START.get('tab');
         if (openTab === 'mine') goTab('stepMine');
         if (openTab === 'tx') goTab('stepTx');
+        const productKey = START.get('product');
+        if (productKey && Object.prototype.hasOwnProperty.call(PRODUCTS, productKey)) openProduct(productKey);
     </script>
 </body>
 </html>

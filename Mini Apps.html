@@ -476,7 +476,7 @@
                     </div>
                     <div class="info">
                         <span class="logo" style="background:#0A8F45"><svg viewBox="0 0 24 24"><path d="M3.5 7.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1V10a2 2 0 0 0 0 4v2.5a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V14a2 2 0 0 0 0-4V7.5Z"/><path d="M14 6.5v11" stroke-dasharray="2 2"/></svg></span>
-                        <span><b>GLOBAL VOUCHERS <em class="rate">&middot; NEW</em></b><small>Netflix, Spotify, PUBG &amp; more, paid with M-PESA</small></span>
+                        <span><b>GLOBAL VOUCHERS <em class="rate">&middot; NEW</em></b><small>Google Play, Netflix, Spotify &amp; PUBG, paid with M-PESA</small></span>
                     </div>
                 </div>
                 <div class="feature" onclick="showToast('RIDE')">
@@ -592,7 +592,7 @@
             const inner = a.icon ? '<svg viewBox="0 0 24 24">' + ICONS[a.icon] + '</svg>' : a.mark;
             const click = a.open || "showToast('" + a.name.toUpperCase() + "')";
             return '<button class="app" onclick="' + click + '">'
-                + '<span class="logo" style="background:' + a.color + '">' + inner
+                + '<span class="logo' + (a.light ? ' light' : '') + '" style="background:' + a.color + '">' + inner
                 + (a.badge ? '<span class="badge">' + a.badge + '</span>' : '') + '</span>'
                 + a.name + '</button>';
         }

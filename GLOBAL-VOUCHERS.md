@@ -8,7 +8,7 @@ Every exception path can be opened straight from the sidebar:
 
 | Sidebar link | `?gv=` | What it shows |
 |---|---|---|
-| Buy a voucher | `normal` | Happy path, seeded history (1 active, 1 redeemed, 1 expired voucher; 1 failed, 1 refunded payment) |
+| Buy a voucher | `normal` | Happy path, seeded history (3 active vouchers; 1 failed, 1 refunded payment) |
 | First visit | `empty` | No vouchers, no transactions — empty states |
 | Low balance | `lowbal` | Wallet 1,200 ETB — insufficient balance on Review |
 | Payment fails | `payfail` | M-PESA payment fails, nothing taken |
@@ -33,6 +33,7 @@ A PIN of **0000** is always rejected (incorrect-PIN state). Any other 4 digits p
 | C6 | Journey's **Transactions** list shows voucher codes, duplicating **My Vouchers**. | Codes live only in My Vouchers (and the success screen). Transactions shows money: amount, status, reference. | Done |
 | C7 | **Voucher Payment Report** (totals, by type, redeemed) appears in the journey, but the BRD's reporting requirements are operational (volume, revenue, fees, failure rate, reconciliation). | Not designed as a customer screen. | Needs product decision |
 | C8 | Bottom nav **Home \| Transaction \| My Vouchers \| Info**. | Changed — see §3.2. | Proposed change |
+| C9 | Mini Apps also promotes **Free Fire**, while the original voucher catalogue does not list it. | **Free Fire added** to the voucher catalogue; Google Play remains the fifth product on the home screen. | Added |
 
 ### 1.2 Requirements missing from the documents — designed here
 
@@ -87,7 +88,7 @@ Transactions → All | Successful | Failed → Transaction → View voucher / Tr
 | | M-PESA PIN (`stepPin`) | entry · incorrect PIN |
 | | Processing (`stepProc`) | payment · voucher · delivery · voucher failed + refund |
 | | Result (`stepResult`) | **Voucher ready** (SMS sent / SMS failed) · **Payment failed** · **Voucher not issued (refunded)** |
-| My Vouchers | List (`stepMine`) | product filter · *Ready to use* / *Used & expired* · empty |
+| My Vouchers | List (`stepMine`) | product filter · all purchased vouchers in one list · expired status · empty |
 | | Voucher (`stepVoucher`) | code masked / shown · active / redeemed / expired · SMS failed · resend sheet (confirm, sending, failed) |
 | Transactions | List (`stepTx`) | All / Successful / Failed · grouped by month · empty · filter empty |
 | | Transaction (`stepTxDetail`) | successful · failed (not charged) · refunded |
@@ -168,7 +169,7 @@ All components are in `Global Vouchers.html`; class names below.
 | A4 | Balance is validated **on Review**, before the PIN (the flow document puts it between Review and PIN). | Same rule, earlier feedback, one less screen. |
 | A5 | **Redeemed** status comes from the provider. | It appears only in the journey's reporting; how it's known isn't specified. |
 | A6 | Codes are **masked in lists** and shown on tap in Voucher details, without re-entering the PIN. | BRD: codes only accessible to the purchaser. Masking is a UX safeguard, not a new rule. |
-| A7 | Redemption steps, links and taglines for **Google Play**, **PUBG Mobile** and **Spotify** are placeholders; only Netflix's guide comes from the journey. | Need provider-approved copy and the official Ethiopia redeem URLs. |
+| A7 | Redemption steps, links and taglines for **Google Play**, **PUBG Mobile**, **Free Fire** and **Spotify** are placeholders; only Netflix's guide comes from the journey. | Need provider-approved copy and the official Ethiopia redeem URLs. |
 | A8 | Help's contact options are labels only (no numbers/email). | The journey names *M-PESA Call Center* and *support email* without details. |
 
 ## 6. Open questions for product / business
