@@ -97,7 +97,8 @@
 
         /* A yellow sticky note for developers, in the empty space to the
            right of the phone (desktop only, never part of an export).
-           devNote(text) shows it, devNote() takes it away. */
+           devNote(text) shows it, devNote() takes it away.
+           **text** in a note is shown bold. */
         devNote: function (text) {
             var note = document.getElementById('protoNote');
             if (!text) { if (note) note.remove(); return; }
@@ -111,7 +112,8 @@
                 window.addEventListener('load', placeNote);
             }
             setTimeout(placeNote, 60);   // again once the page's own layout has settled
-            note.querySelector('p').textContent = text;
+            var safe = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            note.querySelector('p').innerHTML = safe.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
             placeNote();
         }
     };

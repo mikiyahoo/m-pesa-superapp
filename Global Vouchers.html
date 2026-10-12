@@ -415,7 +415,7 @@
             cursor: pointer;
         }
         .denom b { display: block; font-size: 16px; font-weight: 600; white-space: nowrap; color: var(--ink); }
-        .denom .price { display: block; margin-top: 5px; font-size: 18px; font-weight: 700; color: var(--green-dark); }
+        .denom .price { display: block; margin-top: 5px; font-size: 21px; font-weight: 700; color: var(--green-dark); }
         .denom:disabled .price { color: #9a9a9a; }
         .denom.on { border-color: var(--green); background: #F3FBF6; box-shadow: 0 0 0 3px rgba(47, 197, 109, 0.14); }
         .denom.on::after {
@@ -436,7 +436,7 @@
         .pk-sum { margin: 14px 16px 0 16px; }
         .pk-top { display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
         .pk-top b { font-weight: 700; color: var(--ink); }
-        .pk-top .price { font-size: 21px; color: var(--green-dark); }
+        .pk-top .price { font-size: 28px; letter-spacing: -0.3px; color: var(--green-dark); }
         .pk-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .pk-boxes.single { grid-template-columns: 1fr; }
         .pk-box { border-radius: 12px; background: var(--surface); padding: 10px 12px; text-align: center; }
@@ -562,6 +562,21 @@
         .result .badge.warn { background: var(--amber-tint); } .result .badge.warn svg { stroke: var(--amber); }
         .result h3 { margin-top: 16px; font-size: 21px; font-weight: 600; }
         .result p { margin: 6px auto 0 auto; max-width: 290px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+
+        /* receipt: a paper slip with a torn line between the details and the amounts */
+        .receipt { position: relative; margin: 16px 16px 0 16px; padding: 16px 16px 12px 16px; border-radius: 14px; background: #ffffff; border: 1px solid var(--line); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
+        .rc-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+        .rc-head img { height: 16px; }
+        .rc-head span { font-size: 12px; font-weight: 700; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; }
+        .rc-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 13px; }
+        .rc-row span { color: var(--muted); }
+        .rc-row b { font-weight: 600; color: var(--ink); text-align: right; }
+        .rc-row.total { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); }
+        .rc-row.total span { color: var(--ink); font-weight: 600; }
+        .rc-row.total b { font-size: 17px; font-weight: 700; }
+        .rc-cut { height: 0; margin: 8px -16px; border-top: 1.5px dashed #D9DEDB; }
+        .rc-share { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 40px; margin-top: 10px; border: 1.5px solid var(--green); border-radius: 20px; background: #ffffff; color: var(--green-dark); font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.4px; cursor: pointer; }
+        .rc-share svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
         .facts { margin: 18px 16px 0 16px; border-radius: 14px; background: var(--surface); padding: 4px 14px; }
         .fact { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; font-size: 13px; color: var(--muted); }
@@ -705,7 +720,7 @@
         .system-nav { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; justify-items: center; height: 48px; flex-shrink: 0; border-top: 1px solid #f0f0f0; color: #555555; background: #ffffff; }
         .system-nav svg { width: 22px; height: 22px; }
     </style>
-    <script src="assets/prototype-mode.js?v=67"></script>
+    <script src="assets/prototype-mode.js?v=68"></script>
 </head>
 <body>
 
@@ -945,7 +960,7 @@
                     'Go to netflix.com/et/redeem and paste your code',
                     'Sign in, or create an account with your email',
                     'Choose the {plan} plan. A different plan may not be fully covered',
-                    'Skip adding a payment method, accept the terms and start watching'],
+                    '<b>Skip adding a payment method</b>, accept the terms and start watching'],
                 link: ['netflix.com/et/redeem', 'https://www.netflix.com/et/redeem'], linkAt: 1
             },
             googleplay: {
@@ -960,7 +975,7 @@
                 link: ['play.google.com/redeem', 'https://play.google.com/redeem'], linkAt: 0
             },
             pubg: {
-                short: 'UC and in-game items', name: 'PUBG Mobile', category: 'Gaming', prefix: 'PUBG', tagline: 'Top up your PUBG',
+                short: 'UC and in-game items', name: 'PUBG Mobile', category: 'Games', prefix: 'PUBG', tagline: 'Top up your PUBG',
                 showVoucherValue: false,
                 desc: 'Top up your PUBG Mobile account with a voucher to unlock skins, outfits and more.',
                 packs: [
@@ -972,7 +987,7 @@
                 link: ['midasbuy.com', 'https://www.midasbuy.com/'], linkAt: 0
             },
             spotify: {
-                short: 'Music, podcasts and more', name: 'Spotify', category: 'Music', prefix: 'SPTF', tagline: 'Enjoy endless music',
+                short: 'Music, podcasts and more', name: 'Spotify', category: 'Streaming', prefix: 'SPTF', tagline: 'Enjoy endless music',
                 desc: 'Pay for Spotify Premium with a voucher to enjoy endless music.',
                 packs: [
                     { name: 'Individual', usd: 10, get: '1 month', perks: [['screens', '1 Premium account'], ['music', 'Ad-free, offline listening']] },
@@ -983,13 +998,13 @@
                 link: ['spotify.com/redeem', 'https://www.spotify.com/redeem/'], linkAt: 0
             },
             freefire: {
-                short: 'Diamonds for skins and passes', name: 'Free Fire', category: 'Gaming', prefix: 'FFIR', tagline: 'Gear up with Diamonds',
+                short: 'Diamonds for skins and passes', name: 'Free Fire', category: 'Games', prefix: 'FFIR', tagline: 'Gear up with Diamonds',
                 showVoucherValue: false,
                 desc: 'Use a Free Fire voucher to top up Diamonds for skins, passes and more.',
                 packs: [
-                    { name: 'Starter', usd: 10, get: '$10', getSubtitle: 'game credit', perks: [['game', 'Diamonds and in-game items']] },
-                    { name: 'Plus', usd: 20, get: '$20', getSubtitle: 'game credit', perks: [['game', 'Diamonds and in-game items']] },
-                    { name: 'Max', usd: 30, get: '$30', getSubtitle: 'game credit', perks: [['game', 'Diamonds and in-game items']] }
+                    { name: '100 Diamonds', usd: 10, get: '100 Diamonds', perks: [['game', 'Characters, skins and Elite Pass']] },
+                    { name: '310 Diamonds', usd: 20, get: '310 Diamonds', perks: [['game', 'Characters, skins and Elite Pass']] },
+                    { name: '520 Diamonds', usd: 30, get: '520 Diamonds', perks: [['game', 'Characters, skins and Elite Pass']] }
                 ],
                 steps: ['Open Free Fire and sign in to your account', 'Open the supported voucher redemption page', 'Enter your code and follow the instructions to claim your Diamonds']
             }
@@ -1220,7 +1235,8 @@
         function setHomeCat(c) { homeCat = c; renderHome(); }
 
         function renderHome() {
-            const cats = ['All'].concat(HOME_ORDER.map(k => PRODUCTS[k].category).filter((c, i, a) => a.indexOf(c) === i));
+            /* category tabs: only Streaming and Games for now (Apps & games removed) */
+            const cats = ['All', 'Streaming', 'Games'];
             const shown = HOME_ORDER.filter(k => homeCat === 'All' || PRODUCTS[k].category === homeCat);
             document.getElementById('homeBody').innerHTML = '<div class="hero"><img class="pat" src="assets/M-PESA-pattern.svg" alt="">'
                 + '<div class="hero-bar"><button class="icon-btn on-dark" onclick="leaveApp()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button><h1>Global Vouchers</h1>' + CAPSULE.replace('class="capsule"', 'class="capsule light"') + '</div>'
@@ -1289,7 +1305,7 @@
 
         /* {plan} names the package bought; without one it reads "the same" */
         function guideHtml(key, pack) {
-            const P = PRODUCTS[key], plan = pack != null ? '\u201c' + P.packs[pack].name + '\u201d' : 'same';
+            const P = PRODUCTS[key], plan = pack != null ? '<b>\u201c' + P.packs[pack].name + '\u201d</b>' : 'same';
             return '<ol class="guide">' + P.steps.map((s, i) => '<li><em>' + (i + 1) + '</em><span>' + s.replace('{plan}', plan)
                 + (i === (P.linkAt || 0) && P.link ? '<a class="glink" href="' + P.link[1] + '" target="_blank" rel="noopener">' + P.link[0] + '</a>' : '')
                 + '</span></li>').join('') + '</ol>';
@@ -1517,12 +1533,36 @@
                 + ticketHtml(v, true)
                 + (smsOk ? '' : '<div class="banner warn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg><div><b>We Couldn’t Send the SMS</b>Your code is safe here and in My Vouchers. <a href="#" onclick="askResend(\'' + v.id + '\');return false;" style="color:inherit;font-weight:700">Resend SMS</a></div></div>')
                 + '<button class="redeem-link" onclick="openGuide(\'' + v.product + '\', ' + packOf(v) + ')"><span>How to Redeem<small>' + PRODUCTS[v.product].steps.length + ' quick steps</small></span><span class="info-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M12 11v5"/><circle cx="12" cy="7.9" r="1.1" class="dot"/></svg></span></button>'
-                + factsHtml([refRow(v.ref), ['Paid', money(purchase.total) + ' ETB']])
+                + receiptHtml(S.tx.find(t => t.ref === v.ref))
                 + '<div style="height:12px"></div>';
             document.getElementById('resultFoot').innerHTML = '<button class="btn" onclick="backToHome()">Done</button><button class="btn text" onclick="openVoucher(\'' + v.id + '\', true)">View in My Vouchers</button>';
             stack = ['stepHome', 'stepResult'];
             show('stepResult');
             if (smsOk) setTimeout(() => notify('M-PESA', 'Your ' + P.name + ' ' + pk(v.product, packOf(v)) + ' voucher code is ' + v.code + '. Ref ' + v.ref + '.'), 500);
+        }
+
+        /* the payment receipt: shown after a successful payment */
+        function receiptHtml(t) {
+            const P = PRODUCTS[t.product], d = new Date(t.on);
+            const row = (k, val, cls) => '<div class="rc-row' + (cls ? ' ' + cls : '') + '"><span>' + k + '</span><b>' + val + '</b></div>';
+            return '<div class="receipt"><div class="rc-head"><img src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"><span>Payment Receipt</span></div>'
+                + row('Transaction ID', t.ref)
+                + row('Date', fmtDate(d) + ', ' + fmtTime(d))
+                + row('Voucher', P.name + ' ' + pk(t.product, packOf(t)))
+                + row('Paid from', 'M-PESA &middot; ' + ME.phone)
+                + '<div class="rc-cut"></div>'
+                + row('Voucher price', money(priceOf(t.usd)) + ' ETB')
+                + row('Service fee', money(SERVICE_FEE) + ' ETB')
+                + row('VAT', money(VAT) + ' ETB')
+                + row('Total paid', money(totalOf(t.usd)) + ' ETB', 'total')
+                + '<button class="rc-share" onclick="shareReceipt(\'' + t.ref + '\')"><svg viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></svg>Share receipt</button></div>';
+        }
+        function shareReceipt(ref) {
+            const t = S.tx.find(x => x.ref === ref), d = new Date(t.on);
+            const text = 'M-PESA payment receipt\nTransaction ID: ' + t.ref + '\nDate: ' + fmtDate(d) + ', ' + fmtTime(d)
+                + '\nVoucher: ' + PRODUCTS[t.product].name + ' ' + pk(t.product, packOf(t)) + '\nTotal paid: ' + money(totalOf(t.usd)) + ' ETB';
+            if (navigator.share) { navigator.share({ title: 'M-PESA receipt', text: text }).catch(() => {}); return; }
+            copyText(text, 'Receipt copied');
         }
 
         function retry() { renderProduct(); stack = ['stepHome', 'stepProduct']; show('stepProduct'); }
@@ -1537,7 +1577,7 @@
             const P = PRODUCTS[v.product], shown = open || revealed[v.id], live = v.status === 'active';
             return '<div class="ticket"><div class="top">' + mark(v.product)
                 + '<span><b>' + P.name + ' ' + pk(v.product, packOf(v)) + '</b><small>' + P.category + ' voucher</small></span>'
-                + '<span class="st ' + v.status + '">' + (v.status === 'redeemed' ? 'used' : v.status) + '</span></div>'
+                + (v.status === 'expired' ? '<span class="st expired">expired</span>' : '') + '</div>'
                 + '<div class="perf"></div>'
                 + '<div class="code"><small>YOUR VOUCHER CODE</small>'
                 + '<div class="code-line"><span class="' + (shown ? '' : 'masked') + '">' + (shown ? v.code : maskCode(v.code)) + '</span>'
