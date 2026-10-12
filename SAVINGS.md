@@ -393,6 +393,8 @@ Shortfall sheet — `rollShort()` / `rollTopUp()`: when the matured amount is be
 
 Individual and Target are the **same pocket object**; the mode only decides whether a goal is asked for. Rate 7% p.a. (`IND_RATE`), auto-save minimum 50 ETB (`IND_MIN_AUTO`), target minimum 500 ETB (`TARGET_MIN`).
 
+> **Scope (current release):** automatic deduction / recurring transfer is **not in scope** for Individual and Target savings. It is switched off by `IND_AUTO_ENABLED = false`: the *Automatic Deduction* card on the create form is greyed out with a **Not available** chip and can't be toggled, the pocket's **RECURRING TRANSFER** action is disabled, `openRecurring()` ignores individual pockets, and seeded / saved pockets load with `auto: null`. Developer notes beside the phone (`DEV_NOTES`, shown from `show()`) explain this on `stepIndCreate` and `stepIndPocket`. Group savings keep their recurring contributions. The auto-save behaviour described below only applies when the flag is set back to `true`.
+
 **Create** — `openIndCreate(mode)` · `paintIndForm()` · `indCreate()` · `stepIndCreate` ( `data-green`)
 
 - Fields: **name** (required for target, optional for individual — it then takes the next free "Individual Saving N" via `autoName()`, capped at 10 characters with a live counter), an **automatic-deduction switch** (`toggleIndAuto`) with amount and Daily / Weekly / Monthly (`startLine`, `nextDeduction`), and in target mode a **goal** (≥ 500 ETB) and a **target date**.

@@ -55,6 +55,9 @@
             sessionStorage.removeItem('gvState');
             sessionStorage.removeItem('railSendOpen');
             sessionStorage.removeItem('railPortalOpen');
+            sessionStorage.removeItem('railFaydaOpen');
+            sessionStorage.removeItem('railFaydaErrOpen');
+            sessionStorage.removeItem('faydaError');
             sessionStorage.removeItem('savingsReturn');
             sessionStorage.setItem(RUN_KEY, '1');
         } catch (e) {}
@@ -362,7 +365,37 @@
             '    stroke-linejoin: round;',
             '    display: block;',
             '}',
-            '@media (max-width: 719px) { .proto-export { display: none; } }',
+            '.proto-export-status {',
+            '    position: fixed;',
+            '    top: 60px;',
+            '    right: 16px;',
+            '    display: none;',
+            '    align-items: center;',
+            '    gap: 8px;',
+            '    padding: 8px 14px;',
+            '    background: #ffffff;',
+            '    color: #12492C;',
+            '    border: 1px solid #2FC56D;',
+            '    border-radius: 8px;',
+            '    font-family: Barlow, sans-serif;',
+            '    font-size: 12px;',
+            '    font-weight: 600;',
+            '    box-shadow: 0 4px 14px rgba(0,0,0,0.12);',
+            '    z-index: 2001;',
+            '}',
+            '.proto-export-status.show { display: flex; }',
+            '.proto-export-status.error { border-color: #D7263D; color: #9C1B2B; }',
+            '.proto-export-status .spinner, .proto-export .spinner {',
+            '    width: 13px;',
+            '    height: 13px;',
+            '    border: 2px solid rgba(47, 197, 109, 0.25);',
+            '    border-top-color: #2FC56D;',
+            '    border-radius: 50%;',
+            '    animation: protoSpin 0.7s linear infinite;',
+            '    flex-shrink: 0;',
+            '}',
+            '@keyframes protoSpin { to { transform: rotate(360deg); } }',
+            '@media (max-width: 719px) { .proto-export, .proto-export-status { display: none; } }',
 
             /* ----- the phone's own navigation ----- */
             /* Back/home/recents is device chrome, not app surface. No
@@ -540,6 +573,17 @@
         document.head.appendChild(el);
     }
 
+    /* Fayda error flow: ?faydaErr=limit|failed (sidebar > Fayda Activation >
+       Error Flow) makes this run's linking end on that error; any other way
+       into the Fayda journey (?fayda=ask, ?nofayda=1) is the normal path. */
+    (function () {
+        try {
+            var q = new URLSearchParams(location.search), err = q.get('faydaErr');
+            if (err === 'limit' || err === 'failed') sessionStorage.setItem('faydaError', err);
+            else if (q.get('fayda') === 'ask' || q.get('nofayda') === '1') sessionStorage.removeItem('faydaError');
+        } catch (e) {}
+    })();
+
     /* ---------------------------------------------------------- sidebar */
     function injectRail() {
         var rail = document.createElement('nav');
@@ -565,6 +609,18 @@
             + '<a class="proto-home" href="Send to Bank.html?fayda=ask"><span>FAYDA NOT LINKED</span></a>'
             + '</div></div>'
             + '<a class="proto-home" href="Buy Packages.html"><span>BUY PACKAGE</span></a>'
+            /* Fayda activation: the error paths of the linking journey */
+            + '<div class="proto-fold" data-key="railFaydaOpen">'
+            + '<button class="proto-home proto-label" type="button" aria-expanded="false">FAYDA ACTIVATION</button>'
+            + '<div class="proto-sub2">'
+            + '<div class="proto-fold" data-key="railFaydaErrOpen">'
+            + '<button class="proto-home proto-label" type="button" aria-expanded="false">ERROR FLOW</button>'
+            + '<div class="proto-sub2">'
+            /* after the OTP: this phone number can't link any more accounts */
+            + '<a class="proto-home" href="Send to Bank.html?fayda=ask&amp;faydaErr=limit"><span>LIMIT REACHED</span></a>'
+            /* the final activation fails: reason, retry, support */
+            + '<a class="proto-home" href="Send to Bank.html?fayda=ask&amp;faydaErr=failed"><span>REQUEST FAILED</span></a>'
+            + '</div></div></div></div>'
             + '</div></div>'
             /* the M-PESA tab of the bottom nav, which also offers withdrawing */
             + '<div class="proto-group" data-key="railMpesaOpen">'
@@ -676,18 +732,55 @@
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
     }
 
-    var libLoading = null;
-    function loadHtmlToImage() {
-        if (window.htmlToImage) return Promise.resolve(window.htmlToImage);
-        if (libLoading) return libLoading;
-        libLoading = new Promise(function (resolve, reject) {
+    var HTML_TO_IMAGE_LOCAL = 'assets/html-to-image.min.js';
+    var HTML_TO_IMAGE_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
+    var JSZIP_LOCAL = 'assets/jszip.min.js';
+    var JSZIP_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+
+    function loadScript(localSrc, cdnSrc, globalName) {
+        if (window[globalName]) return Promise.resolve(window[globalName]);
+        return new Promise(function (resolve, reject) {
             var s = document.createElement('script');
-            s.src = HTML_TO_IMAGE;
-            s.onload = function () { resolve(window.htmlToImage); };
-            s.onerror = function () { libLoading = null; reject(new Error('Could not load html-to-image')); };
+            s.src = localSrc;
+            s.onload = function () {
+                if (window[globalName]) resolve(window[globalName]);
+                else tryCdn();
+            };
+            s.onerror = tryCdn;
+            function tryCdn() {
+                var s2 = document.createElement('script');
+                s2.src = cdnSrc;
+                s2.onload = function () {
+                    if (window[globalName]) resolve(window[globalName]);
+                    else reject(new Error('Loaded ' + cdnSrc + ' but window.' + globalName + ' is undefined'));
+                };
+                s2.onerror = function () {
+                    reject(new Error('Failed to load ' + globalName + ' from ' + localSrc + ' or ' + cdnSrc));
+                };
+                document.head.appendChild(s2);
+            }
             document.head.appendChild(s);
         });
-        return libLoading;
+    }
+
+    var htmlToImagePromise = null;
+    function loadHtmlToImage() {
+        if (window.htmlToImage) return Promise.resolve(window.htmlToImage);
+        if (!htmlToImagePromise) {
+            htmlToImagePromise = loadScript(HTML_TO_IMAGE_LOCAL, HTML_TO_IMAGE_CDN, 'htmlToImage')
+                .catch(function (err) { htmlToImagePromise = null; throw err; });
+        }
+        return htmlToImagePromise;
+    }
+
+    var jsZipPromise = null;
+    function loadJsZip() {
+        if (window.JSZip) return Promise.resolve(window.JSZip);
+        if (!jsZipPromise) {
+            jsZipPromise = loadScript(JSZIP_LOCAL, JSZIP_CDN, 'JSZip')
+                .catch(function (err) { jsZipPromise = null; throw err; });
+        }
+        return jsZipPromise;
     }
 
     /* The Google Fonts sheet is cross-origin, so its rules can't be read
@@ -721,6 +814,32 @@
        so one unreadable logo cannot sink the screen, and name the cause. */
     var BLANK_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
+    function renderFrameToBlob(targetEl, fontCssText) {
+        if (!targetEl) return Promise.reject(new Error('No target element to render'));
+        return loadHtmlToImage().then(function (h2i) {
+            return h2i.toBlob(targetEl, {
+                pixelRatio: EXPORT_SCALE,
+                fontEmbedCSS: fontCssText,
+                backgroundColor: '#ffffff',
+                imagePlaceholder: BLANK_PIXEL,
+                filter: function (node) {
+                    if (node.nodeType === 1 && node.classList) {
+                        if (node.classList.contains('proto-export') ||
+                            node.classList.contains('proto-rail') ||
+                            node.classList.contains('proto-export-status') ||
+                            node.id === 'protoNote') {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            });
+        }).then(function (blob) {
+            if (!blob || !blob.size) throw new Error('Render returned an empty image');
+            return blob;
+        });
+    }
+
     function downloadPng(btn) {
         var frame = phoneFrame();
         if (!frame) return;
@@ -729,20 +848,322 @@
                 + 'Serve the prototype over http (e.g. "python -m http.server 5500") to include them.');
         }
         btn.disabled = true;
-        Promise.all([loadHtmlToImage(), embeddedFontCss()]).then(function (r) {
-            return r[0].toBlob(frame, {
-                pixelRatio: EXPORT_SCALE,
-                fontEmbedCSS: r[1],
-                backgroundColor: '#ffffff',
-                imagePlaceholder: BLANK_PIXEL
-            });
+        embeddedFontCss().then(function (fontCssText) {
+            return renderFrameToBlob(frame, fontCssText);
         }).then(function (blob) {
-            if (!blob || !blob.size) throw new Error('the exporter returned an empty image');
             saveBlob(blob, exportName() + '.png');
         }).catch(function (e) {
             console.error(e);
             alert('PNG export failed: ' + String((e && (e.message || e.type || e)) || e));
         }).then(function () { btn.disabled = false; });
+    }
+
+    /* ------------------------------------------- export all screens as ZIP */
+    function sanitizeSlug(str) {
+        if (!str) return '';
+        return str
+            .toLowerCase()
+            .replace(/&/g, ' and ')
+            .replace(/['’]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 50);
+    }
+
+    function extractHeadingText(el) {
+        if (!el) return '';
+        var heading = el.querySelector('.bar h1, .app-bar h1, .flow-bar h2, .screen-header h1, .screen-header h2, h1, h2, #title');
+        if (heading && heading.textContent) {
+            var txt = heading.textContent.trim();
+            if (txt && !/^\d+$/.test(txt)) return txt;
+        }
+        return '';
+    }
+
+    function deriveScreenName(el, fallbackIndex) {
+        if (!el) return 'screen-' + String(fallbackIndex).padStart(2, '0');
+        var dataName = el.getAttribute('data-screen-name') ||
+                       el.getAttribute('data-name') ||
+                       el.getAttribute('data-title') ||
+                       el.getAttribute('aria-label');
+        if (dataName) {
+            var s = sanitizeSlug(dataName);
+            if (s) return s;
+        }
+
+        var headingTxt = extractHeadingText(el);
+        if (headingTxt) {
+            var s2 = sanitizeSlug(headingTxt);
+            if (s2) return s2;
+        }
+
+        if (el.id) {
+            var cleanId = el.id.replace(/^step[-_]?/i, '');
+            cleanId = cleanId.replace(/([a-z])([A-Z])/g, '$1-$2');
+            var s3 = sanitizeSlug(cleanId);
+            if (s3) return s3;
+        }
+
+        if (el.classList && el.classList.contains('mobile-container')) {
+            var s4 = sanitizeSlug(exportName());
+            if (s4) return s4;
+        }
+
+        return 'screen';
+    }
+
+    function detectAllScreens() {
+        var screens = [];
+        var allFrames = Array.prototype.slice.call(
+            document.querySelectorAll('.mobile-container, [data-screen-frame], .artboard, .screen-frame')
+        );
+
+        var topFrames = allFrames.filter(function (f) {
+            return !allFrames.some(function (parent) {
+                return parent !== f && parent.contains(f);
+            });
+        });
+
+        if (topFrames.length > 1) {
+            topFrames.sort(function (a, b) {
+                var ra = a.getBoundingClientRect();
+                var rb = b.getBoundingClientRect();
+                if (Math.abs(ra.top - rb.top) > 50) return ra.top - rb.top;
+                return ra.left - rb.left;
+            });
+            topFrames.forEach(function (frameEl, idx) {
+                screens.push({
+                    type: 'frame',
+                    element: frameEl,
+                    container: frameEl,
+                    rawName: deriveScreenName(frameEl, idx + 1),
+                    index: idx + 1
+                });
+            });
+            return assignFilenames(screens);
+        }
+
+        var frame = phoneFrame();
+        if (frame) {
+            var stepElements = Array.prototype.slice.call(
+                frame.querySelectorAll('.step, [data-step], .flow-step')
+            );
+            var topSteps = stepElements.filter(function (s) {
+                return !stepElements.some(function (p) {
+                    return p !== s && p.contains(s);
+                });
+            });
+
+            if (topSteps.length > 1) {
+                topSteps.forEach(function (stepEl, idx) {
+                    screens.push({
+                        type: 'step',
+                        element: stepEl,
+                        container: frame,
+                        rawName: deriveScreenName(stepEl, idx + 1),
+                        index: idx + 1
+                    });
+                });
+                return assignFilenames(screens);
+            }
+
+            screens.push({
+                type: 'frame',
+                element: frame,
+                container: frame,
+                rawName: deriveScreenName(frame, 1),
+                index: 1
+            });
+            return assignFilenames(screens);
+        }
+
+        return [];
+    }
+
+    function assignFilenames(screens) {
+        var total = screens.length;
+        var padLen = total >= 100 ? 3 : 2;
+        var usedNames = {};
+
+        screens.forEach(function (s, idx) {
+            var num = String(idx + 1).padStart(padLen, '0');
+            var baseName = s.rawName || 'screen';
+            var candidate = num + '-' + baseName;
+
+            if (usedNames[candidate]) {
+                usedNames[candidate]++;
+                candidate = candidate + '-' + usedNames[candidate];
+            } else {
+                usedNames[candidate] = 1;
+            }
+            s.filename = candidate + '.png';
+        });
+
+        return screens;
+    }
+
+    var isExportingZip = false;
+    var statusEl = null;
+    var statusTimer = null;
+
+    function getOrCreateStatusEl() {
+        if (!statusEl) {
+            statusEl = document.createElement('div');
+            statusEl.className = 'proto-export-status';
+            document.body.appendChild(statusEl);
+        }
+        return statusEl;
+    }
+
+    function showStatusToast(message, isSpinning, isError, durationMs) {
+        var el = getOrCreateStatusEl();
+        clearTimeout(statusTimer);
+        el.className = 'proto-export-status show' + (isError ? ' error' : '');
+        var spinnerHtml = isSpinning ? '<span class="spinner"></span>' : '';
+        el.innerHTML = spinnerHtml + '<span>' + message + '</span>';
+        if (durationMs) {
+            statusTimer = setTimeout(function () {
+                el.classList.remove('show');
+            }, durationMs);
+        }
+    }
+
+    function exportZipFilename() {
+        var base = exportName() || 'screens';
+        var dateStr = new Date().toISOString().slice(0, 10);
+        return base + '-screens-' + dateStr + '.zip';
+    }
+
+    function exportAllScreensZip(btn) {
+        if (isExportingZip) return;
+        isExportingZip = true;
+        btn.disabled = true;
+
+        var originalBtnHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner" style="width:13px;height:13px;border:2px solid rgba(18,73,44,0.3);border-top-color:#12492C;border-radius:50%;animation:protoSpin 0.7s linear infinite;display:inline-block"></span>'
+            + '<span>EXPORTING...</span>';
+
+        if (location.protocol === 'file:') {
+            console.warn('ZIP export: a file:// page cannot fetch its own images, so they will come out blank. '
+                + 'Serve the prototype over http (e.g. "python -m http.server 5500") to include them.');
+        }
+
+        var screens = detectAllScreens();
+        var total = screens.length;
+
+        if (!total) {
+            isExportingZip = false;
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
+            showStatusToast('No exportable screens detected.', false, true, 4000);
+            return;
+        }
+
+        showStatusToast('Preparing export: 0 of ' + total + ' screens...', true, false);
+
+        Promise.all([loadHtmlToImage(), embeddedFontCss(), loadJsZip()]).then(function (loaded) {
+            var fontCssText = loaded[1];
+            var JSZipLib = loaded[2];
+
+            var zip = new JSZipLib();
+            var successCount = 0;
+            var failedScreens = [];
+
+            var frame = phoneFrame();
+            var originalActiveSteps = frame ? Array.prototype.slice.call(frame.querySelectorAll('.step.active, [data-step].active')) : [];
+            var initialScrollTop = frame ? frame.scrollTop : 0;
+            var statusBar = frame ? frame.querySelector('.status-bar, #statusBar') : null;
+            var initialStatusBarGreen = statusBar ? statusBar.classList.contains('on-green') : false;
+            var tabs = document.getElementById('tabs');
+            var initialTabsShow = tabs ? tabs.classList.contains('show') : false;
+
+            function processScreen(index) {
+                if (index >= total) {
+                    return finishPackaging();
+                }
+
+                var item = screens[index];
+                showStatusToast('Preparing export: ' + (index + 1) + ' of ' + total + ' screens (' + item.rawName + ')...', true, false);
+
+                if (item.type === 'step' && frame) {
+                    Array.prototype.forEach.call(frame.querySelectorAll('.step, [data-step]'), function (s) {
+                        s.classList.remove('active');
+                    });
+                    item.element.classList.add('active');
+
+                    var isGreen = item.element.hasAttribute('data-green');
+                    if (statusBar) statusBar.classList.toggle('on-green', isGreen);
+
+                    if (tabs) {
+                        var isTabRoot = ['stepHome', 'stepMine', 'stepTx'].indexOf(item.element.id) !== -1;
+                        tabs.classList.toggle('show', isTabRoot);
+                    }
+
+                    frame.scrollTop = 0;
+                    var scrollEl = item.element.querySelector('.scroll, .flow-scroll, .optin-body');
+                    if (scrollEl) scrollEl.scrollTop = 0;
+                }
+
+                return new Promise(function (resolve) {
+                    requestAnimationFrame(function () {
+                        setTimeout(resolve, 80);
+                    });
+                }).then(function () {
+                    var target = item.type === 'step' ? (item.container || frame) : item.element;
+                    return renderFrameToBlob(target, fontCssText);
+                }).then(function (blob) {
+                    zip.file(item.filename, blob);
+                    successCount++;
+                }).catch(function (err) {
+                    console.error('Failed to export screen ' + item.filename, err);
+                    failedScreens.push({ name: item.rawName, filename: item.filename, error: err.message });
+                }).then(function () {
+                    return processScreen(index + 1);
+                });
+            }
+
+            function finishPackaging() {
+                if (frame && originalActiveSteps.length) {
+                    Array.prototype.forEach.call(frame.querySelectorAll('.step, [data-step]'), function (s) {
+                        s.classList.remove('active');
+                    });
+                    originalActiveSteps.forEach(function (s) { s.classList.add('active'); });
+                    if (statusBar) statusBar.classList.toggle('on-green', initialStatusBarGreen);
+                    if (tabs) tabs.classList.toggle('show', initialTabsShow);
+                    frame.scrollTop = initialScrollTop;
+                }
+
+                if (successCount === 0) {
+                    throw new Error('All ' + total + ' screens failed to export.');
+                }
+
+                showStatusToast('Packaging ' + successCount + ' PNG images into ZIP...', true, false);
+
+                return zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                }).then(function (zipBlob) {
+                    var zipFilename = exportZipFilename();
+                    saveBlob(zipBlob, zipFilename);
+
+                    if (failedScreens.length > 0) {
+                        showStatusToast('Export complete with warnings: ' + successCount + ' of ' + total + ' screens exported. Failed: ' + failedScreens.map(function (f) { return f.name; }).join(', '), false, false, 6000);
+                    } else {
+                        showStatusToast('Export complete: ' + successCount + ' screens exported successfully.', false, false, 4000);
+                    }
+                });
+            }
+
+            return processScreen(0);
+        }).catch(function (err) {
+            console.error('ZIP export failed:', err);
+            showStatusToast('Export failed: ' + String((err && (err.message || err.type || err)) || err), false, true, 6000);
+        }).then(function () {
+            isExportingZip = false;
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
+        });
     }
 
     /* ---- Figma node tree ---- */
@@ -912,17 +1333,26 @@
         if (!phoneFrame()) return;
         var bar = document.createElement('div');
         bar.className = 'proto-export';
-        bar.innerHTML = '<button type="button" data-export="png">'
+        bar.innerHTML = '<button type="button" data-export="png" title="Download current screen as PNG">'
             + '<svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10.5 5 5 5-5"/><path d="M4.5 19.5h15"/></svg>'
             + '<span>DOWNLOAD PNG</span></button>'
-            + '<button type="button" data-export="figma">'
+            + '<button type="button" data-export="zip" title="Export all screens in flow as a ZIP archive">'
+            + '<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>'
+            + '<span>EXPORT ALL SCREENS (ZIP)</span></button>'
+            + '<button type="button" data-export="figma" title="Export as Figma JSON">'
             + '<svg viewBox="0 0 24 24"><path d="M9 3.5h3v6H9a3 3 0 0 1 0-6Z"/><path d="M12 3.5h3a3 3 0 0 1 0 6h-3Z"/>'
             + '<path d="M9 9.5h3v6H9a3 3 0 0 1 0-6Z"/><circle cx="15" cy="12.5" r="3"/>'
             + '<path d="M9 15.5h3v3a3 3 0 1 1-3-3Z"/></svg>'
             + '<span>FIGMA JSON</span></button>';
         bar.querySelector('[data-export="png"]').addEventListener('click', function () { downloadPng(this); });
+        bar.querySelector('[data-export="zip"]').addEventListener('click', function () { exportAllScreensZip(this); });
         bar.querySelector('[data-export="figma"]').addEventListener('click', downloadFigmaJson);
         document.body.appendChild(bar);
+
+        if (window.prototypeMode) {
+            window.prototypeMode.exportAllScreensZip = exportAllScreensZip;
+            window.prototypeMode.detectAllScreens = detectAllScreens;
+        }
     }
 
     /* ------------------------------------------------------- prompt */

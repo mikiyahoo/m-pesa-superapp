@@ -232,7 +232,7 @@
 
         .system-nav svg { width: 19px; height: 19px; display: block; }
     </style>
-    <script src="assets/prototype-mode.js?v=66"></script>
+    <script src="assets/prototype-mode.js?v=67"></script>
 </head>
 <body>
 
@@ -305,7 +305,7 @@
 
         <!-- Confirm -->
         <div class="action">
-            <button class="primary-btn" onclick="window.location.href='Request Submitted.html'">
+            <button class="primary-btn" onclick="confirmProfile()">
                 <span>CONFIRM</span>
                 <svg viewBox="0 0 24 24"><path d="M4 12h15M13.5 6.5 20 12l-6.5 5.5"/></svg>
             </button>
@@ -326,6 +326,13 @@
     </div>
 
     <script>
+        /* final activation: in the error flow it fails (Request Failed screen) */
+        function confirmProfile() {
+            var err = '';
+            try { err = sessionStorage.getItem('faydaError') || ''; } catch (e) {}
+            window.location.href = err === 'failed' ? 'Fayda Error.html?type=failed' : 'Request Submitted.html';
+        }
+
         function goBackToApp() {
             var target = 'Send to Bank.html';
             try { target = sessionStorage.getItem('faydaReturn') || target; } catch (e) {}

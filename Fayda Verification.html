@@ -730,7 +730,7 @@
             line-height: 1.6;
         }
     </style>
-    <script src="assets/prototype-mode.js?v=66"></script>
+    <script src="assets/prototype-mode.js?v=67"></script>
 </head>
 <body>
 
@@ -1067,6 +1067,10 @@
             }
 
             clearInterval(otpInterval);
+            /* error flow: this phone number already has the maximum number of linked accounts */
+            let faydaError = '';
+            try { faydaError = sessionStorage.getItem('faydaError') || ''; } catch (e) {}
+            if (faydaError === 'limit') { window.location.href = 'Fayda Error.html?type=limit'; return; }
             showStep('stepConsent');
             startConsentTimer();
         }

@@ -2374,6 +2374,8 @@
         }
 
         .auto-card .chip { display: inline-block; margin-top: 8px; }
+        .auto-card.is-off { cursor: not-allowed; }
+        .auto-card.is-off b, .auto-card.is-off .switch { opacity: 0.4; }
 
         .switch {
             position: relative;
@@ -4117,7 +4119,7 @@
         }
     </style>
 
-    <script src="assets/prototype-mode.js?v=66"></script>
+    <script src="assets/prototype-mode.js?v=67"></script>
 </head>
 <body>
 
@@ -4599,8 +4601,8 @@
                 </div>
                 <div style="height:16px"></div>
             </div>
-            <div class="auto-card" onclick="toggleIndAuto()">
-                <div><b>Automatic Deduction</b><span class="chip green">Recommended</span></div>
+            <div class="auto-card" id="indAutoCard" onclick="toggleIndAuto()">
+                <div><b>Automatic Deduction</b><span class="chip green" id="indAutoChip">Recommended</span></div>
                 <span class="switch" id="indAutoSwitch"></span>
             </div>
             <button class="flow-btn blue" id="indCreateBtn" onclick="indCreate()" disabled>CREATE
@@ -4876,6 +4878,19 @@
            screens; prototype-mode clears it when a new run starts. */
         const STATE_KEY = 'fdState';
 
+        /* Automatic deduction (recurring transfer from the wallet) is NOT in the
+           current scope for Individual and Target savings: the toggle and the
+           Recurring Transfer action are shown disabled and no deductions run.
+           Group savings keep their recurring contributions. Set to true to
+           bring the feature back. */
+        const IND_AUTO_ENABLED = false;
+
+        /* developer notes beside the phone, for the screens where scope matters */
+        const DEV_NOTES = {
+            stepIndCreate: 'Automatic deduction is not in the current scope for Individual and Target savings. The toggle is shown disabled and must not be built for this release: customers fund these savings with manual deposits only (no frequency, amount or scheduled deduction).',
+            stepIndPocket: 'Recurring transfer (automatic deduction) is not in the current scope for Individual and Target savings, so the action is disabled. No scheduled deductions or deduction SMS for these accounts in this release. Group saving recurring contributions are unchanged.'
+        };
+
         /* Pockets every run starts with: three with a target, one without */
         function seedPockets() {
             const ago = n => addDays(TODAY, -n).toISOString();
@@ -4944,6 +4959,8 @@
 
         let S = loadState();
         S.individual = S.individual || seedPockets();
+        /* out of scope: no individual / target saving runs an automatic deduction */
+        if (!IND_AUTO_ENABLED) S.individual.forEach(p => { p.auto = null; });
         /* ensure individual savings dates match */
         const pRainy = S.individual.find(p => p.id === 'IS90212410');
         if (pRainy) pRainy.opened = '2026-09-20T08:00:00.000Z';
@@ -4992,6 +5009,7 @@
             document.getElementById('statusBar').classList.toggle('on-green', green);
             const muted = id === 'stepAccount' && current && statusOf(current) === 'closed';
             document.getElementById('statusBar').style.background = green && muted ? '#8E9A93' : '';
+            if (window.prototypeMode && window.prototypeMode.devNote) window.prototypeMode.devNote(DEV_NOTES[id] || '');
         }
 
         function go(id) {
@@ -6897,11 +6915,15 @@
             document.getElementById('indName').placeholder = indMode === 'target' ? '' : autoName();
             document.getElementById('indAmount').value = '';
             document.getElementById('indFreq').value = 'Monthly';
+            document.getElementById('indAutoCard').classList.toggle('is-off', !IND_AUTO_ENABLED);
+            document.getElementById('indAutoChip').className = 'chip ' + (IND_AUTO_ENABLED ? 'green' : 'grey');
+            document.getElementById('indAutoChip').textContent = IND_AUTO_ENABLED ? 'Recommended' : 'Not available';
             paintIndForm();
             go('stepIndCreate');
         }
 
         function toggleIndAuto() {
+            if (!IND_AUTO_ENABLED) return;   // out of scope for this release
             indAuto = !indAuto;
             paintIndForm();
         }
@@ -7081,7 +7103,7 @@
                 + '<div class="actions">'
                 + actionBtn('DEPOSIT', 'green', IC.plus, 'openIndAmount(\'deposit\')')
                 + actionBtn('WITHDRAW', 'red', IC.out, 'openIndAmount(\'withdraw\')', p.balance <= 0)
-                + actionBtn('RECURRING<br>TRANSFER', 'purple', IC.roll, 'openRecurring()')
+                + actionBtn('RECURRING<br>TRANSFER', 'purple', IC.roll, 'openRecurring()', !IND_AUTO_ENABLED)
                 + '</div>'
                 + '<div class="target-card" onclick="openTargetSet()">'
                 + '<span class="ic blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m12 12 6-6M15.5 5.5H18v2.5"/></svg></span>'
@@ -7294,6 +7316,7 @@
         function recHolder() { return recGroup || ind; }
 
         function openRecurring(g) {
+            if (!g && !IND_AUTO_ENABLED) return;   // individual / target: out of scope
             recGroup = g || null;
             const h = recHolder(), a = h.auto;
             document.getElementById('recLead').innerHTML = 'Move money from your M-PESA wallet to <b>' + h.name + '</b> automatically.';
