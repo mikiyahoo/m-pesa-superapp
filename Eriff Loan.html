@@ -810,9 +810,9 @@
            ================================================================ */
         let stack = [];
         const NOTES = {
-            stepTerms: 'Activation is a one-time opt-in. **ACTIVATE stays disabled until both consents are ticked:** the Terms and Conditions, and data sharing with the partner banks and the credit bureau. Key facts come from the live offer tariffs. Consents are stored with a timestamp and the T&C version.',
+            stepTerms: 'Activation is a one-time opt-in. **ACTIVATE stays disabled until both consents are ticked:** the Terms and Conditions, and data sharing with the partner banks and the credit bureau. **No pricing on this screen for now:** fees are shown on each offer and on the confirm screen. Consents are stored with a timestamp and the T&C version.',
             stepTnc: '**Placeholder text.** The final Terms and Conditions must be supplied by the partner banks and Legal/Compliance and shown in full here, with a version number and effective date. I AGREE ticks the T&C consent and returns to activation.',
-            stepBank: 'Banks listed are the partner banks connected for transaction data. The selected bank is used to read the customer’s transactions and enhance the credit score; "Select other bank" opens the full list.',
+            stepBank: 'Banks listed are the partner banks connected for transaction data. The selected bank is used to read the customer’s transactions and enhance the credit score; "Select other bank" opens the full list. **Onboarding goes from here straight to the credit score** (no bank statement upload for now); the upload is used by UPDATE SCORE.',
             stepUpload: 'Bank statement: **PDF only, maximum 10 MB.** CONTINUE stays disabled until a file is attached and the customer agrees to share it for credit assessment.',
             stepScore: 'Credit score ranges: Poor 300–579, Fair 580–669, Good 670–739, Very Good 740–799, Excellent 800–900. UPDATE SCORE asks for a new bank statement (same upload screen as onboarding), then re-runs the assessment.',
             stepAmount: 'Borrow: amount between the offer’s minimum and the customer’s credit limit for that offer (the lower of the offer limit and the available limit). Repay: up to the unpaid loan.',
@@ -921,9 +921,6 @@
             return (lo === hi ? lo : lo + '&ndash;' + hi) + unit;
         }
         function renderTerms() {
-            /* worked example: 1,000 Birr on the cheapest 30-day offer */
-            const p = PRODUCTS.filter(x => x.days === 30).sort((x, y) => (x.access + x.maint * 30) - (y.access + y.maint * 30))[0];
-            const q = quote(p, 1000);
             const tick = (key, html) => '<button class="consent' + (consent[key] ? ' on' : '') + '" onclick="consent.' + key + '=!consent.' + key + ';renderTerms()">'
                 + '<span class="box"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span>' + html + '</span></button>';
             document.getElementById('termsBody').innerHTML =
@@ -933,13 +930,9 @@
                 + '<div class="fr"><span>Lenders</span><b>Partner banks</b></div>'
                 + '<div class="fr"><span>Loan amount</span><b>' + money(Math.min.apply(null, PRODUCTS.map(x => x.min))) + ' to ' + money(Math.max.apply(null, PRODUCTS.map(x => x.max))) + ' Birr per offer</b></div>'
                 + '<div class="fr"><span>Loan period</span><b>' + range('days', ' days') + '</b></div>'
-                + '<div class="fr"><span>Access fee (once)</span><b>' + range('access', '%') + ' of the loan</b></div>'
-                + '<div class="fr"><span>Maintenance fee</span><b>' + range('maint', '%') + ' per day</b></div>'
-                + '<div class="fr"><span>Late payment</span><b>' + range('penalty', '%') + ' of the overdue amount per day</b></div>'
-                + '<div class="fr"><span>Repayment</span><b>' + range('inst', '') + ' installments, from your M-PESA wallet</b></div>'
-                + '<div class="ex">Example: borrow <b>1,000.00 Birr</b> for ' + p.days + ' days and repay <b>' + money(q.total) + ' Birr</b> in total (fees ' + money(q.fee) + ' Birr) if you pay on time.</div></div>'
+                + '<div class="fr"><span>Repayment</span><b>' + range('inst', '') + ' installments, from your M-PESA wallet</b></div></div>'
                 + '<h5>Your credit score</h5>'
-                + '<p>Your limit is based on your credit score. We use your M-PESA history and, if you share it, your bank statement. Missed payments are reported and can lower your score.</p>'
+                + '<p>Your limit is based on your credit score. We use your M-PESA history and, if you share it, your bank statement. Missed payments are reported and can lower your score. Fees are shown on each loan offer before you borrow.</p>'
                 + '<h5>Help and complaints</h5>'
                 + '<p>Call M-PESA customer care or visit any partner bank branch. You can stop using Eriff be M-PESA at any time once your loans are repaid.</p>'
                 + tick('tnc', 'I have read and agree to the <a href="#" onclick="event.stopPropagation();openTnc();return false;">Terms and Conditions</a>.')
@@ -990,7 +983,12 @@
             if (other) { bankContinue(); return; }
             renderBanks();
         }
-        function bankContinue() { if (!pickedBank) return; upload = { bank: pickedBank, file: false, agree: false }; go('stepUpload'); }
+        /* onboarding skips the statement upload for now: the chosen bank goes straight to the score */
+        function bankContinue() {
+            if (!pickedBank) return;
+            S.bank = pickedBank; save();
+            loading('Calculating your credit score...', 1800, () => { scoreMode = 'onboarding'; resetTo(['stepScore']); });
+        }
 
         let upload = { bank: 'cbe', file: false, agree: false };
         function renderUpload() {
