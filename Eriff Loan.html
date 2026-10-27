@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eriff be M-PESA</title>
+    <!--
+        Eriff be M-PESA: term loans from partner banks, inside the M-PESA mini apps.
+          Onboarding   intro -> terms -> PIN -> choose your bank -> bank statement -> credit score -> loans
+          Loans        limit + credit score, loans taken, offers by bank and type
+          Apply        amount -> confirm (fees + repayment schedule) -> PIN -> success
+          Repay        amount -> confirm -> PIN -> success
+          Statements   transactions by month, details, export
+        Scenario from the sidebar: ?eriff=new | active | submitted | failed
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --green: #2FC56D;
+            --green-dark: #1E9E4F;
+            --green-tint: #E3F5EA;
+            --blue: #1474F0;
+            --blue-tint: #E3EEFD;
+            --amber: #E8A10C;
+            --orange: #F39200;
+            --red: #E5383B;
+            --ink: #1c1c1c;
+            --ink-2: #4a4a4a;
+            --muted: #9a9a9a;
+            --line: #ECECEC;
+        }
+        body { font-family: 'Barlow', sans-serif; background: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--ink); }
+        button { font-family: 'Barlow', sans-serif; cursor: pointer; }
+
+        .mobile-container { width: 360px; height: 808px; background: #ffffff; overflow: hidden; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+
+        /* ---------- Status bar ---------- */
+        .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 4px 16px; flex-shrink: 0; background: #ffffff; color: #333333; }
+        .status-bar .time { font-size: 13px; font-weight: 600; }
+        .status-icons { display: flex; align-items: center; gap: 6px; }
+        .status-icons svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+        .status-bar.on-green { background: #27B463; color: #ffffff; }
+
+        /* ---------- Screens ---------- */
+        .step { display: none; flex: 1; min-height: 0; flex-direction: column; position: relative; }
+        .step.active { display: flex; }
+        /* every screen scrolls as a whole when it doesn't fit (short phones); screens with
+           their own list keep scrolling inside it */
+        .step { overflow-y: auto; overflow-x: hidden; }
+        .step::-webkit-scrollbar { display: none; }
+        .step > * { flex-shrink: 0; }
+        .step > .scroll { flex-shrink: 1; }
+        .step > .slides { min-height: 330px; }
+        .step > .center { min-height: 200px; }
+        /* sideways rows: wheel and drag scroll them on desktop too */
+        .chips, .loans, .months { cursor: grab; scroll-behavior: auto; }
+        .chips.dragging, .loans.dragging, .months.dragging { cursor: grabbing; scroll-snap-type: none; }
+        .scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+        .scroll::-webkit-scrollbar { display: none; }
+
+        .bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 10px 12px; min-height: 50px; flex-shrink: 0; position: relative; }
+        .bar h2 { position: absolute; left: 50px; right: 50px; text-align: center; font-size: 18px; font-weight: 400; letter-spacing: 0.6px; text-transform: uppercase; color: #2a2a2a; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .icon-btn { background: none; border: none; padding: 5px; display: flex; border-radius: 50%; z-index: 2; }
+        .icon-btn:active { background: rgba(0,0,0,0.06); }
+        .icon-btn svg { width: 22px; height: 22px; stroke: #444444; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .icon-btn.hide { visibility: hidden; }
+
+        /* green head with the M-PESA pattern; the white card overlaps it */
+        .ghead { position: absolute; left: 0; right: 0; top: 0; height: 196px; background: linear-gradient(110deg, #27B463 0%, #2FC56D 100%); overflow: hidden; }
+        .ghead img { position: absolute; left: -40px; top: -160px; width: 460px; opacity: 0.12; pointer-events: none; }
+        .gbar { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 6px 12px 8px 12px; min-height: 50px; flex-shrink: 0; z-index: 2; }
+        .gbar h2 { position: absolute; left: 50px; right: 50px; text-align: center; font-size: 19px; font-weight: 400; letter-spacing: 0.8px; color: #ffffff; text-transform: uppercase; pointer-events: none; }
+        .gbar .icon-btn svg { stroke: #ffffff; }
+        .gscroll { position: relative; z-index: 1; }
+        /* the green band belongs to the page: it scrolls away with the content, and the
+           title bar above it stays green */
+        .ghead { display: none; }
+        .gbar { background: #2CBF68 url('assets/M-PESA-pattern.svg') no-repeat -40px -160px / 460px auto; }
+        .gbar::before { content: ''; position: absolute; inset: 0; background: rgba(44, 191, 104, 0.88); z-index: -1; }
+        .gscroll { background: linear-gradient(110deg, #27B463 0%, #2FC56D 100%) no-repeat 0 0 / 100% 146px, #ffffff; background-attachment: local; }
+
+        /* ---------- Buttons ---------- */
+        .cta { margin: 10px 16px 16px 16px; height: 50px; border: none; border-radius: 25px; background: var(--blue); color: #ffffff; font-size: 14px; font-weight: 700; letter-spacing: 1.2px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; box-shadow: 0 6px 14px rgba(20, 116, 240, 0.25); }
+        .cta.green { background: var(--green); box-shadow: 0 6px 14px rgba(47, 197, 109, 0.28); }
+        .cta:disabled { background: #F0F0F0; color: #C9C9C9; box-shadow: none; cursor: default; }
+        .cta .arrow { position: absolute; right: 22px; width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-pair { display: flex; gap: 10px; margin: 10px 16px 16px 16px; flex-shrink: 0; }
+        .btn-pair .cta { margin: 0; flex: 1; }
+        .cta.ghost { background: #ffffff; color: #3a3a3a; box-shadow: 0 3px 12px rgba(0,0,0,0.12); }
+        .pill { border: none; border-radius: 16px; padding: 7px 18px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.8px; color: #ffffff; background: var(--blue); }
+        .pill.green { background: var(--green); }
+        .link { background: none; border: none; color: var(--green-dark); font-size: 14px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+
+        /* ---------- Chips ---------- */
+        .chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 2px 16px; }
+        .chips::-webkit-scrollbar { display: none; }
+        .chip { flex-shrink: 0; border: 1px solid #DADADA; background: #ffffff; border-radius: 16px; padding: 6px 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.8px; color: #3a3a3a; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
+        .chip.on { background: var(--green); border-color: var(--green); color: #ffffff; }
+        .chip svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+        .badge { display: inline-block; border: 1.5px solid var(--green); color: var(--green-dark); border-radius: 14px; padding: 3px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .badge.overdue { border-color: var(--amber); color: #C98600; }
+        .badge.paid { border-color: #BDBDBD; color: #8a8a8a; }
+        .badge.fill { background: var(--green-tint); border-color: transparent; }
+
+        /* ---------- Cards ---------- */
+        .card { background: #ffffff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.09); margin: 0 16px; }
+        .sec-head { display: flex; justify-content: space-between; align-items: center; margin: 22px 16px 12px 16px; }
+        .sec-head span { font-size: 14px; font-weight: 600; letter-spacing: 0.8px; color: #3a3a3a; text-transform: uppercase; }
+
+        /* limit card */
+        .limit { padding: 16px 18px 14px 18px; position: relative; }
+        .limit .top { display: flex; gap: 12px; }
+        .limit .main { flex: 1; min-width: 0; }
+        .limit .lbl { display: flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: 0.8px; color: #5a5a5a; text-transform: uppercase; }
+        .limit .lbl button { background: none; border: none; display: flex; }
+        .limit .lbl svg { width: 22px; height: 22px; stroke: #9a9a9a; stroke-width: 1.6; fill: none; }
+        .limit .amt { font-size: 29px; font-weight: 500; color: #4a4a4a; margin-top: 2px; letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; }
+        .limit .amt.masked { letter-spacing: 3px; }
+        .limit .sub { font-size: 12.5px; color: #3a3a3a; margin-top: 2px; }
+        .limit .sub2 { font-size: 12px; color: #6a6a6a; margin-top: 1px; }
+        .limit .score-mini { width: 96px; border-left: 1px solid var(--line); padding-left: 10px; text-align: center; background: none; border-top: 0; border-right: 0; border-bottom: 0; }
+        .limit .score-mini small { display: block; font-size: 8.5px; letter-spacing: 0.6px; color: #6a6a6a; text-transform: uppercase; margin-top: -2px; }
+        .limit .help { position: absolute; right: 12px; top: 10px; }
+        .limit .help svg { width: 20px; height: 20px; stroke: #9a9a9a; stroke-width: 1.5; }
+        .brands { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-right: 30px; }
+        .brands img.mp { height: 20px; }
+        .brands i { width: 1px; height: 22px; background: #E0E0E0; }
+        .brands .bk { display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600; color: #3a3a3a; line-height: 1.1; }
+        .track { height: 5px; border-radius: 3px; background: #E6E6E6; margin-top: 12px; overflow: hidden; }
+        .track i { display: block; height: 100%; border-radius: 3px; background: var(--blue); }
+        .track.green i { background: var(--green); }
+        .track-foot { display: flex; justify-content: space-between; font-size: 12.5px; margin-top: 8px; color: #9a9a9a; }
+        .track-foot b { font-weight: 500; color: var(--blue); }
+
+        /* loans taken carousel */
+        .loans { display: flex; gap: 12px; overflow-x: auto; padding: 4px 16px 14px 16px; scroll-snap-type: x mandatory; scroll-padding: 0 16px; }
+        .loans::-webkit-scrollbar { display: none; }
+        .loan { flex: 0 0 258px; scroll-snap-align: start; background: #ffffff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.09); padding: 12px 14px; border: none; text-align: left; }
+        .loan .lt { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+        .loan .lt b { flex: 1; font-size: 14px; font-weight: 600; color: #4a4a4a; }
+        .loan .lb { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; }
+        .loan .lb p { font-size: 12px; color: #6a6a6a; line-height: 1.6; }
+        .loan .lb p b { color: #4a4a4a; font-weight: 600; }
+
+        /* bank marks */
+        .bmark { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .bmark svg { width: 100%; height: 100%; display: block; }
+        .bmark img { width: 70%; height: 70%; object-fit: contain; }
+        .bmark.full img { width: 100%; height: 100%; }   /* logos that are already a full circle */
+
+        /* offers */
+        .offer { margin: 0 16px 12px 16px; background: #ffffff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.09); padding: 14px 16px 0 16px; }
+        .offer .ot { display: flex; align-items: center; gap: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+        .offer .ot b { display: block; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; color: #3a3a3a; text-transform: uppercase; }
+        .offer .ot small { display: block; font-size: 13px; color: #9a9a9a; margin-top: 2px; }
+        .offer .ob { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+        .offer .cond { background: none; border: none; font-size: 13px; font-weight: 500; letter-spacing: 0.8px; color: #3a3a3a; display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
+        .offer .cond svg { width: 14px; height: 14px; stroke: #3a3a3a; stroke-width: 2.2; fill: none; transition: transform 0.2s; }
+        .offer.open .cond svg { transform: rotate(180deg); }
+        .offer .conds { display: none; padding: 0 0 12px 0; }
+        .offer.open .conds { display: block; }
+        .kv { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 12.5px; color: #8a8a8a; text-transform: uppercase; letter-spacing: 0.4px; }
+        .kv b { color: #3a3a3a; font-weight: 600; text-align: right; }
+        .empty { margin: 8px 16px; padding: 18px; text-align: center; font-size: 13px; color: var(--muted); border: 1.5px dashed #E0E0E0; border-radius: 10px; }
+
+        /* ---------- Gauge ---------- */
+        .gauge { position: relative; }
+        .gauge svg { display: block; margin: 0 auto; }
+        .gauge .val { position: absolute; left: 0; right: 0; text-align: center; color: var(--green-dark); font-weight: 500; line-height: 1; }
+        .gauge .lab { position: absolute; left: 0; right: 0; text-align: center; color: var(--green-dark); }
+
+        /* credit score screen */
+        .score-card { padding: 16px 16px 14px 16px; position: relative; }
+        .score-card .say { text-align: center; font-size: 13px; color: #5a5a5a; margin-top: 2px; }
+        .bands { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 18px; text-align: center; }
+        .bands span { font-size: 11px; color: #7a7a7a; }
+        .bands i { display: block; height: 3px; border-radius: 2px; margin: 8px 2px; position: relative; }
+        .bands .on span, .bands .on small { color: var(--green-dark); font-weight: 600; }
+        .bands .on i::after { content: ''; position: absolute; left: 50%; top: -7px; margin-left: -5px; border: 5px solid transparent; border-top-color: var(--green-dark); }
+        .bands small { font-size: 10.5px; color: #8a8a8a; }
+        .upd { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; font-size: 12.5px; color: #7a7a7a; }
+        .upd b { color: var(--green-dark); font-weight: 500; }
+        .upd button { background: none; border: none; color: var(--green-dark); font-size: 12.5px; font-weight: 700; letter-spacing: 0.4px; display: flex; align-items: center; gap: 6px; }
+        .upd button svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; }
+        .upd button.spin svg { animation: spin 0.8s linear infinite; }
+        .panel { margin: 12px 16px 0 16px; padding: 14px 14px 4px 14px; }
+        .panel h4 { font-size: 13px; font-weight: 600; letter-spacing: 0.6px; color: #3a3a3a; margin-bottom: 4px; }
+        .frow { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+        .frow:last-child { border-bottom: 0; }
+        .frow .ic { width: 36px; height: 36px; border-radius: 50%; background: var(--green-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .frow .ic svg { width: 18px; height: 18px; stroke: var(--green-dark); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .frow .t { flex: 1; min-width: 0; }
+        .frow .t b { display: block; font-size: 13.5px; font-weight: 500; color: #2a2a2a; }
+        .frow .t small { display: block; font-size: 11.5px; color: #8a8a8a; margin-top: 1px; }
+        .frow .tag { background: var(--green-tint); color: var(--green-dark); font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; padding: 5px 12px; border-radius: 12px; }
+        .frow .chev { width: 16px; height: 16px; stroke: var(--green); stroke-width: 2.2; fill: none; }
+        .healthy { display: flex; gap: 12px; align-items: center; margin: 12px 16px 6px 16px; padding: 14px; }
+        .healthy .ic { width: 46px; height: 46px; border-radius: 50%; background: var(--green-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .healthy .ic svg { width: 26px; height: 26px; }
+        .healthy b { display: block; font-size: 14.5px; font-weight: 500; }
+        .healthy small { display: block; font-size: 12px; color: #8a8a8a; margin-top: 2px; line-height: 1.35; }
+
+        /* ---------- Loan details ---------- */
+        .ld { padding: 16px 18px; }
+        .ld .hd { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+        .ld .hd .bmark { width: 44px; height: 44px; }
+        .ld .hd span { flex: 1; min-width: 0; }
+        .ld .hd b { display: block; font-size: 14px; font-weight: 600; letter-spacing: 0.6px; color: #3a3a3a; text-transform: uppercase; }
+        .ld .hd small { display: block; font-size: 13px; color: #8a8a8a; margin-top: 2px; }
+        .ld .tot { padding: 12px 0; border-bottom: 1px solid var(--line); }
+        .ld .tot small, .ld .three small, .ld .dis small { display: block; font-size: 12px; letter-spacing: 0.6px; color: #6a6a6a; text-transform: uppercase; }
+        .ld .tot b { display: block; font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin-top: 4px; }
+        .ld .three { display: grid; grid-template-columns: 1.2fr 1fr 1fr; padding: 12px 0; border-bottom: 1px solid var(--line); }
+        .ld .three div + div { border-left: 1px solid #DADADA; padding-left: 12px; }
+        .ld .three b { display: block; font-size: 15px; font-weight: 500; margin-top: 4px; color: var(--green-dark); text-transform: uppercase; }
+        .ld .three div:last-child b { color: #3a3a3a; }
+        .ld .three b.late { color: var(--red); }
+        .ld .dis { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; }
+        .ld .dis p { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 15px; font-weight: 600; }
+        .ld .dis p svg { width: 20px; height: 20px; stroke: #9a9a9a; stroke-width: 1.5; fill: none; }
+        .prog { margin: 12px 16px 0 16px; padding: 14px 18px; }
+        .prog h4, .inst h4 { font-size: 13.5px; font-weight: 600; letter-spacing: 0.6px; color: #3a3a3a; text-transform: uppercase; }
+        .pfoot { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; letter-spacing: 0.5px; color: #6a6a6a; text-transform: uppercase; }
+        .pfoot b { display: block; font-size: 14px; font-weight: 500; margin-top: 3px; text-transform: none; letter-spacing: 0; }
+        .pfoot .paid b { color: var(--green-dark); }
+        .pfoot .rem { text-align: right; }
+        .pfoot .rem b { color: #8a8a8a; }
+        .inst { margin: 0 16px 12px 16px; padding: 14px 18px; }
+        .inst .ih { display: flex; justify-content: space-between; align-items: center; }
+        .inst .ih span { font-size: 12px; letter-spacing: 0.5px; color: #8a8a8a; text-transform: uppercase; }
+        .inst .ih span.late { color: var(--red); }
+        .inst .ih span.done { color: var(--green-dark); }
+        .inst .ib { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
+        .inst .ib small { display: block; font-size: 12px; letter-spacing: 0.5px; color: #6a6a6a; text-transform: uppercase; }
+        .inst .ib b { display: block; font-size: 15px; font-weight: 500; color: var(--blue); margin-top: 3px; }
+
+        /* ---------- Amount keypad ---------- */
+        .prod-head { text-align: center; padding: 0 20px; flex-shrink: 0; }
+        .prod-head .bmark { width: 64px; height: 64px; margin: -34px auto 8px auto; }
+        .prod-head h3 { font-size: 16px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; }
+        .prod-head p { font-size: 12.5px; line-height: 1.55; color: #2a2a2a; }
+        .prod-head p b { font-weight: 700; letter-spacing: 0.4px; margin-right: 6px; text-transform: uppercase; }
+        .amt-entry { text-align: center; margin-top: 34px; flex-shrink: 0; }
+        .amt-entry .big { font-size: 30px; font-weight: 400; color: #b5b5b5; letter-spacing: 0.4px; display: inline-flex; align-items: center; }
+        .amt-entry .big b { font-weight: 600; color: #8a8a8a; }
+        .amt-entry .big.has b { color: #2a2a2a; }
+        .amt-entry .big i { display: inline-block; width: 2px; height: 30px; background: var(--green); margin-right: 3px; animation: blink 1s step-end infinite; }
+        .amt-entry .big em { font-style: normal; margin-left: 10px; }
+        .amt-entry p { font-size: 12.5px; letter-spacing: 0.6px; color: #7a7a7a; margin-top: 6px; text-transform: uppercase; }
+        .amt-entry p span { text-transform: none; }
+        .amt-entry .err { color: var(--red); text-transform: none; letter-spacing: 0; min-height: 16px; }
+        @keyframes blink { 50% { opacity: 0; } }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0 24px 4px 24px; flex-shrink: 0; }
+        .key { background: none; border: none; font-size: 28px; color: #6a6a6a; padding: 9px 0; border-radius: 8px; }
+        .key:active { background: #f4f4f4; }
+        .key.blank { visibility: hidden; }
+        .key svg { width: 28px; height: 28px; display: block; margin: 0 auto; }
+
+        /* ---------- Confirm ---------- */
+        .confirm { margin: 18px 16px 6px 16px; padding: 0 0 8px 0; overflow: hidden; }
+        .confirm .ctop { text-align: center; padding: 16px 0 8px 0; background: linear-gradient(180deg, #F6F6F6 0%, #ffffff 100%); }
+        .confirm .ctop .tag { display: inline-block; background: #EDEDED; border-radius: 12px; padding: 4px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.8px; color: #5a5a5a; }
+        .confirm .ctop .bmark { width: 56px; height: 56px; margin: 14px auto 0 auto; }
+        .cfield { padding: 10px 18px; position: relative; }
+        .cfield small { display: block; font-size: 12px; letter-spacing: 0.6px; color: #9a9a9a; text-transform: uppercase; }
+        .cfield b { display: block; font-size: 16px; font-weight: 400; margin-top: 3px; color: #2a2a2a; text-transform: uppercase; }
+        .cfield b.strong { font-weight: 600; font-size: 17px; }
+        .cfield b.hl { color: var(--orange); }
+        .cfield em { display: block; font-style: normal; font-size: 11.5px; font-weight: 700; letter-spacing: 0.5px; color: #3a3a3a; margin-top: 1px; }
+        .cfield .edit { position: absolute; right: 18px; top: 12px; width: 38px; height: 38px; border-radius: 50%; border: none; background: #EFEFEF; display: flex; align-items: center; justify-content: center; }
+        .cfield .edit svg { width: 18px; height: 18px; stroke: #5a5a5a; stroke-width: 1.7; fill: none; }
+        .sched { margin: 6px 14px; background: #F2F2F2; border-radius: 10px; padding: 12px 14px; }
+        .sched .sh { display: flex; justify-content: space-between; align-items: center; }
+        .sched .sh b { font-size: 12px; font-weight: 700; letter-spacing: 0.6px; color: #3a3a3a; }
+        .sched .sh span { background: #E0E0E0; border-radius: 10px; padding: 3px 10px; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; color: #5a5a5a; }
+        .dots { display: flex; align-items: center; gap: 6px; margin: 8px 0 4px 0; }
+        .dots button { width: 22px; height: 22px; border-radius: 50%; border: none; background: #DCDCDC; color: #5a5a5a; font-size: 11px; font-weight: 700; }
+        .dots button.on { background: var(--green); color: #ffffff; }
+        .dots i { width: 20px; height: 1px; background: #CFCFCF; }
+        .sched .sr { display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #DDDDDD; margin-top: 8px; padding-top: 8px; }
+        .sched small { display: block; font-size: 12px; letter-spacing: 0.5px; color: #9a9a9a; text-transform: uppercase; margin-top: 6px; }
+        .sched .val { display: block; font-size: 16px; color: #3a3a3a; margin-top: 2px; text-transform: uppercase; }
+        .sched .nx { border: none; border-radius: 12px; background: var(--green); color: #ffffff; font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; padding: 4px 10px; }
+        .sched .nx:disabled { background: #CFCFCF; }
+
+        /* ---------- PIN ---------- */
+        .pin-top { text-align: center; padding: 0 20px; flex-shrink: 0; }
+        .pin-top .bmark { width: 62px; height: 62px; margin: -30px auto 8px auto; }
+        .pin-top h3 { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+        .pin-top p { font-size: 12.5px; line-height: 1.55; color: #2a2a2a; }
+        .pin-top p b { font-weight: 700; letter-spacing: 0.4px; margin-right: 6px; text-transform: uppercase; }
+        .pin-label { text-align: center; font-size: 12px; font-weight: 500; letter-spacing: 0.8px; color: #3a3a3a; margin-top: auto; margin-bottom: 14px; text-transform: uppercase; }
+        .pin-dots { display: flex; justify-content: center; gap: 12px; flex-shrink: 0; }
+        .pin-dots.shake { animation: shake 0.4s ease; }
+        @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        .pin-dot { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #D6D6D6; display: flex; align-items: center; justify-content: center; }
+        .pin-dot::after { content: ''; width: 14px; height: 14px; border-radius: 50%; background: var(--green); transform: scale(0); transition: transform 0.15s; }
+        .pin-dot.filled { border-color: var(--green); }
+        .pin-dot.filled::after { transform: scale(1); }
+        .pin-err { text-align: center; min-height: 18px; margin: 10px 0 auto 0; font-size: 12.5px; color: var(--red); }
+
+        /* ---------- Loading / results ---------- */
+        .spinner { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; border-top-color: var(--blue); border-right-color: var(--blue); animation: spin 0.9s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 28px; }
+        .center p { font-size: 13px; color: #6a6a6a; margin-top: 16px; line-height: 1.45; }
+        .ok-ring { width: 84px; height: 84px; }
+        .ok-ring svg { width: 84px; height: 84px; stroke: var(--green); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .res-msg { color: var(--green-dark); font-size: 17px; font-weight: 500; margin-top: 18px; }
+        .res-id { display: inline-flex; align-items: center; gap: 6px; background: var(--green-tint); color: var(--green-dark); font-weight: 700; letter-spacing: 0.6px; padding: 5px 14px; border-radius: 14px; margin-top: 10px; border: none; font-size: 14px; }
+        .res-id svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; }
+        .res-acts { display: flex; justify-content: center; gap: 40px; margin: 6px 0 4px 0; flex-shrink: 0; }
+        .res-acts button { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px; color: #6a6a6a; text-transform: uppercase; line-height: 1.25; }
+        .res-acts span { width: 46px; height: 46px; border-radius: 50%; background: #EFEFEF; display: flex; align-items: center; justify-content: center; }
+        .res-acts svg { width: 20px; height: 20px; stroke: #5a5a5a; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .fail-ring svg { width: 46px; height: 46px; stroke: var(--red); stroke-width: 1.8; fill: none; stroke-linecap: round; }
+        .fail-msg { color: var(--red); font-size: 14px; margin-top: 8px; }
+        .ill { width: 260px; height: 225px; display: block; margin: 0 auto; }
+
+        /* ---------- Onboarding ---------- */
+        .ob-title { text-align: center; font-size: 22px; font-weight: 300; letter-spacing: 1px; color: #2a2a2a; text-transform: uppercase; margin: 22px 20px 0 20px; line-height: 1.25; flex-shrink: 0; }
+        .slides { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+        .slides .track2 { display: flex; height: 100%; transition: transform 0.35s ease; }
+        .slide { flex: 0 0 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 30px 26px 0 26px; text-align: center; }
+        .slide > div { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+        .slide .ill { max-height: 100%; width: auto; }
+        .slide p { font-size: 13px; line-height: 1.5; color: #4a4a4a; margin-top: 16px; flex-shrink: 0; }
+        .sdots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 6px 0; flex-shrink: 0; }
+        .sdots i { width: 6px; height: 6px; border-radius: 50%; background: #D6D6D6; }
+        .sdots i.on { background: var(--green); }
+        .terms { padding: 0 22px; }
+        .terms h5 { font-size: 12.5px; font-weight: 700; letter-spacing: 0.4px; color: #4a4a4a; text-transform: uppercase; margin-top: 18px; }
+        .terms p { font-size: 13px; line-height: 1.5; color: #6a6a6a; margin-top: 8px; }
+        .agree { font-size: 13px; color: #6a6a6a; line-height: 1.45; padding: 0 22px; flex-shrink: 0; }
+        .agree a { color: var(--green-dark); font-weight: 700; text-decoration: none; }
+        .mini-prog { width: 76px; height: 4px; border-radius: 2px; background: #E6E6E6; overflow: hidden; margin-right: 6px; }
+        .mini-prog i { display: block; height: 100%; background: var(--green); }
+        .ob-lead { text-align: center; font-size: 11.5px; font-weight: 600; letter-spacing: 0.4px; color: #4a4a4a; text-transform: uppercase; margin: 14px 26px 0 26px; line-height: 1.5; flex-shrink: 0; }
+        .banks { margin: 18px 16px 0 16px; }
+        .bank-opt { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 10px; border: none; background: #ffffff; border-radius: 8px; box-shadow: 0 3px 12px rgba(0,0,0,0.09); text-align: left; font-size: 12.5px; font-weight: 600; letter-spacing: 0.4px; color: #3a3a3a; text-transform: uppercase; }
+        .bank-opt .bmark { width: 26px; height: 26px; }
+        .bank-opt span { flex: 1; }
+        .radio { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #CFCFCF; display: flex; align-items: center; justify-content: center; }
+        .radio.on { border-color: var(--green); }
+        .radio.on::after { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
+        .bank-opt svg.chev { width: 16px; height: 16px; stroke: #9a9a9a; stroke-width: 2; fill: none; }
+        .sel { margin: 22px 16px 0 16px; }
+        .sel small { display: block; font-size: 11px; letter-spacing: 0.5px; color: #9a9a9a; text-transform: uppercase; }
+        .sel select { width: 100%; border: none; border-bottom: 1px solid #CFCFCF; padding: 8px 0; font-family: inherit; font-size: 14px; font-weight: 600; letter-spacing: 0.4px; color: #2a2a2a; text-transform: uppercase; background: transparent; outline: none; }
+        .drop { margin: 10px 16px 0 16px; border: 1.5px dashed var(--green); border-radius: 10px; padding: 26px 0; text-align: center; background: #FAFFFC; width: calc(100% - 32px); }
+        .drop svg { width: 40px; height: 40px; }
+        .drop b { display: block; color: var(--green-dark); font-size: 14px; font-weight: 600; margin-top: 8px; }
+        .drop-note { text-align: center; font-size: 10.5px; letter-spacing: 0.4px; color: #9a9a9a; margin-top: 8px; text-transform: uppercase; }
+        .file { display: flex; align-items: center; gap: 12px; margin: 14px 16px 0 16px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+        .file .pdf { width: 30px; height: 34px; border-radius: 4px; background: #E5383B; color: #ffffff; font-size: 9px; font-weight: 800; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; flex-shrink: 0; }
+        .file span { flex: 1; min-width: 0; }
+        .file b { display: block; font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+        .file small { font-size: 11px; color: #9a9a9a; }
+        .file button { background: none; border: none; display: flex; }
+        .file button svg { width: 18px; height: 18px; stroke: #5a5a5a; stroke-width: 2; }
+        .consent { display: flex; align-items: flex-start; gap: 10px; margin: 18px 16px 0 16px; font-size: 12.5px; line-height: 1.45; color: #4a4a4a; text-align: left; background: none; border: none; }
+        .consent .box { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid #BDBDBD; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+        .consent.on .box { background: var(--green); border-color: var(--green); }
+        .consent .box svg { width: 12px; height: 12px; stroke: #ffffff; stroke-width: 3; fill: none; display: none; }
+        .consent.on .box svg { display: block; }
+
+        /* ---------- Transactions ---------- */
+        .months { display: flex; gap: 6px; overflow-x: auto; padding: 4px 16px 10px 16px; flex-shrink: 0; }
+        .months::-webkit-scrollbar { display: none; }
+        .months button { flex-shrink: 0; border: none; background: none; border-radius: 16px; padding: 7px 14px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.8px; color: #5a5a5a; text-transform: uppercase; }
+        .months button.on { background: var(--green); color: #ffffff; }
+        .search { margin: 0 16px 8px 16px; display: none; }
+        .search.show { display: block; }
+        .search input { width: 100%; border: 1px solid #DADADA; border-radius: 20px; padding: 9px 16px; font-family: inherit; font-size: 13.5px; outline: none; }
+        .day { font-size: 13px; font-weight: 600; letter-spacing: 0.6px; color: #5a5a5a; margin: 16px 16px 4px 16px; text-transform: uppercase; }
+        .tx { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 16px; border: none; background: none; text-align: left; }
+        .tx:active { background: #fafafa; }
+        .tx .ic { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .tx .ic svg { width: 20px; height: 20px; }
+        .ic.blue { background: var(--blue-tint); }
+        .ic.green { background: var(--green-tint); }
+        .tx .t { flex: 1; min-width: 0; }
+        .tx .t b, .tx .r b { display: block; font-size: 13px; font-weight: 600; letter-spacing: 0.4px; color: #5a5a5a; text-transform: uppercase; }
+        .tx .t small, .tx .r small { display: block; font-size: 12px; color: #a8a8a8; margin-top: 3px; letter-spacing: 0.3px; text-transform: uppercase; }
+        .tx .r { text-align: right; }
+        .tx .r small { text-transform: none; }
+        .export { position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 10px; background: #ffffff; border: none; border-radius: 28px; padding: 14px 24px; box-shadow: 0 6px 20px rgba(0,0,0,0.16); color: var(--green-dark); font-size: 13px; font-weight: 700; letter-spacing: 0.6px; z-index: 3; }
+        .export svg { width: 22px; height: 22px; stroke: var(--green); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .txd-top { display: flex; align-items: center; gap: 12px; margin: 8px 16px 0 16px; padding: 16px; }
+        .txd-top .ic { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .txd-top .ic svg { width: 22px; height: 22px; }
+        .txd-top span { flex: 1; min-width: 0; }
+        .txd-top small { display: block; font-size: 12px; letter-spacing: 0.5px; color: #9a9a9a; text-transform: uppercase; }
+        .txd-top b { display: block; font-size: 17px; font-weight: 600; margin-top: 1px; }
+        .txd-top em { display: block; font-style: normal; font-size: 11.5px; font-weight: 700; letter-spacing: 0.4px; color: #6a6a6a; margin-top: 2px; text-transform: uppercase; }
+        .box2 { margin: 12px 16px 0 16px; padding: 14px 16px 6px 16px; }
+        .box2 h4 { font-size: 12.5px; font-weight: 600; letter-spacing: 0.6px; color: #3a3a3a; text-transform: uppercase; margin-bottom: 6px; }
+        .box2 .kv { font-size: 12.5px; padding: 8px 0; }
+        .box2 .kv.sum { border-top: 1px solid #E0E0E0; margin-top: 4px; padding-top: 12px; color: #2a2a2a; font-weight: 700; }
+        .box2 .kv.sum b { color: var(--green-dark); }
+
+        /* ---------- Sheet, menu, toast ---------- */
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.42); display: none; z-index: 20; align-items: flex-end; }
+        .overlay.show { display: flex; }
+        .sheet { width: 100%; background: #ffffff; border-radius: 16px 16px 0 0; padding: 10px 18px 18px 18px; }
+        .sheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #DADADA; margin: 0 auto 12px auto; }
+        .sheet h3 { font-size: 15px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; text-align: center; }
+        .sheet p.sub { font-size: 12.5px; color: #8a8a8a; text-align: center; margin-top: 4px; }
+        .opt { width: 100%; display: flex; align-items: center; gap: 12px; padding: 13px 4px; border: none; border-bottom: 1px solid var(--line); background: none; font-size: 14px; color: #2a2a2a; text-align: left; }
+        .opt:last-of-type { border-bottom: 0; }
+        .opt svg { width: 20px; height: 20px; stroke: var(--green-dark); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .sheet .cta { margin: 14px 0 0 0; }
+        .toast { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%) translateY(10px); background: rgba(9, 126, 70, 0.95); color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.4px; padding: 10px 16px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 30; white-space: nowrap; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* marks, badges and icons never stretch inside a row */
+        .bmark, .badge, .ic, .radio, .pdf, .consent .box { flex: 0 0 auto !important; }
+
+        .system-nav { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; justify-items: center; height: 48px; background: #ffffff; border-top: 1px solid #f0f0f0; flex-shrink: 0; color: #666666; }
+        .system-nav svg { width: 19px; height: 19px; display: block; cursor: pointer; }
+    </style>
+    <script src="assets/prototype-mode.js?v=69"></script>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="status-bar" id="statusBar">
+            <span class="time">9:00</span>
+            <div class="status-icons">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29ZM13 5.83l1.88 1.88L13 9.59V5.83Zm1.88 10.46L13 18.17v-3.76l1.88 1.88Z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.1 8.9a14.2 14.2 0 0 1 19.8 0L12.9 20.3a1.1 1.1 0 0 1-1.8 0L2.1 8.9Z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 3.6v16.1c0 .5-.4.9-.9.9H4.6c-.8 0-1.2-1-.6-1.5L19.4 3c.6-.6 1.5-.2 1.5.6Z"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.6 1.8h4.8c.5 0 .9.4.9.9v1.1H8.7V2.7c0-.5.4-.9.9-.9Z"/><rect x="6.6" y="4.3" width="10.8" height="17.9" rx="2.2"/></svg>
+            </div>
+        </div>
+
+        <!-- ============ Onboarding: intro ============ -->
+        <section class="step" id="stepIntro">
+            <div class="bar">
+                <button class="icon-btn" onclick="leaveApp()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+            </div>
+            <h1 class="ob-title">Eriff be M-PESA</h1>
+            <div class="slides"><div class="track2" id="slideTrack"></div></div>
+            <div class="sdots" id="slideDots"></div>
+            <button class="cta" onclick="introNext()">CONTINUE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+        </section>
+
+        <!-- ============ Onboarding: terms ============ -->
+        <section class="step" id="stepTerms">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+                <span class="mini-prog"><i style="width:30%"></i></span>
+            </div>
+            <h1 class="ob-title" style="margin-top:10px">Eriff be M-PESA</h1>
+            <div class="scroll terms">
+                <h5 style="margin-top:22px">Choose the term loan offer that suits you better</h5>
+                <h5>How it works</h5>
+                <p>Eriff be M-PESA gives you a term loan from a partner bank, paid straight into your M-PESA wallet. Use it to send money, pay bills, buy airtime and bundles, or pay with M-PESA.</p>
+                <h5>Fees and repayment</h5>
+                <p>Each offer shows its access fee, daily maintenance fee and penalty fee before you borrow. Repay in one or more installments by the due date; late installments add a daily penalty fee.</p>
+                <h5>Your credit score</h5>
+                <p>Your limit is based on your credit score. We use your M-PESA history and, if you share it, your bank statement.</p>
+            </div>
+            <p class="agree">By tapping &ldquo;Activate&rdquo; you acknowledge that you have read and agree to the <a href="#" onclick="toast('TERMS AND CONDITIONS');return false;">Terms and Conditions</a></p>
+            <button class="cta" onclick="toPin('activate')">ACTIVATE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+        </section>
+
+        <!-- ============ PIN (activation, borrow, repay) ============ -->
+        <section class="step" id="stepPin">
+            <div class="bar"><button class="icon-btn" onclick="cancelPin()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button></div>
+            <div class="pin-top" id="pinTop"></div>
+            <p class="pin-label">Enter M-PESA PIN:</p>
+            <div class="pin-dots" id="pinDots"><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span></div>
+            <p class="pin-err" id="pinErr"></p>
+            <div class="keypad" id="pinPad"></div>
+        </section>
+
+        <!-- ============ Loading ============ -->
+        <section class="step" id="stepLoading">
+            <div class="center"><div class="spinner"></div><p id="loadingText"></p></div>
+        </section>
+
+        <!-- ============ Activation submitted / failed ============ -->
+        <section class="step" id="stepSubmitted">
+            <div class="bar"><button class="icon-btn" onclick="leaveApp()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button></div>
+            <h1 class="ob-title" style="margin-top:4px">Activation<br>submitted</h1>
+            <div class="center" id="submittedArt"></div>
+            <p class="agree" style="text-align:center">Your request is being processed. You will receive a notification with your Eriff be M-PESA limit.</p>
+            <button class="cta" onclick="leaveApp()">CLOSE</button>
+        </section>
+        <section class="step" id="stepFailed">
+            <div class="bar"><button class="icon-btn" onclick="leaveApp()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button></div>
+            <div class="pin-top" id="failedTop"></div>
+            <div class="center">
+                <span class="fail-ring"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21"/><path d="m17.5 17.5 13 13M30.5 17.5l-13 13"/></svg></span>
+                <p class="fail-msg">Your request failed</p>
+            </div>
+            <p class="agree" style="text-align:center" id="failedText">Sorry, we are unable to complete your request at this time. Please try again later.</p>
+            <div class="btn-pair">
+                <button class="cta ghost" onclick="leaveApp()">DONE</button>
+                <button class="cta" onclick="retryActivation()">RETRY</button>
+            </div>
+        </section>
+
+        <!-- ============ Onboarding: choose your bank ============ -->
+        <section class="step" id="stepBank">
+            <div class="bar">
+                <button class="icon-btn" onclick="leaveApp()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+                <span class="mini-prog"><i style="width:60%"></i></span>
+            </div>
+            <h1 class="ob-title" style="margin-top:4px">Select your bank</h1>
+            <p class="ob-lead">Choose the bank you want to connect to view your transactions for enhancing your credit score.</p>
+            <div class="scroll"><div class="banks" id="bankList"></div></div>
+            <button class="cta" id="bankGo" onclick="bankContinue()">CONTINUE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+        </section>
+
+        <!-- ============ Onboarding: upload bank statement ============ -->
+        <section class="step" id="stepUpload">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <span class="mini-prog"><i style="width:80%"></i></span>
+            </div>
+            <h1 class="ob-title" style="margin-top:4px">Upload bank<br>statement</h1>
+            <p class="ob-lead">Upload your latest bank statement to help us verify your transactions and calculate your credit score.</p>
+            <div class="scroll" id="uploadBody"></div>
+            <button class="cta" id="uploadGo" onclick="uploadContinue()" disabled>CONTINUE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+        </section>
+
+        <!-- ============ Credit score ============ -->
+        <section class="step" id="stepScore" data-green>
+            <div class="ghead"><img src="assets/M-PESA-pattern.svg" alt=""></div>
+            <div class="gbar">
+                <button class="icon-btn" onclick="scoreClose()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+                <h2>Credit score</h2>
+                <button class="icon-btn" onclick="openMenu()" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg></button>
+            </div>
+            <div class="scroll gscroll" id="scoreBody"></div>
+            <button class="cta" id="scoreGo" onclick="scoreContinue()">CONTINUE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+        </section>
+
+        <!-- ============ Loans home (all banks) and one bank's term loans ============ -->
+        <section class="step" id="stepHome" data-green>
+            <div class="ghead"><img src="assets/M-PESA-pattern.svg" alt=""></div>
+            <div class="gbar">
+                <button class="icon-btn" onclick="homeClose()" aria-label="Close" id="homeX"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+                <h2 id="homeTitle">Loan</h2>
+                <button class="icon-btn" onclick="openMenu()" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg></button>
+            </div>
+            <div class="scroll gscroll" id="homeBody"></div>
+        </section>
+
+        <!-- ============ All loans taken ============ -->
+        <section class="step" id="stepLoans">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h2 id="loansTitle">Loan taken</h2>
+                <span class="icon-btn hide"><svg viewBox="0 0 24 24"></svg></span>
+            </div>
+            <div class="scroll" id="loansBody"></div>
+        </section>
+
+        <!-- ============ Loan details ============ -->
+        <section class="step" id="stepDetail" data-green>
+            <div class="ghead"><img src="assets/M-PESA-pattern.svg" alt=""></div>
+            <div class="gbar">
+                <button class="icon-btn" onclick="back()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5"/></svg></button>
+                <h2>Loan details</h2>
+                <button class="icon-btn" onclick="openMenu()" aria-label="More"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="0.8"/><circle cx="12" cy="12" r="0.8"/><circle cx="12" cy="19" r="0.8"/></svg></button>
+            </div>
+            <div class="scroll gscroll" id="detailBody"></div>
+        </section>
+
+        <!-- ============ Amount (borrow / repay) ============ -->
+        <section class="step" id="stepAmount">
+            <div class="bar"><button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button></div>
+            <div class="prod-head" id="amtHead"></div>
+            <div class="amt-entry">
+                <span class="big" id="amtBig"><i></i><b>0</b><em>BIRR.</em></span>
+                <p id="amtLimit"></p>
+                <p class="err" id="amtErr"></p>
+            </div>
+            <div style="flex:1"></div>
+            <button class="cta" id="amtGo" onclick="amountContinue()" disabled>CONTINUE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+            <div class="keypad" id="amtPad"></div>
+        </section>
+
+        <!-- ============ Confirm ============ -->
+        <section class="step" id="stepConfirm">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h2>Confirm</h2>
+                <span class="icon-btn hide"><svg viewBox="0 0 24 24"></svg></span>
+            </div>
+            <div class="scroll" id="confirmBody"></div>
+            <button class="cta green" id="confirmGo" onclick="confirmGo()"></button>
+        </section>
+
+        <!-- ============ Success ============ -->
+        <section class="step" id="stepSuccess">
+            <div class="bar"><button class="icon-btn" onclick="successDone()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button></div>
+            <div class="pin-top" id="successTop"></div>
+            <div class="center">
+                <span class="ok-ring"><svg viewBox="0 0 48 48"><path d="M42 24a18 18 0 1 1-6.2-13.6"/><path d="m16 24 6 6 11-12"/></svg></span>
+                <p class="res-msg" id="successMsg"></p>
+                <button class="res-id" id="successId"></button>
+            </div>
+            <div class="res-acts">
+                <button onclick="downloadReceipt()"><span><svg viewBox="0 0 24 24"><path d="M6 3.5h12v17l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4Z"/><path d="M9 8h6M9 11.5h6M9 15h4"/></svg></span>Download<br>receipt</button>
+                <button onclick="shareDetails()"><span><svg viewBox="0 0 24 24"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 13v6.5h14V13"/></svg></span>Share<br>details</button>
+            </div>
+            <button class="cta green" onclick="successDone()">DONE</button>
+        </section>
+
+        <!-- ============ Transactions ============ -->
+        <section class="step" id="stepTx">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h2 id="txTitle">Term loan transactions</h2>
+                <button class="icon-btn" onclick="toggleSearch()" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></button>
+            </div>
+            <div class="search" id="txSearch"><input id="txQuery" placeholder="Search transactions" oninput="renderTx()"></div>
+            <div class="months" id="txMonths"></div>
+            <div class="scroll" id="txBody"></div>
+            <button class="export" onclick="openExport()"><svg viewBox="0 0 24 24"><path d="M6 2.8h8.5l4 4V21H6Z"/><path d="M14.3 2.8V7h4.2M9 12h6.5M9 15.5h6.5M9 8.5h3"/></svg>EXPORT STATEMENTS</button>
+        </section>
+
+        <!-- ============ Transaction details ============ -->
+        <section class="step" id="stepTxDetail">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h2>Transactions details</h2>
+                <span class="icon-btn hide"><svg viewBox="0 0 24 24"></svg></span>
+            </div>
+            <div class="scroll" id="txDetailBody"></div>
+        </section>
+
+        <div class="overlay" id="sheet" onclick="if (event.target === this) closeSheet()"><div class="sheet" id="sheetBody"></div></div>
+        <div class="toast" id="toast"></div>
+
+        <div class="system-nav">
+            <svg viewBox="0 0 24 24" fill="none" aria-label="Back" onclick="back()"><path d="M14.8 4.8 6 12l8.8 7.2V4.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-label="Home" onclick="window.location.href='index.html'"><circle cx="12" cy="12" r="6.9" stroke="currentColor" stroke-width="1.5"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5.4" y="5.4" width="13.2" height="13.2" rx="1.2" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+    </div>
+
+    <script>
+        /* ================================================================
+           Basics: dates, money, banks, products
+           ================================================================ */
+        const DAY = 86400000;
+        function startOfDay(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+        const TODAY = startOfDay(new Date());
+        function addDays(d, n) { return new Date(new Date(d).getTime() + n * DAY); }
+        function daysBetween(a, b) { return Math.round((startOfDay(b) - startOfDay(a)) / DAY); }
+        function money(n) { return (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function whole(n) { return Math.round(n).toLocaleString('en-US'); }
+        const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        function fmtLong(d) { d = new Date(d); return MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); }
+        function fmtShort(d) { d = new Date(d); return String(d.getDate()).padStart(2, '0') + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear(); }
+        function fmtTime(d) { d = new Date(d); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+        function newRef() { const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 10; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+
+        /* bank marks: drawn for the two partner banks in the designs, logo files for the rest */
+        const ABY = '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#F2A916"/><g fill="#ffffff">'
+            + [0, 60, 120, 180, 240, 300].map(a => '<path d="M50 45 57.5 33 50 17 42.5 33Z" transform="rotate(' + a + ' 50 50)"/>').join('') + '</g></svg>';
+        const BANKS = {
+            abyssinia: { name: 'Bank of Abyssinia', chip: 'Abyssinia', svg: ABY },
+            awash: { name: 'Awash Bank', chip: 'Awash', img: 'assets/banks logo/awash-bank.png', full: true },   // official logo (Wikimedia Commons)
+            coop: { name: 'Cooperative Bank of Oromia', chip: 'Coop', img: 'assets/banks logo/coop-bank.png' },
+            cbe: { name: 'Commercial Bank of Ethiopia', chip: 'CBE', img: 'assets/banks logo/cbe-logo.png' },
+            dashen: { name: 'Dashen Bank', chip: 'Dashen', img: 'assets/banks logo/dashen-bank.png' },
+            zemen: { name: 'Zemen Bank', chip: 'Zemen', img: 'assets/banks logo/zemen-bank.png' }
+        };
+        function bmark(key, size) {
+            const b = BANKS[key];
+            const st = ' style="' + (b.svg || b.full ? '' : 'background:#F1F3F2;') + (size ? 'width:' + size + 'px;height:' + size + 'px' : '') + '"';
+            return '<span class="bmark' + (b.full ? ' full' : '') + '"' + st + '>' + (b.svg || '<img src="' + b.img + '" alt="' + b.name + '">') + '</span>';
+        }
+
+        /* loan offers: one row per bank product */
+        const PRODUCTS = [
+            { id: 'aby10', bank: 'abyssinia', name: '10-Day Term Loan', type: 'cash', days: 10, inst: 1, access: 4, maint: 0.1, penalty: 0.5, min: 100, max: 10000 },
+            { id: 'aby30', bank: 'abyssinia', name: '30-Day Term Loan', type: 'cash', days: 30, inst: 2, access: 4, maint: 0.15, penalty: 0.5, min: 100, max: 30000 },
+            { id: 'awa30', bank: 'awash', name: '30-Day Term Loan', type: 'cash', days: 30, inst: 2, access: 3.5, maint: 0.12, penalty: 0.5, min: 100, max: 25000 },
+            { id: 'awaSal', bank: 'awash', name: 'Salary Advance', type: 'salary', days: 30, inst: 1, access: 2, maint: 0.1, penalty: 0.5, min: 500, max: 15000 },
+            { id: 'coopB', bank: 'coop', name: '60-Day BNPL', type: 'bnpl', days: 60, inst: 3, access: 3, maint: 0.08, penalty: 0.5, min: 200, max: 20000 },
+            { id: 'cbe30', bank: 'cbe', name: '30-Day Term Loan', type: 'cash', days: 30, inst: 2, access: 3, maint: 0.1, penalty: 0.5, min: 100, max: 20000 },
+            { id: 'dash14', bank: 'dashen', name: '14-Day Salary Advance', type: 'salary', days: 14, inst: 1, access: 2.5, maint: 0.1, penalty: 0.5, min: 300, max: 12000 }
+        ];
+        const TYPES = [['all', 'All'], ['cash', 'Cash loan'], ['salary', 'Salary advance'], ['bnpl', 'BNPL']];
+        const TOTAL_LIMIT = 100000;
+        const prod = id => PRODUCTS.find(p => p.id === id);
+
+        /* what a loan of `amount` costs: fees, total and the installment plan */
+        function quote(p, amount, from) {
+            const access = amount * p.access / 100;
+            const maint = amount * p.maint / 100 * p.days;
+            const fee = access + maint, total = amount + fee;
+            const inst = [];
+            for (let i = 1; i <= p.inst; i++) {
+                inst.push({ due: addDays(from || TODAY, Math.round(p.days * i / p.inst)).toISOString(),
+                    amount: Math.round(total / p.inst * 100) / 100, principal: Math.round(amount / p.inst * 100) / 100, paid: 0 });
+            }
+            const drift = Math.round((total - inst.reduce((s, x) => s + x.amount, 0)) * 100) / 100;   // rounding goes to the last one
+            inst[inst.length - 1].amount = Math.round((inst[inst.length - 1].amount + drift) * 100) / 100;
+            return { access: access, maint: maint, fee: fee, total: total, inst: inst };
+        }
+
+        /* ================================================================
+           State: kept for the run (prototype-mode clears it on a new run)
+           ================================================================ */
+        const KEY = 'eriffState';
+        function outstanding(l) { return l.inst.reduce((s, x) => s + Math.max(0, x.amount - x.paid), 0); }
+        function paidOf(l) { return l.inst.reduce((s, x) => s + x.paid, 0); }
+        function nextInst(l) { return l.inst.findIndex(x => x.amount - x.paid > 0.004); }
+        function statusOf(l) {
+            if (outstanding(l) < 0.01) return 'paid';
+            return l.inst.some(x => x.amount - x.paid > 0.004 && new Date(x.due) < TODAY) ? 'overdue' : 'active';
+        }
+
+        function makeLoan(pid, amount, disbursedAgo) {
+            const p = prod(pid), on = addDays(TODAY, -disbursedAgo);
+            on.setHours(9 + Math.floor(Math.random() * 8), Math.floor(Math.random() * 60));
+            const q = quote(p, amount, startOfDay(on));
+            return { id: 'L' + Math.random().toString(36).slice(2, 8), contract: '1000' + Math.floor(10000000 + Math.random() * 89999999),
+                product: pid, amount: amount, access: q.access, maint: q.maint, penalty: 0, total: q.total, disbursed: on.toISOString(), inst: q.inst };
+        }
+
+        function seed(scenario) {
+            const s = { scenario: scenario, activated: scenario === 'active', bank: null, statement: false, score: 720,
+                scoreOn: addDays(TODAY, -6).toISOString(), hidden: false, loans: [], tx: [] };
+            if (scenario !== 'active') return s;
+            s.bank = 'abyssinia'; s.statement = true;
+            const a = makeLoan('aby30', 4800, 10), b = makeLoan('awa30', 6600, 20), c = makeLoan('aby10', 2000, 70);
+            s.loans = [a, b, c];
+            const tx = [];
+            const add = (l, type, amount, on) => tx.push({ id: newRef(), loan: l.id, type: type, amount: Math.round(amount * 100) / 100, on: new Date(on).toISOString() });
+            s.loans.forEach(l => { add(l, 'disbursement', l.amount, l.disbursed); add(l, 'maintenance', l.maint, addDays(l.disbursed, 1).setHours(0, 5)); });
+            /* the 10-day loan was repaid on time */
+            c.inst[0].paid = c.inst[0].amount; add(c, 'repayment', c.inst[0].amount, addDays(c.inst[0].due, -1).setHours(14, 46));
+            /* the Awash loan missed its first installment: a penalty is charged */
+            const late = daysBetween(b.inst[0].due, TODAY), pen = Math.round(b.inst[0].amount * 0.005 * late * 100) / 100;
+            b.inst[0].amount = Math.round((b.inst[0].amount + pen) * 100) / 100; b.penalty = pen; b.total += pen;
+            add(b, 'penalty', pen, addDays(b.inst[0].due, 1).setHours(0, 10));
+            /* part of the Abyssinia loan already paid */
+            a.inst[0].paid = 1500; add(a, 'repayment', 1500, addDays(TODAY, -3).setHours(18, 12));
+            s.tx = tx;
+            return s;
+        }
+
+        function load() {
+            try { const raw = sessionStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+            return null;
+        }
+        function save() { try { sessionStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+        let S = load();
+        const askScenario = new URLSearchParams(location.search).get('eriff');
+        if (askScenario || !S) {
+            S = seed(['new', 'active', 'submitted', 'failed'].indexOf(askScenario) >= 0 ? askScenario : 'new');
+            save();
+        }
+
+        /* the running "unpaid loan" after each movement, all loans together */
+        function txWithBalance() {
+            const list = S.tx.slice().sort((a, b) => new Date(a.on) - new Date(b.on));
+            let bal = 0;
+            list.forEach(t => {
+                const l = S.loans.find(x => x.id === t.loan);
+                if (t.type === 'disbursement') bal += l ? l.total - l.penalty : t.amount;
+                if (t.type === 'penalty') bal += t.amount;
+                if (t.type === 'repayment') bal -= t.amount;
+                t.unpaid = Math.max(0, bal);
+            });
+            return list;
+        }
+        const used = () => S.loans.reduce((s, l) => s + outstanding(l), 0);
+        const available = () => Math.max(0, TOTAL_LIMIT - used());
+        const prodLimit = p => Math.max(0, Math.min(p.max, available()));
+
+        /* ================================================================
+           Navigation
+           ================================================================ */
+        let stack = [];
+        const NOTES = {
+            stepTerms: 'Activation is a one-time opt-in to Eriff be M-PESA. Terms must be accepted (ACTIVATE) and confirmed with the M-PESA PIN before any bank data is requested.',
+            stepBank: 'Banks listed are the partner banks connected for transaction data. The selected bank is used to read the customer’s transactions and enhance the credit score; "Select other bank" opens the full list.',
+            stepUpload: 'Bank statement: **PDF only, maximum 10 MB.** CONTINUE stays disabled until a file is attached and the customer agrees to share it for credit assessment.',
+            stepScore: 'Credit score ranges: Poor 300–579, Fair 580–669, Good 670–739, Very Good 740–799, Excellent 800–900. UPDATE SCORE re-runs the assessment.',
+            stepAmount: 'Borrow: amount between the offer’s minimum and the customer’s credit limit for that offer (the lower of the offer limit and the available limit). Repay: up to the unpaid loan.',
+            stepConfirm: 'All fees and the full repayment schedule are shown before BORROW. The penalty fee is only charged per day an installment is overdue, so it is not part of the total.',
+            stepTx: 'Statements cover all of the customer’s Eriff loans, by month. Unpaid loan is the running balance after each movement. EXPORT STATEMENTS produces a PDF for the chosen period.'
+        };
+        function show(entry) {
+            const id = entry.split('@')[0];
+            document.querySelectorAll('.step').forEach(s => s.classList.toggle('active', s.id === id));
+            document.getElementById('statusBar').classList.toggle('on-green', document.getElementById(id).hasAttribute('data-green'));
+            if (window.prototypeMode && window.prototypeMode.devNote) window.prototypeMode.devNote(NOTES[id] || '');
+        }
+        function go(entry) {
+            closeSheet();
+            if (stack[stack.length - 1] !== entry) stack.push(entry);
+            render(entry);
+            show(entry);
+        }
+        function resetTo(entries) { closeSheet(); stack = entries.slice(); const top = stack[stack.length - 1]; render(top); show(top); }
+        function back() {
+            if (document.getElementById('sheet').classList.contains('show')) { closeSheet(); return; }
+            const top = (stack[stack.length - 1] || '').split('@')[0];
+            if (busy || top === 'stepLoading') return;
+            if (top === 'stepSuccess') { successDone(); return; }
+            if (top === 'stepPin') { cancelPin(); return; }
+            if (stack.length <= 1) { leaveApp(); return; }
+            stack.pop();
+            const prev = stack[stack.length - 1];
+            render(prev);
+            show(prev);
+        }
+        function render(entry) {
+            const id = entry.split('@')[0], arg = entry.split('@')[1];
+            if (id === 'stepHome') renderHome(arg || null);
+            if (id === 'stepScore') renderScore();
+            if (id === 'stepLoans') renderLoans(arg);
+            if (id === 'stepDetail') renderDetail(arg);
+            if (id === 'stepTx') renderTx();
+            if (id === 'stepBank') renderBanks();
+            if (id === 'stepUpload') renderUpload();
+        }
+        function leaveApp() { window.location.href = 'Mini Apps.html'; }
+
+        let toastTimer;
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 1700);
+        }
+        function openSheet(html) { document.getElementById('sheetBody').innerHTML = '<div class="grab"></div>' + html; document.getElementById('sheet').classList.add('show'); }
+        function closeSheet() { document.getElementById('sheet').classList.remove('show'); }
+
+        let busy = false;
+        function loading(text, ms, then) {
+            busy = true;
+            document.getElementById('loadingText').textContent = text || '';
+            stack.push('stepLoading');
+            show('stepLoading');
+            setTimeout(() => { busy = false; stack.pop(); then(); }, ms);
+        }
+
+        /* ================================================================
+           Illustrations (placeholders for the supplied artwork)
+           ================================================================ */
+        const NOTE = (x, y, r) => '<g transform="translate(' + x + ' ' + y + ') rotate(' + r + ')"><rect x="-17" y="-9" width="34" height="18" rx="2" fill="#3DBE5E"/><rect x="-13" y="-5" width="26" height="10" rx="2" fill="none" stroke="#C9F2D3" stroke-width="1.4"/><circle r="3" fill="#C9F2D3"/></g>';
+        function illStore() {
+            return '<svg class="ill" viewBox="0 0 220 190"><ellipse cx="112" cy="168" rx="92" ry="12" fill="#EEF5F0"/>'
+                + '<path d="M96 70h88v86H96Z" fill="#2FC56D"/><path d="M96 70l12-26h64l12 26Z" fill="#23A657"/><path d="M104 52h72v14h-72z" fill="#1E9E4F"/>'
+                + '<path d="M90 70h100v12H90Z" fill="#E5383B"/>' + [0, 1, 2, 3, 4].map(i => '<path d="M' + (90 + i * 20) + ' 70h10v12H' + (90 + i * 20) + 'Z" fill="#ffffff"/>').join('')
+                + '<path d="M110 100h28v56h-28z" fill="#ffffff" opacity=".85"/><path d="M146 100h28v24h-28z" fill="#BFF0D2"/>'
+                + '<g transform="translate(34 118)"><circle cx="12" cy="40" r="11" fill="#2a2a2a"/><circle cx="58" cy="40" r="11" fill="#2a2a2a"/><path d="M8 32h52l-6-18H28l-8 18" fill="#2FC56D"/><path d="M40 6h22v14H40z" fill="#E5383B"/></g>'
+                + NOTE(52, 28, -20) + NOTE(82, 48, 18) + NOTE(160, 28, 10)
+                + '<g transform="translate(176 140)"><rect width="30" height="18" rx="3" fill="#3B7BE8"/><rect y="12" width="30" height="14" rx="3" fill="#F2C94C"/></g></svg>';
+        }
+        function illPos() {
+            return '<svg class="ill" viewBox="0 0 220 190"><ellipse cx="110" cy="166" rx="92" ry="12" fill="#EEF5F0"/>'
+                + '<g transform="rotate(-14 80 110)"><rect x="34" y="82" width="96" height="62" rx="12" fill="#1F4FC4"/><rect x="46" y="92" width="38" height="20" rx="3" fill="#9FD3FF"/>'
+                + [0, 1, 2].map(r => [0, 1, 2].map(c => '<rect x="' + (92 + c * 11) + '" y="' + (92 + r * 13) + '" width="8" height="9" rx="2" fill="#ffffff"/>').join('')).join('')
+                + '<rect x="50" y="56" width="34" height="34" rx="3" fill="#ffffff"/><path d="M56 66h22M56 74h16" stroke="#9a9a9a" stroke-width="2"/></g>'
+                + '<g transform="rotate(10 160 120)"><rect x="128" y="86" width="64" height="60" rx="8" fill="#2a2a2a"/><rect x="134" y="92" width="52" height="48" rx="4" fill="#2FC56D"/><rect x="146" y="104" width="28" height="22" rx="3" fill="#1E9E4F"/></g>'
+                + [0, 1, 2, 3].map(i => '<ellipse cx="' + (150 + (i % 2) * 18) + '" cy="' + (156 - i * 6) + '" rx="13" ry="5" fill="#F2A916" stroke="#D68A00"/>').join('')
+                + NOTE(70, 34, -16) + NOTE(112, 22, 12) + NOTE(172, 50, -8) + '</svg>';
+        }
+        function illServices() {
+            const items = [[110, 30, '#2FC56D', '<path d="M-6 3 1-4M-2-5h4v4M6-3-1 4M2 5h-4V1" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>'],
+                [176, 70, '#16A3A3', '<rect x="-6" y="-8" width="12" height="16" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M-3-3h6M-3 1h6" stroke="#fff" stroke-width="2"/>'],
+                [168, 138, '#E5383B', '<rect x="-5" y="-8" width="10" height="16" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M-1 5h2" stroke="#fff" stroke-width="2"/>'],
+                [52, 138, '#1474F0', '<path d="M-7 4l6-10 4 6 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>'],
+                [44, 70, '#7A5AF8', '<path d="M0-8 7-4v8L0 8l-7-4v-8Z M-7-4 0 0l7-4M0 0v8" stroke="#fff" stroke-width="1.8" fill="none"/>']];
+            return '<svg class="ill" viewBox="0 0 220 190"><circle cx="110" cy="92" r="64" fill="none" stroke="#D8EFE0" stroke-width="1.5" stroke-dasharray="3 5"/>'
+                + '<circle cx="110" cy="92" r="24" fill="#E3F5EA"/><circle cx="110" cy="92" r="16" fill="#2FC56D"/><text x="110" y="97" text-anchor="middle" font-family="Barlow" font-weight="800" font-size="13" fill="#fff">Br</text>'
+                + items.map(i => '<g transform="translate(' + i[0] + ' ' + i[1] + ')"><circle r="19" fill="#ffffff" stroke="' + i[2] + '" stroke-width="2"/><circle r="14" fill="' + i[2] + '"/>' + i[3] + '</g>').join('')
+                + NOTE(30, 26, -22) + NOTE(196, 112, 14) + '<circle cx="80" cy="160" r="5" fill="#F2A916"/><circle cx="146" cy="24" r="5" fill="#F2A916"/></svg>';
+        }
+        function illReview() {
+            return '<svg class="ill" viewBox="0 0 220 190"><ellipse cx="110" cy="168" rx="90" ry="12" fill="#EEF5F0"/>'
+                + '<g transform="rotate(-12 100 120)"><rect x="40" y="90" width="120" height="70" rx="6" fill="#ffffff" stroke="#3B7BE8" stroke-width="3"/>'
+                + [0, 1, 2].map(i => '<path d="M54 ' + (106 + i * 16) + 'l5 5 9-9" stroke="#2FC56D" stroke-width="3" fill="none"/><path d="M76 ' + (108 + i * 16) + 'h60" stroke="#9FD3FF" stroke-width="4"/>').join('') + '</g>'
+                + '<path d="M60 30h28v6l-10 16 10 16v6H60v-6l10-16-10-16Z" fill="#9FD3FF" stroke="#1F4FC4" stroke-width="3"/><path d="M66 70h16l-8-8Z" fill="#F2A916"/>'
+                + '<circle cx="160" cy="92" r="24" fill="#E3EEFD" stroke="#1F4FC4" stroke-width="6"/><path d="M176 110l18 22" stroke="#1F4FC4" stroke-width="9" stroke-linecap="round"/>'
+                + '<rect x="146" y="22" width="52" height="34" rx="4" fill="#F4F6F8" stroke="#BFC7CE"/><circle cx="160" cy="36" r="6" fill="#BFC7CE"/><path d="M172 32h18M172 40h12" stroke="#2FC56D" stroke-width="3"/></svg>';
+        }
+
+        /* ================================================================
+           Onboarding
+           ================================================================ */
+        const SLIDES = [
+            [illStore, 'Eriff be M-PESA is a Term Loan facility that allows you to complete M-PESA transactions when you have insufficient funds.'],
+            [illPos, 'Associated fees: associated fees may vary according to the chosen Term Loan offer. Daily fee as per Tariff on T&amp;C.'],
+            [illServices, 'Term Loan is eligible in 5 transaction types: Send Money, Pay Bill, Buy Airtime &amp; Bundles, Pay with M-PESA.']
+        ];
+        let slide = 0;
+        function renderIntro() {
+            document.getElementById('slideTrack').innerHTML = SLIDES.map(s => '<div class="slide"><div>' + s[0]() + '</div><p>' + s[1] + '</p></div>').join('');
+            paintSlide();
+        }
+        function paintSlide() {
+            document.getElementById('slideTrack').style.transform = 'translateX(' + (-100 * slide) + '%)';
+            document.getElementById('slideDots').innerHTML = SLIDES.map((s, i) => '<i class="' + (i === slide ? 'on' : '') + '"></i>').join('');
+        }
+        function introNext() {
+            if (slide < SLIDES.length - 1) { slide++; paintSlide(); return; }
+            go('stepTerms');
+        }
+
+        function afterActivation() {
+            if (S.scenario === 'submitted') { resetTo(['stepSubmitted']); return; }
+            if (S.scenario === 'failed') { resetTo(['stepFailed']); return; }
+            resetTo(['stepBank']);
+        }
+        function retryActivation() {
+            S.scenario = 'new'; save();
+            loading('Activating Eriff be M-PESA...', 1600, () => resetTo(['stepBank']));
+        }
+
+        const BANK_CHOICES = ['awash', 'coop', 'abyssinia'];
+        let pickedBank = null;
+        function renderBanks() {
+            document.getElementById('bankList').innerHTML = BANK_CHOICES.map(k => '<button class="bank-opt" onclick="pickBank(\'' + k + '\')">' + bmark(k)
+                + '<span>' + BANKS[k].name + '</span><i class="radio' + (pickedBank === k ? ' on' : '') + '"></i></button>').join('')
+                + '<button class="bank-opt" onclick="pickBank(\'cbe\', true)"><span class="bmark" style="background:#E3F5EA"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#1E9E4F;stroke-width:2;fill:none"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3.5 20h17"/></svg></span>'
+                + '<span>Select other bank</span><svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>';
+            document.getElementById('bankGo').disabled = !pickedBank;
+        }
+        function pickBank(k, other) {
+            pickedBank = k;
+            if (other) { bankContinue(); return; }
+            renderBanks();
+        }
+        function bankContinue() { if (!pickedBank) return; upload = { bank: pickedBank, file: false, agree: false }; go('stepUpload'); }
+
+        let upload = { bank: 'cbe', file: false, agree: false };
+        function renderUpload() {
+            const opts = Object.keys(BANKS).map(k => '<option value="' + k + '"' + (upload.bank === k ? ' selected' : '') + '>' + BANKS[k].name + '</option>').join('');
+            document.getElementById('uploadBody').innerHTML = '<div class="sel"><small>Select other bank</small><select onchange="upload.bank=this.value">' + opts + '</select></div>'
+                + (upload.file
+                    ? '<div class="file"><span class="pdf">PDF</span><span><b>Bank statement.pdf</b><small>1.0 MB &middot; ' + BANKS[upload.bank].name + '</small></span><button onclick="upload.file=false;renderUpload()" aria-label="Remove"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>'
+                    : '<p class="sel" style="margin-top:22px"><small>Attach bank statement</small></p><button class="drop" onclick="attachPdf()"><svg viewBox="0 0 40 40" fill="none" stroke="#2FC56D" stroke-width="2"><rect x="4" y="4" width="32" height="32" rx="8" fill="#E3F5EA" stroke="none"/><path d="M14 10h9l5 5v15H14Z"/><path d="M18 20h7M18 24h7"/></svg><b>Attach PDF</b></button><p class="drop-note">PDF only &middot; maximum 10 MB</p>')
+                + '<button class="consent' + (upload.agree ? ' on' : '') + '" onclick="upload.agree=!upload.agree;renderUpload()"><span class="box"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>I agree to share my bank statement and transaction data for credit assessment.</button>';
+            document.getElementById('uploadGo').disabled = !(upload.file && upload.agree);
+        }
+        function attachPdf() { upload.file = true; renderUpload(); toast('BANK STATEMENT ATTACHED'); }
+        function uploadContinue() {
+            S.bank = upload.bank; S.statement = true; save();
+            loading('Calculating your credit score...', 1800, () => { scoreMode = 'onboarding'; resetTo(['stepScore']); });
+        }
+
+        /* ================================================================
+           Credit score
+           ================================================================ */
+        const BANDS = [['Poor', 300, 579, '#E5383B'], ['Fair', 580, 669, '#F2A916'], ['Good', 670, 739, '#2FC56D'], ['Very Good', 740, 799, '#2FC56D'], ['Excellent', 800, 900, '#2FC56D']];
+        const band = s => BANDS.find(b => s >= b[1] && s <= b[2]) || BANDS[0];
+        let gaugeN = 0;
+        /* a 240-degree arc, open at the bottom, filled up to the score */
+        function gauge(score, w, valSize) {
+            const id = 'gg' + (++gaugeN), r = w * 0.42, cx = w / 2, cy = w / 2, h = w * 0.78, sw = w * 0.06;
+            const pt = a => [cx + r * Math.cos(a * Math.PI / 180), cy + r * Math.sin(a * Math.PI / 180)];
+            const arc = (a0, a1) => { const p0 = pt(a0), p1 = pt(a1); return 'M' + p0[0].toFixed(1) + ' ' + p0[1].toFixed(1) + 'A' + r + ' ' + r + ' 0 ' + (a1 - a0 > 180 ? 1 : 0) + ' 1 ' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1); };
+            const f = Math.max(0.02, Math.min(1, (score - 300) / 600)), end = 150 + 240 * f, dot = pt(end);
+            return '<div class="gauge" style="width:' + w + 'px;height:' + h + 'px;margin:0 auto"><svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">'
+                + '<defs><linearGradient id="' + id + '" x1="0" x2="1"><stop offset="0" stop-color="#F7931E"/><stop offset=".5" stop-color="#E6C21A"/><stop offset="1" stop-color="#2FC56D"/></linearGradient></defs>'
+                + '<path d="' + arc(150, 390) + '" stroke="#E6E6E6" stroke-width="' + sw + '" fill="none" stroke-linecap="round"/>'
+                + '<path d="' + arc(150, end) + '" stroke="url(#' + id + ')" stroke-width="' + sw + '" fill="none" stroke-linecap="round"/>'
+                + (w > 120 ? '<circle cx="' + dot[0] + '" cy="' + dot[1] + '" r="' + sw * 0.75 + '" fill="#2FC56D" stroke="#fff" stroke-width="2"/>' : '') + '</svg>'
+                + '<span class="val" style="top:' + (cy - valSize * 0.62) + 'px;font-size:' + valSize + 'px">' + score + '</span>'
+                + '<span class="lab" style="top:' + (cy + valSize * 0.5) + 'px;font-size:' + Math.max(10, valSize * 0.36) + 'px">' + band(score)[0] + '</span></div>';
+        }
+
+        let scoreMode = 'home';
+        function renderScore() {
+            const b = band(S.score), I = (p) => '<span class="ic"><svg viewBox="0 0 24 24">' + p + '</svg></span>';
+            const CAL = '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/>', CLOCK = '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>';
+            const row = (ic, t, s, tag) => '<div class="frow">' + I(ic) + '<span class="t"><b>' + t + '</b><small>' + s + '</small></span>'
+                + (tag ? '<span class="tag">' + tag + '</span><svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>' : '<svg class="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>') + '</div>';
+            document.getElementById('scoreBody').innerHTML = '<div class="card score-card" style="margin-top:2px">'
+                + '<button class="icon-btn help" onclick="openHelp(\'score\')" style="position:absolute;right:10px;top:10px" aria-label="Help"><svg viewBox="0 0 24 24" style="stroke:#9a9a9a;stroke-width:1.5"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.1"/></svg></button>'
+                + gauge(S.score, 210, 58)
+                + '<p class="say">Your credit score is in a ' + b[0].toLowerCase() + ' range.</p>'
+                + '<div class="bands">' + BANDS.map(x => '<div class="' + (x === b ? 'on' : '') + '"><span>' + x[0] + '</span><i style="background:' + x[3] + '"></i><small>' + x[1] + '&ndash;' + x[2] + '</small></div>').join('') + '</div>'
+                + '<div class="upd"><span>Last updated: <b>' + fmtLong(S.scoreOn) + '</b></span><button id="updBtn" onclick="updateScore()"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>UPDATE SCORE</button></div></div>'
+                + '<div class="card panel"><h4>CREDIT SCORE OVERVIEW</h4>'
+                + row(CAL, 'Payment History', 'How consistently you pay on time', S.loans.some(l => statusOf(l) === 'overdue') ? 'FAIR' : 'STRONG')
+                + row(CAL, 'Credit Utilization', 'How much of your credit you use', used() / TOTAL_LIMIT > 0.5 ? 'HIGH' : 'GOOD')
+                + row(CLOCK, 'Credit History', 'Length and quality of your history', 'GOOD') + '</div>'
+                + '<div class="card panel"><h4>WHAT AFFECTS YOUR SCORE?</h4>'
+                + row('<rect x="3.5" y="5" width="13" height="13" rx="2"/><path d="M3.5 9.5h13M7 3v4M13 3v4"/><circle cx="17" cy="17" r="4"/><path d="M17 15.5V17l1 1"/>', 'Repayment behavior', 'Pay your loans on time, every time.')
+                + row('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 13.5h5M6 7l9-3 1.5 3"/>', 'Outstanding loans', 'Too many or high balances can lower your score.')
+                + row('<path d="M12 3a9 9 0 1 0 9 9h-9Z"/><path d="M14.5 3.3A9 9 0 0 1 20.7 9.5H14.5Z"/>', 'Credit Usage', 'Keep your credit usage low and manageable.') + '</div>'
+                + '<div class="card healthy"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2.8 19.5 6v5.6c0 4.6-3.2 8.2-7.5 9.6-4.3-1.4-7.5-5-7.5-9.6V6Z" fill="#2FC56D"/><path d="m8.5 12.2 2.4 2.4 4.6-4.8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+                + '<span><b>Keep your score healthy</b><small>Pay your loans on time, keep your balances low, and avoid taking on more debt than you need.</small></span></div><div style="height:10px"></div>';
+            document.getElementById('scoreGo').style.display = scoreMode === 'onboarding' ? '' : 'none';
+        }
+        function updateScore() {
+            const b = document.getElementById('updBtn');
+            b.classList.add('spin');
+            setTimeout(() => { S.scoreOn = TODAY.toISOString(); save(); renderScore(); toast('YOUR SCORE IS UP TO DATE'); }, 1300);
+        }
+        function scoreContinue() {
+            S.activated = true; S.scenario = 'active'; save();
+            scoreMode = 'home';
+            resetTo(['stepHome']);
+            toast('ERIFF BE M-PESA IS ACTIVE');
+        }
+        function scoreClose() { if (scoreMode === 'onboarding') { scoreContinue(); return; } back(); }
+
+        /* ================================================================
+           Loans home: all banks, or one bank's term loans
+           ================================================================ */
+        let offerType = 'all', openOffer = null;
+        const EYE = '<svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>';
+        function renderHome(bank) {
+            document.getElementById('homeTitle').textContent = bank ? 'Term loan' : 'Loan';
+            const loans = S.loans.filter(l => statusOf(l) !== 'paid' && (!bank || prod(l.product).bank === bank));
+            const owe = loans.reduce((s, l) => s + outstanding(l), 0);
+            const dues = loans.map(l => l.inst[nextInst(l)].due).sort();
+            const dueIn = dues.length ? daysBetween(TODAY, dues[0]) : null;
+            const h = S.hidden, u = used();
+            const limitCard = '<div class="card limit">'
+                + (bank ? '<div class="brands"><img class="mp" src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"><i></i><span class="bk">' + bmark(bank, 26) + BANKS[bank].name + '</span></div>' : '')
+                + '<button class="icon-btn help" onclick="openHelp(\'limit\')" aria-label="Help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.1"/></svg></button>'
+                + '<div class="top"><div class="main"><p class="lbl">Available limit<button onclick="S.hidden=!S.hidden;save();renderHome(' + (bank ? '\'' + bank + '\'' : 'null') + ')" aria-label="Show or hide">' + EYE + (h ? '' : '<path d="M4 4l16 16"/>') + '</svg></button></p>'
+                + '<p class="amt' + (h ? ' masked' : '') + '">' + (h ? '*******' : money(available()) + ' BIRR') + '</p>'
+                + '<p class="sub">Unpaid loan: ' + (h ? '****' : money(owe)) + ' Birr</p>'
+                + '<p class="sub2">' + (dueIn === null ? 'No payment due' : dueIn < 0 ? '<span style="color:#E5383B">Overdue by ' + -dueIn + ' days</span>' : 'Due in ' + dueIn + ' days') + '</p></div>'
+                + (bank ? '' : '<button class="score-mini" onclick="openScore()">' + gauge(S.score, 86, 22) + '<small>Credit score</small></button>') + '</div>'
+                + '<div class="track"><i style="width:' + (u / TOTAL_LIMIT * 100).toFixed(1) + '%"></i></div>'
+                + '<div class="track-foot"><b>' + (h ? '****' : money(u)) + ' Birr</b><span>' + money(TOTAL_LIMIT) + ' Birr</span></div></div>';
+            requestAnimationFrame(fitAmounts);
+            const loanCards = loans.length
+                ? '<div class="loans">' + loans.map(loanCard).join('') + '</div>'
+                : '<div class="empty">No active loans' + (bank ? ' with ' + BANKS[bank].name : '') + '. Apply for an offer below.</div>';
+            const offers = PRODUCTS.filter(p => (!bank || p.bank === bank) && (offerType === 'all' || p.type === offerType));
+            const bankChips = bank ? '' : '<div class="chips" style="margin-bottom:10px">'
+                + '<button class="chip on">All bank</button>'
+                + ['abyssinia', 'awash'].map(k => '<button class="chip" onclick="openBank(\'' + k + '\')">' + BANKS[k].chip + '</button>').join('')
+                + '<button class="chip" onclick="moreBanks()">More<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div>';
+            document.getElementById('homeBody').innerHTML = limitCard
+                + '<div class="sec-head"><span>Loan taken</span><button class="link" onclick="go(\'stepLoans@' + (bank || 'all') + '\')">View all</button></div>' + loanCards
+                + '<div class="sec-head" style="margin-top:12px"><span>Loan offers</span><button class="link" onclick="viewAllOffers()">View all</button></div>'
+                + bankChips
+                + '<div class="chips" style="margin-bottom:14px">' + TYPES.map(t => '<button class="chip' + (offerType === t[0] ? ' on' : '') + '" onclick="offerType=\'' + t[0] + '\';renderHome(' + (bank ? '\'' + bank + '\'' : 'null') + ')">' + t[1] + '</button>').join('') + '</div>'
+                + (offers.length ? offers.map(offerCard).join('') : '<div class="empty">No ' + TYPES.find(t => t[0] === offerType)[1].toLowerCase() + ' offers' + (bank ? ' from ' + BANKS[bank].name : '') + ' right now.</div>')
+                + '<div style="height:10px"></div>';
+        }
+        /* the big limit amount shrinks until it fits beside the credit score */
+        function fitAmounts() {
+            document.querySelectorAll('.limit .amt').forEach(el => {
+                let size = 29;
+                el.style.fontSize = size + 'px';
+                while (el.scrollWidth > el.clientWidth + 1 && size > 16) { size -= 1; el.style.fontSize = size + 'px'; }
+            });
+        }
+        window.addEventListener('resize', fitAmounts);
+
+        function loanCard(l) {
+            const p = prod(l.product), st = statusOf(l), n = nextInst(l), d = daysBetween(TODAY, l.inst[n].due);
+            return '<div class="loan" onclick="go(\'stepDetail@' + l.id + '\')" role="button">'
+                + '<div class="lt">' + bmark(p.bank, 30) + '<b>' + money(outstanding(l)) + ' BR</b><span class="badge ' + st + '">' + st + '</span></div>'
+                + '<div class="lb"><p><b>Installment:</b> ' + (n + 1) + '/' + l.inst.length + '<br><b>Due Date:</b> ' + (d < 0 ? '<span style="color:#E5383B">' + -d + ' days ago</span>' : 'In ' + d + ' days') + '</p>'
+                + '<button class="pill" onclick="event.stopPropagation();startRepay(\'' + l.id + '\', \'next\')">REPAY</button></div></div>';
+        }
+        function offerCard(p) {
+            const open = openOffer === p.id;
+            return '<div class="offer' + (open ? ' open' : '') + '"><div class="ot">' + bmark(p.bank, 48)
+                + '<span><b>' + p.name + '</b><small>Credit Limit: ' + money(p.min) + ' to ' + money(p.max) + '</small></span></div>'
+                + '<div class="ob"><button class="cond" onclick="openOffer=' + (open ? 'null' : '\'' + p.id + '\'') + ';render(stack[stack.length-1])">Loan conditions<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>'
+                + '<button class="pill" onclick="startBorrow(\'' + p.id + '\')">APPLY</button></div>'
+                + '<div class="conds">' + [['Bank', BANKS[p.bank].name], ['Duration', p.days + ' days'], ['Installments', p.inst], ['Access fee', p.access + '%'],
+                    ['Daily maintenance fee', p.maint + '%'], ['Penalty fee', p.penalty + '% per day late'], ['Your limit', money(prodLimit(p)) + ' Birr']].map(r => '<div class="kv"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('')
+                + '</div></div>';
+        }
+        function openBank(k) { offerType = 'all'; go('stepHome@' + k); }
+        function moreBanks() {
+            openSheet('<h3>Choose a bank</h3><p class="sub">See the term loans each bank offers</p><div style="margin-top:8px">'
+                + Object.keys(BANKS).map(k => '<button class="opt" onclick="openBank(\'' + k + '\')">' + bmark(k, 28) + BANKS[k].name + '</button>').join('') + '</div>');
+        }
+        function viewAllOffers() { offerType = 'all'; go('stepLoans@offers'); }
+        function homeClose() { if ((stack[stack.length - 1] || '').indexOf('@') > 0) { back(); return; } leaveApp(); }
+        function openScore() { scoreMode = 'home'; go('stepScore'); }
+
+        function renderLoans(arg) {
+            const body = document.getElementById('loansBody');
+            if (arg === 'offers') {
+                document.getElementById('loansTitle').textContent = 'Loan offers';
+                body.innerHTML = '<div style="height:6px"></div>' + Object.keys(BANKS).map(k => {
+                    const ps = PRODUCTS.filter(p => p.bank === k);
+                    return ps.length ? '<p class="day">' + BANKS[k].name + '</p><div style="height:6px"></div>' + ps.map(offerCard).join('') : '';
+                }).join('');
+                return;
+            }
+            document.getElementById('loansTitle').textContent = 'Loan taken';
+            const list = S.loans.filter(l => arg === 'all' || prod(l.product).bank === arg).sort((a, b) => new Date(b.disbursed) - new Date(a.disbursed));
+            body.innerHTML = list.length ? '<div style="height:6px"></div>' + list.map(l => {
+                const p = prod(l.product), st = statusOf(l);
+                return '<div class="offer" onclick="go(\'stepDetail@' + l.id + '\')" style="cursor:pointer;padding-bottom:12px"><div class="ot" style="border:0;padding-bottom:6px">' + bmark(p.bank, 40)
+                    + '<span style="flex:1"><b>' + p.name + '</b><small>' + BANKS[p.bank].name + ' &middot; ' + fmtShort(l.disbursed) + '</small></span><span class="badge ' + st + '">' + st + '</span></div>'
+                    + '<div class="kv"><span>Borrowed</span><b>' + money(l.amount) + ' Birr</b></div><div class="kv"><span>' + (st === 'paid' ? 'Repaid' : 'Unpaid') + '</span><b>' + money(st === 'paid' ? paidOf(l) : outstanding(l)) + ' Birr</b></div></div>';
+            }).join('') : '<div class="empty" style="margin-top:20px">No loans yet.</div>';
+        }
+
+        /* ================================================================
+           Loan details
+           ================================================================ */
+        function renderDetail(id) {
+            const l = S.loans.find(x => x.id === id);
+            if (!l) return;
+            const p = prod(l.product), st = statusOf(l), n = nextInst(l), done = st === 'paid';
+            const due = done ? l.inst[l.inst.length - 1].due : l.inst[n].due, d = daysBetween(TODAY, due), pct = paidOf(l) / (paidOf(l) + outstanding(l)) * 100;
+            const CAL = '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+            document.getElementById('detailBody').innerHTML = '<div class="card ld" style="margin-top:2px"><div class="hd">' + bmark(p.bank)
+                + '<span><b>' + BANKS[p.bank].name + '</b><small>' + p.name + '</small></span><span class="badge ' + st + '">' + st + '</span></div>'
+                + '<div class="tot"><small>Total repayment</small><b>' + money(l.total) + ' BIRR</b></div>'
+                + '<div class="three"><div><small>Due date</small><b' + (d < 0 && !done ? ' class="late"' : '') + '>' + fmtShort(due) + '</b></div>'
+                + '<div><small>' + (done ? 'Status' : d < 0 ? 'Overdue' : 'Due in') + '</small><b' + (d < 0 && !done ? ' class="late"' : '') + '>' + (done ? 'Paid' : Math.abs(d) + ' days') + '</b></div>'
+                + '<div><small>Installment</small><b>' + (done ? l.inst.length : n + 1) + ' of ' + l.inst.length + '</b></div></div>'
+                + '<div class="dis"><div><small>Disbursed on</small><p>' + CAL + fmtLong(l.disbursed) + '</p></div>'
+                + (done ? '' : '<button class="pill green" onclick="startRepay(\'' + l.id + '\', \'all\')">REPAY ALL</button>') + '</div></div>'
+                + '<div class="card prog"><h4>Repayment progress</h4><div class="track green"><i style="width:' + pct.toFixed(1) + '%"></i></div>'
+                + '<div class="pfoot"><div class="paid">Amount paid<b>' + money(paidOf(l)) + ' Birr</b></div><div class="rem">Remaining<b>' + money(outstanding(l)) + ' Birr</b></div></div></div>'
+                + '<div class="sec-head"><span>Installment history</span><button class="link" onclick="openTx(\'' + l.id + '\')">Transaction</button></div>'
+                + l.inst.map((x, i) => {
+                    const left = Math.max(0, x.amount - x.paid), dd = daysBetween(TODAY, x.due), ok = left < 0.005;
+                    return '<div class="card inst"><div class="ih"><h4>Installment ' + (i + 1) + '</h4><span class="' + (ok ? 'done' : dd < 0 ? 'late' : '') + '">'
+                        + (ok ? 'Paid' : dd < 0 ? 'Overdue ' + -dd + ' days' : 'Due in ' + dd + ' days') + '</span></div>'
+                        + '<div class="track' + (ok ? ' green' : '') + '"><i style="width:' + (x.paid / x.amount * 100).toFixed(1) + '%"></i></div>'
+                        + '<div class="ib"><div><small>' + (ok ? 'Paid amount' : 'Repayment amount') + '</small><b' + (ok ? ' style="color:#1E9E4F"' : '') + '>' + money(ok ? x.amount : left) + ' Birr</b></div>'
+                        + (!ok && i === n ? '<button class="pill" onclick="startRepay(\'' + l.id + '\', \'next\')">REPAY NOW</button>' : '<small>' + fmtShort(x.due) + '</small>') + '</div></div>';
+                }).join('') + '<div style="height:6px"></div>';
+        }
+
+        /* ================================================================
+           Borrow / repay: amount, confirm, PIN, result
+           ================================================================ */
+        let flow = null;   // { kind: 'borrow'|'repay', product, loan, amount, entry, inst }
+        function prodHead(p) {
+            return bmark(p.bank) + '<h3>' + p.name + '</h3>'
+                + '<p><b>Duration</b>' + p.days + ' days</p><p><b>Access fee</b>' + p.access + '%</p><p><b>Maintenance fee</b>' + p.maint + '%</p><p><b>Term loan limit</b>' + whole(p.max) + ' Birr</p>';
+        }
+        function startBorrow(pid) {
+            const p = prod(pid);
+            if (prodLimit(p) < p.min) { toast('NOT ENOUGH LIMIT FOR THIS OFFER'); return; }
+            flow = { kind: 'borrow', product: pid, entry: '' };
+            openAmount();
+        }
+        function startRepay(lid, what) {
+            const l = S.loans.find(x => x.id === lid), n = nextInst(l);
+            const pre = what === 'all' ? outstanding(l) : l.inst[n].amount - l.inst[n].paid;
+            flow = { kind: 'repay', product: l.product, loan: lid, entry: String(Math.ceil(pre * 100) / 100) };
+            openAmount();
+        }
+        function maxOf() { return flow.kind === 'borrow' ? prodLimit(prod(flow.product)) : outstanding(S.loans.find(x => x.id === flow.loan)); }
+        function openAmount() {
+            document.getElementById('amtHead').innerHTML = prodHead(prod(flow.product));
+            document.getElementById('amtPad').innerHTML = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '<'].map(k => k === '<'
+                ? '<button class="key" onclick="amtKey(\'<\')" aria-label="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="#6a6a6a" stroke-width="1.6"><path d="M9 6h11v12H9l-5-6Z"/><path d="m12 9.5 5 5M17 9.5l-5 5"/></svg></button>'
+                : '<button class="key" onclick="amtKey(\'' + k + '\')">' + k + '</button>').join('');
+            paintAmount();
+            go('stepAmount');
+        }
+        function amtKey(k) {
+            let e = flow.entry;
+            if (k === '<') e = e.slice(0, -1);
+            else if (k === '.') { if (e.indexOf('.') < 0) e = (e || '0') + '.'; }
+            else if (e.indexOf('.') >= 0 ? e.split('.')[1].length < 2 : e.replace('.', '').length < 7) e = (e === '0' ? '' : e) + k;
+            flow.entry = e;
+            paintAmount();
+        }
+        function paintAmount() {
+            const n = parseFloat(flow.entry) || 0, max = maxOf(), p = prod(flow.product), min = flow.kind === 'borrow' ? p.min : 1;
+            const shown = flow.entry ? Number(flow.entry.split('.')[0]).toLocaleString('en-US') + (flow.entry.indexOf('.') >= 0 ? '.' + flow.entry.split('.')[1] : '') : '0';
+            const big = document.getElementById('amtBig');
+            big.className = 'big' + (flow.entry ? ' has' : '');
+            big.innerHTML = '<i></i><b>' + shown + '</b><em>BIRR.</em>';
+            document.getElementById('amtLimit').innerHTML = (flow.kind === 'borrow' ? 'Credit limit: ' : 'Unpaid loan: ') + '<span>' + money(max) + ' Birr</span>';
+            const err = !n ? '' : n > max ? (flow.kind === 'borrow' ? 'More than your credit limit' : 'More than your unpaid loan')
+                : n < min ? 'The minimum is ' + money(min) + ' Birr' : flow.kind === 'repay' && n > S.wallet ? 'Not enough balance in your M-PESA wallet' : '';
+            document.getElementById('amtErr').textContent = err;
+            document.getElementById('amtGo').disabled = !n || !!err;
+        }
+        function amountContinue() {
+            flow.amount = Math.round((parseFloat(flow.entry) || 0) * 100) / 100;
+            flow.inst = 0;
+            renderConfirm();
+            go('stepConfirm');
+        }
+        function renderConfirm() {
+            const p = prod(flow.product), F = (lbl, val, cls, extra) => '<div class="cfield"><small>' + lbl + '</small><b class="' + (cls || '') + '">' + val + '</b>' + (extra || '') + '</div>';
+            const EDIT = '<button class="edit" onclick="back()" aria-label="Change amount"><svg viewBox="0 0 24 24"><path d="M15.5 4.5 19.5 8.5 8.5 19.5H4.5V15.5Z"/></svg></button>';
+            let html = '<div class="card confirm"><div class="ctop"><span class="tag">' + (flow.kind === 'borrow' ? 'APPLY LOAN' : 'REPAY LOAN') + '</span>' + bmark(p.bank) + '</div>'
+                + '<div class="cfield"><small>Loan type</small><b class="strong">' + p.name + '</b><em>' + BANKS[p.bank].name.toUpperCase() + '</em></div>';
+            if (flow.kind === 'borrow') {
+                const q = quote(p, flow.amount), x = q.inst[flow.inst];
+                html += F('Total loan amount', money(flow.amount) + ' BIRR', 'hl', EDIT)
+                    + F('Access fee (' + p.access + '%)', money(q.access) + ' BIRR')
+                    + F('Daily maintenance (' + p.maint + '% &times; ' + p.days + ' days)', money(q.maint) + ' BIRR')
+                    + F('Penalty fee (' + p.penalty + '% per day)', 'Only if an installment is late')
+                    + '<div class="sched"><div class="sh"><b>REPAYMENT SCHEDULE</b><span>INSTALLMENT ' + (flow.inst + 1) + ' OF ' + q.inst.length + '</span></div>'
+                    + '<div class="dots">' + q.inst.map((y, i) => (i ? '<i></i>' : '') + '<button class="' + (i === flow.inst ? 'on' : '') + '" onclick="flow.inst=' + i + ';renderConfirm()">' + (i + 1) + '</button>').join('') + '</div>'
+                    + '<small>Due date</small><span class="val">' + fmtShort(x.due) + '</span>'
+                    + '<div class="sr"><div><small style="margin-top:0">Amount due</small><span class="val">' + money(x.amount) + ' BIRR</span></div>'
+                    + '<button class="nx" onclick="flow.inst=(flow.inst+1)%' + q.inst.length + ';renderConfirm()"' + (q.inst.length < 2 ? ' disabled' : '') + '>' + (flow.inst === q.inst.length - 1 && q.inst.length > 1 ? '&lsaquo; FIRST' : 'NEXT &rsaquo;') + '</button></div></div>'
+                    + F('Total fee', money(q.fee) + ' BIRR')
+                    + F('Total repayment amount', money(q.total) + ' BIRR', 'hl');
+            } else {
+                const l = S.loans.find(z => z.id === flow.loan), n = nextInst(l), owe = outstanding(l);
+                html += F('Repayment amount', money(flow.amount) + ' BIRR', 'hl', EDIT)
+                    + F('Installment', (n + 1) + ' of ' + l.inst.length)
+                    + F('Contract number', l.contract)
+                    + F('Unpaid loan now', money(owe) + ' BIRR')
+                    + F('Unpaid loan after this payment', money(owe - flow.amount) + ' BIRR')
+                    + F('Paid from', 'M-PESA wallet');
+            }
+            document.getElementById('confirmBody').innerHTML = html + '</div><div style="height:6px"></div>';
+            document.getElementById('confirmGo').innerHTML = (flow.kind === 'borrow' ? 'BORROW' : 'REPAY') + '<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg>';
+        }
+        function confirmGo() { toPin(flow.kind); }
+
+        /* ---------- PIN ---------- */
+        let pin = '', pinFor = null;
+        const FINGER = '<svg viewBox="0 0 24 24" fill="none" stroke="#5f5f5f" stroke-width="1.3" stroke-linecap="round"><path d="M6.5 5.2a9 9 0 0 1 11 0M4 9a9.5 9.5 0 0 1 16 0"/><path d="M7.5 19.5c-1-1.4-1.8-3.2-1.8-5.3a6.3 6.3 0 0 1 12.6 0"/><path d="M10.4 20.5c-1.2-1.6-2-3.6-2-6a3.6 3.6 0 0 1 7.2 0c0 1.3 1 2.2 2 2.2"/><path d="M12 14.4c0 2.8 1.3 5 3.5 6.3"/></svg>';
+        function toPin(kind) {
+            pinFor = kind; pin = '';
+            const p = flow && flow.product ? prod(flow.product) : null;
+            document.getElementById('pinTop').innerHTML = kind === 'activate'
+                ? bmark('abyssinia') + '<h3>Eriff be M-PESA</h3><p>Activate term loans on your M-PESA</p>'
+                : prodHead(p) + '<p><b>' + (kind === 'borrow' ? 'Borrow' : 'Repay') + '</b>' + money(flow.amount) + ' Birr</p>';
+            document.getElementById('pinPad').innerHTML = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'f'].map(k => k === '' ? '<span class="key blank"></span>'
+                : k === 'f' ? '<button class="key" onclick="pinFill()" aria-label="Fingerprint">' + FINGER + '</button>'
+                : '<button class="key" onclick="pinPress(\'' + k + '\')">' + k + '</button>').join('');
+            document.getElementById('pinErr').textContent = '';
+            paintPin();
+            go('stepPin');
+        }
+        function paintPin() { document.querySelectorAll('#pinDots .pin-dot').forEach((d, i) => d.classList.toggle('filled', i < pin.length)); }
+        function pinPress(k) {
+            if (pin.length >= 4) return;
+            document.getElementById('pinErr').textContent = '';
+            pin += k; paintPin();
+            if (pin.length === 4) setTimeout(checkPin, 200);
+        }
+        function pinFill() { pin = '1234'; paintPin(); setTimeout(checkPin, 300); }
+        function cancelPin() { pin = ''; stack.pop(); const prev = stack[stack.length - 1]; if (prev) { render(prev); show(prev); } else leaveApp(); }
+        function checkPin() {
+            if (pin === '0000') {
+                const d = document.getElementById('pinDots');
+                d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake');
+                document.getElementById('pinErr').textContent = 'Incorrect PIN. Please try again.';
+                pin = ''; setTimeout(paintPin, 300);
+                return;
+            }
+            stack.pop();   // the PIN never stays in the history
+            if (pinFor === 'activate') { loading('Activating Eriff be M-PESA...', 1700, afterActivation); return; }
+            if (pinFor === 'borrow') { loading('Processing your loan request...', 1700, doBorrow); return; }
+            loading('Processing your repayment...', 1600, doRepay);
+        }
+
+        function doBorrow() {
+            const l = makeLoan(flow.product, flow.amount, 0);
+            l.disbursed = new Date().toISOString();
+            S.loans.unshift(l);
+            S.wallet += flow.amount;
+            const ref = newRef();
+            S.tx.push({ id: ref, loan: l.id, type: 'disbursement', amount: flow.amount, on: l.disbursed });
+            save();
+            flow.ref = ref; flow.loan = l.id;
+            showSuccess('Your loan request is successful');
+        }
+        function doRepay() {
+            const l = S.loans.find(x => x.id === flow.loan);
+            let left = flow.amount;
+            l.inst.forEach(x => { const take = Math.min(left, Math.max(0, x.amount - x.paid)); x.paid = Math.round((x.paid + take) * 100) / 100; left -= take; });
+            S.wallet -= flow.amount;
+            const ref = newRef();
+            S.tx.push({ id: ref, loan: l.id, type: 'repayment', amount: flow.amount, on: new Date().toISOString() });
+            save();
+            flow.ref = ref;
+            showSuccess(statusOf(l) === 'paid' ? 'You have paid your loan in full' : 'You have paid your loan successfully');
+        }
+        function showSuccess(msg) {
+            document.getElementById('successTop').innerHTML = prodHead(prod(flow.product));
+            document.getElementById('successMsg').textContent = msg;
+            const id = document.getElementById('successId');
+            id.innerHTML = 'ID: ' + flow.ref + '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 15.5V5.5a1.5 1.5 0 0 1 1.5-1.5H15"/></svg>';
+            id.onclick = () => { try { navigator.clipboard.writeText(flow.ref); } catch (e) {} toast('ID COPIED'); };
+            stack.push('stepSuccess');
+            show('stepSuccess');
+        }
+        function successDone() {
+            const l = S.loans.find(x => x.id === flow.loan);
+            const bank = (stack.find(e => e.indexOf('stepHome@') === 0) || '').split('@')[1];
+            const base = ['stepHome'].concat(bank ? ['stepHome@' + bank] : []);
+            resetTo(flow.kind === 'repay' && l ? base.concat(['stepDetail@' + l.id]) : base);
+        }
+        function downloadReceipt() { toast('RECEIPT SAVED TO DOWNLOADS'); }
+        function shareDetails() {
+            const p = prod(flow.product);
+            const text = 'Eriff be M-PESA ' + (flow.kind === 'borrow' ? 'loan' : 'repayment') + '\n' + BANKS[p.bank].name + ' ' + p.name + '\nAmount: ' + money(flow.amount) + ' Birr\nID: ' + flow.ref;
+            if (navigator.share) { navigator.share({ title: 'Eriff be M-PESA', text: text }).catch(() => {}); return; }
+            try { navigator.clipboard.writeText(text); } catch (e) {}
+            toast('DETAILS COPIED');
+        }
+
+        /* ================================================================
+           Statements
+           ================================================================ */
+        let txLoan = null, txMonth = null;
+        const TX = {
+            disbursement: ['Loan disbursement', 'green', '<path d="M7 17 17 7M9 7h8v8" stroke="#1E9E4F" stroke-width="2" fill="none" stroke-linecap="round"/>'],
+            repayment: ['Loan repayment', 'green', '<rect x="3.5" y="7" width="13" height="9" rx="1.5" fill="#2FC56D" transform="rotate(-18 10 11.5)"/><path d="M12 18h8m-3-3 3 3-3 3" stroke="#1E9E4F" stroke-width="1.8" fill="none" stroke-linecap="round"/>'],
+            maintenance: ['Maintenance fee', 'blue', '<rect x="5" y="6" width="13" height="10" rx="1.5" fill="#1474F0" transform="rotate(-25 11.5 11)"/><circle cx="11" cy="11.5" r="1.4" fill="#fff"/><circle cx="15.5" cy="16.5" r="2.4" fill="#1474F0" stroke="#fff"/>'],
+            penalty: ['Penalty fee', 'blue', '<rect x="5" y="6" width="13" height="10" rx="1.5" fill="#1474F0" transform="rotate(-25 11.5 11)"/><path d="M15.5 14v3M15.5 18.6v.2" stroke="#E5383B" stroke-width="2" stroke-linecap="round"/>']
+        };
+        function openTx(loanId) { txLoan = loanId || null; txMonth = null; document.getElementById('txQuery').value = ''; document.getElementById('txSearch').classList.remove('show'); go('stepTx'); }
+        function toggleSearch() { const s = document.getElementById('txSearch'); s.classList.toggle('show'); if (s.classList.contains('show')) document.getElementById('txQuery').focus(); else { document.getElementById('txQuery').value = ''; renderTx(); } }
+        function renderTx() {
+            const all = txWithBalance().filter(t => !txLoan || t.loan === txLoan);
+            document.getElementById('txTitle').textContent = txLoan ? 'Loan transactions' : 'Term loan transactions';
+            const mkey = d => { d = new Date(d); return d.getFullYear() * 12 + d.getMonth(); };
+            const now = mkey(TODAY), first = all.length ? Math.min.apply(null, all.map(t => mkey(t.on))) : now;
+            const months = []; for (let m = Math.min(first, now - 4); m <= now; m++) months.push(m);
+            if (txMonth === null) txMonth = all.length ? Math.max.apply(null, all.map(t => mkey(t.on))) : now;
+            const mb = document.getElementById('txMonths');
+            mb.innerHTML = months.map(m => '<button class="' + (m === txMonth ? 'on' : '') + '" onclick="txMonth=' + m + ';renderTx()">' + MONTHS[m % 12] + '</button>').join('');
+            const on = mb.querySelector('.on'); if (on) mb.scrollLeft = on.offsetLeft - 120;
+            const q = document.getElementById('txQuery').value.trim().toLowerCase();
+            const list = all.filter(t => mkey(t.on) === txMonth && (!q || TX[t.type][0].toLowerCase().indexOf(q) >= 0 || t.id.toLowerCase().indexOf(q) >= 0 || money(t.amount).indexOf(q) >= 0))
+                .sort((a, b) => new Date(b.on) - new Date(a.on));
+            let day = '', html = '';
+            list.forEach(t => {
+                const dk = fmtLong(t.on);
+                if (dk !== day) { day = dk; html += '<p class="day">' + fmtShort(t.on).replace(/^(\d+) (\w+)/, (s, d, m) => d + ' ' + MONTHS[MON.indexOf(m)]) + '</p>'; }
+                const T = TX[t.type];
+                html += '<button class="tx" onclick="openTxDetail(\'' + t.id + '\')"><span class="ic ' + T[1] + '"><svg viewBox="0 0 24 24">' + T[2] + '</svg></span>'
+                    + '<span class="t"><b>' + T[0] + '</b><small>' + fmtShort(t.on) + ', ' + fmtTime(t.on) + '</small></span>'
+                    + '<span class="r"><b>' + (t.type === 'disbursement' ? '+' : '-') + money(t.amount) + ' BIRR</b><small>Unpaid loan: ' + money(t.unpaid) + '</small></span></button>';
+            });
+            document.getElementById('txBody').innerHTML = (html || '<div class="empty" style="margin-top:24px">' + (q ? 'No transactions match &ldquo;' + q + '&rdquo;.' : 'No transactions in ' + MONTHS[txMonth % 12] + '.') + '</div>') + '<div style="height:84px"></div>';
+        }
+        function openTxDetail(id) {
+            const t = txWithBalance().find(x => x.id === id), l = S.loans.find(x => x.id === t.loan), p = prod(l.product), T = TX[t.type];
+            const kv = (k, v, sum) => '<div class="kv' + (sum ? ' sum' : '') + '"><span>' + k + '</span><b>' + v + '</b></div>';
+            const badge = { disbursement: 'Credited', repayment: 'Paid', maintenance: 'Charged', penalty: 'Charged' }[t.type];
+            let bd = '';
+            if (t.type === 'disbursement') {
+                bd = '<h4>Disbursement breakdown</h4>' + kv('Loan amount', money(l.amount) + ' Birr') + kv('Access fee (' + p.access + '%)', money(l.access) + ' Birr')
+                    + kv('Maintenance fee (' + p.maint + '% &times; ' + p.days + ' days)', money(l.maint) + ' Birr')
+                    + kv('Total fee', money(l.access + l.maint) + ' Birr', true) + kv('Total disbursed', money(t.amount) + ' Birr', true) + kv('Total to repay', money(l.total - l.penalty) + ' Birr', true);
+            } else if (t.type === 'repayment') {
+                const share = t.amount / l.total, n = Math.max(0, nextInst(l));
+                bd = '<h4>Repayment breakdown</h4>' + kv('Installment', (statusOf(l) === 'paid' ? l.inst.length : n + 1) + ' of ' + l.inst.length)
+                    + kv('Principal amount', money(l.amount * share) + ' Birr') + kv('Access fee (' + p.access + '%)', money(l.access * share) + ' Birr')
+                    + kv('Maintenance fee', money(l.maint * share) + ' Birr') + kv('Penalty fee (' + p.penalty + '%)', money(l.penalty * share) + ' Birr')
+                    + kv('Total fee', money((l.total - l.amount) * share) + ' Birr', true) + kv('Total repayment', money(t.amount) + ' Birr', true);
+            } else {
+                bd = '<h4>Fee breakdown</h4>' + kv('Fee type', T[0]) + kv('Rate', (t.type === 'penalty' ? p.penalty + '% per day late' : p.maint + '% per day'))
+                    + kv('Applied to', t.type === 'penalty' ? 'Overdue installment' : 'Loan amount') + kv('Total fee', money(t.amount) + ' Birr', true);
+            }
+            document.getElementById('txDetailBody').innerHTML = '<div class="card txd-top"><span class="ic ' + T[1] + '" style="background:var(--' + T[1] + '-tint)"><svg viewBox="0 0 24 24">' + T[2] + '</svg></span>'
+                + '<span><small>' + T[0] + '</small><b>' + (t.type === 'disbursement' ? '+' : '-') + money(t.amount) + ' BIRR</b><em>' + fmtShort(t.on) + ', ' + fmtTime(t.on) + '</em></span><span class="badge">' + badge + '</span></div>'
+                + '<div class="card box2"><h4>Transaction information</h4>' + kv('Transaction ID', t.id) + kv('Contract number', l.contract) + kv('Product name', p.name) + kv('Bank', BANKS[p.bank].name) + '</div>'
+                + '<div class="card box2">' + bd + '</div><div style="height:14px"></div>';
+            go('stepTxDetail');
+        }
+        let exportRange = 1;
+        function openExport() {
+            const R = [[1, 'This month'], [3, 'Last 3 months'], [6, 'Last 6 months'], [12, 'Last 12 months']];
+            openSheet('<h3>Export statements</h3><p class="sub">A PDF of your Eriff be M-PESA transactions</p><div style="margin-top:8px">'
+                + R.map(r => '<button class="opt" onclick="exportRange=' + r[0] + ';openExport()"><i class="radio' + (exportRange === r[0] ? ' on' : '') + '"></i>' + r[1] + '</button>').join('')
+                + '</div><button class="cta green" onclick="closeSheet();toast(\'STATEMENT SAVED TO DOWNLOADS\')">DOWNLOAD PDF</button>');
+        }
+
+        /* ---------- menu and help ---------- */
+        function openMenu() {
+            const I = p => '<svg viewBox="0 0 24 24">' + p + '</svg>';
+            openSheet('<h3>Eriff be M-PESA</h3><div style="margin-top:8px">'
+                + '<button class="opt" onclick="closeSheet();openTx()">' + I('<path d="M6 2.8h8.5l4 4V21H6Z"/><path d="M9 12h6.5M9 15.5h6.5"/>') + 'Transactions &amp; statements</button>'
+                + '<button class="opt" onclick="closeSheet();openScore()">' + I('<path d="M4 16a8 8 0 1 1 16 0"/><path d="m12 16 4-5"/>') + 'Credit score</button>'
+                + '<button class="opt" onclick="closeSheet();go(\'stepLoans@all\')">' + I('<rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M3.5 10h17"/>') + 'My loans</button>'
+                + '<button class="opt" onclick="openHelp(\'limit\')">' + I('<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.1"/>') + 'How it works</button>'
+                + '<button class="opt" onclick="closeSheet();toast(\'CALLING CUSTOMER CARE\')">' + I('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/>') + 'Contact support</button></div>');
+        }
+        function openHelp(what) {
+            openSheet(what === 'score'
+                ? '<h3>Your credit score</h3><p class="sub" style="text-align:left;margin-top:10px;line-height:1.5">Your score (300&ndash;900) is worked out from your M-PESA activity, your loan repayments and the bank statement you shared. Paying on time and keeping balances low raises it; a higher score raises your available limit.</p><button class="cta green" onclick="closeSheet()">GOT IT</button>'
+                : '<h3>Your loan limit</h3><p class="sub" style="text-align:left;margin-top:10px;line-height:1.5">Your total limit is ' + money(TOTAL_LIMIT) + ' Birr across all partner banks. Every unpaid loan uses part of it; repaying frees it up again. Each offer also has its own maximum.</p><button class="cta green" onclick="closeSheet()">GOT IT</button>');
+        }
+
+        /* ================================================================
+           Sideways rows (chips, loan cards, months): a mouse wheel scrolls
+           them sideways, and they can be dragged like on a phone
+           ================================================================ */
+        const ROWS = '.chips, .loans, .months';
+        document.addEventListener('wheel', e => {
+            const row = e.target.closest && e.target.closest(ROWS);
+            if (!row || row.scrollWidth <= row.clientWidth + 1 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+            const max = row.scrollWidth - row.clientWidth;
+            if ((e.deltaY < 0 && row.scrollLeft <= 0) || (e.deltaY > 0 && row.scrollLeft >= max - 1)) return;   // at an end: let the page scroll
+            row.scrollLeft += e.deltaY;
+            e.preventDefault();
+        }, { passive: false });
+        let drag = null;
+        document.addEventListener('pointerdown', e => {
+            const row = e.target.closest && e.target.closest(ROWS);
+            if (!row || e.pointerType === 'touch' || row.scrollWidth <= row.clientWidth + 1) return;
+            drag = { row: row, x: e.clientX, left: row.scrollLeft, moved: false };
+        });
+        document.addEventListener('pointermove', e => {
+            if (!drag) return;
+            const dx = e.clientX - drag.x;
+            if (!drag.moved && Math.abs(dx) < 5) return;
+            drag.moved = true;
+            drag.row.classList.add('dragging');
+            drag.row.scrollLeft = drag.left - dx;
+        });
+        document.addEventListener('pointerup', () => {
+            if (!drag) return;
+            const d = drag;
+            drag = null;
+            d.row.classList.remove('dragging');
+            if (d.moved) {
+                /* a drag is not a tap: swallow the click that follows it */
+                const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
+                document.addEventListener('click', stop, { capture: true, once: true });
+                setTimeout(() => document.removeEventListener('click', stop, { capture: true }), 50);
+            }
+        });
+
+        /* ================================================================
+           Start
+           ================================================================ */
+        if (S.wallet == null) { S.wallet = 25000; save(); }
+        document.getElementById('submittedArt').innerHTML = illReview();
+        document.getElementById('failedTop').innerHTML = bmark('abyssinia') + '<h3>Eriff be M-PESA</h3>';
+        renderIntro();
+        if (S.activated) resetTo(['stepHome']);
+        else if (askScenario === 'submitted' || askScenario === 'failed' || askScenario === 'new' || !S.activated) resetTo(['stepIntro']);
+
+    </script>
+</body>
+</html>

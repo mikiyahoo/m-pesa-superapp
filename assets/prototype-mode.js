@@ -58,6 +58,8 @@
             sessionStorage.removeItem('railFaydaOpen');
             sessionStorage.removeItem('railFaydaErrOpen');
             sessionStorage.removeItem('faydaError');
+            sessionStorage.removeItem('eriffState');
+            sessionStorage.removeItem('railEriffOpen');
             sessionStorage.removeItem('savingsReturn');
             sessionStorage.setItem(RUN_KEY, '1');
         } catch (e) {}
@@ -662,6 +664,15 @@
             /* whoever you invited: the invitation as Daniel sees it */
             + '<a class="proto-home" href="Savings.html?invite=c4"><span>DANIEL B &ndash; INVITED</span></a>'
             + '</div></div></div></div>'
+            /* Eriff be M-PESA: term loans, from first use or already active */
+            + '<div class="proto-fold" data-key="railEriffOpen">'
+            + '<button class="proto-home proto-label" type="button" aria-expanded="false">ERIFF LOAN</button>'
+            + '<div class="proto-sub2">'
+            + '<a class="proto-home" href="Eriff Loan.html?eriff=new"><span>ONBOARDING</span></a>'
+            + '<a class="proto-home" href="Eriff Loan.html?eriff=active"><span>LOANS ACTIVE</span></a>'
+            + '<a class="proto-home" href="Eriff Loan.html?eriff=submitted"><span>ACTIVATION SUBMITTED</span></a>'
+            + '<a class="proto-home" href="Eriff Loan.html?eriff=failed"><span>ACTIVATION FAILED</span></a>'
+            + '</div></div>'
             /* Global Vouchers: the happy path and each exception path */
             + '<div class="proto-fold" data-key="railVouchersOpen">'
             + '<button class="proto-home proto-label" type="button" aria-expanded="false">GLOBAL VOUCHERS</button>'
