@@ -812,7 +812,7 @@
         const NOTES = {
             stepTerms: 'Activation is a one-time opt-in. **ACTIVATE stays disabled until both consents are ticked:** the Terms and Conditions, and data sharing with the partner banks and the credit bureau. **No pricing on this screen for now:** fees are shown on each offer and on the confirm screen. Consents are stored with a timestamp and the T&C version.',
             stepTnc: '**Placeholder text.** The final Terms and Conditions must be supplied by the partner banks and Legal/Compliance and shown in full here, with a version number and effective date. I AGREE ticks the T&C consent and returns to activation.',
-            stepBank: 'Banks listed are the partner banks connected for transaction data. The selected bank is used to read the customer’s transactions and enhance the credit score; "Select other bank" opens the full list. **Onboarding goes from here straight to the credit score** (no bank statement upload for now); the upload is used by UPDATE SCORE.',
+            stepBank: 'Not part of onboarding for now: after the activation PIN the customer goes straight to the credit score. Kept for when bank connection is added.',
             stepUpload: 'Bank statement: **PDF only, maximum 10 MB.** CONTINUE stays disabled until a file is attached and the customer agrees to share it for credit assessment.',
             stepScore: 'Credit score ranges: Poor 300–579, Fair 580–669, Good 670–739, Very Good 740–799, Excellent 800–900. UPDATE SCORE asks for a new bank statement (same upload screen as onboarding), then re-runs the assessment.',
             stepAmount: 'Borrow: amount between the offer’s minimum and the customer’s credit limit for that offer (the lower of the offer limit and the available limit). Repay: up to the unpaid loan.',
@@ -959,14 +959,16 @@
         }
         function agreeTnc() { consent.tnc = true; back(); }
 
+        /* onboarding goes from the PIN straight to the credit score (no bank or statement step for now) */
+        function toScore() { scoreMode = 'onboarding'; resetTo(['stepScore']); }
         function afterActivation() {
             if (S.scenario === 'submitted') { resetTo(['stepSubmitted']); return; }
             if (S.scenario === 'failed') { resetTo(['stepFailed']); return; }
-            resetTo(['stepBank']);
+            toScore();
         }
         function retryActivation() {
             S.scenario = 'new'; save();
-            loading('Activating Eriff be M-PESA...', 1600, () => resetTo(['stepBank']));
+            loading('Activating and calculating your credit score...', 2000, toScore);
         }
 
         const BANK_CHOICES = ['awash', 'coop', 'abyssinia'];
@@ -1324,7 +1326,7 @@
                 return;
             }
             stack.pop();   // the PIN never stays in the history
-            if (pinFor === 'activate') { loading('Activating Eriff be M-PESA...', 1700, afterActivation); return; }
+            if (pinFor === 'activate') { loading('Activating and calculating your credit score...', 2000, afterActivation); return; }
             if (pinFor === 'borrow') { loading('Processing your loan request...', 1700, doBorrow); return; }
             loading('Processing your repayment...', 1600, doRepay);
         }
