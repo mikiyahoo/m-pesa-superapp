@@ -123,6 +123,10 @@
         .limit .sub2 { font-size: 12px; color: #6a6a6a; margin-top: 1px; }
         .limit .score-mini { width: 96px; border-left: 1px solid var(--line); padding-left: 10px; text-align: center; background: none; border-top: 0; border-right: 0; border-bottom: 0; }
         .limit .score-mini small { display: block; font-size: 8.5px; letter-spacing: 0.6px; color: #6a6a6a; text-transform: uppercase; margin-top: -2px; }
+        .limit .score-mini { cursor: pointer; border-radius: 0 8px 8px 0; transition: background 0.15s; }
+        .limit .score-mini:hover, .limit .score-mini:active { background: #F3FBF6; }
+        .limit .score-mini em { display: inline-flex; align-items: center; gap: 2px; margin-top: 4px; font-style: normal; font-size: 9.5px; font-weight: 700; letter-spacing: 0.5px; color: var(--green-dark); }
+        .limit .score-mini em svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 3; fill: none; }
         .limit .help { position: absolute; right: 12px; top: 10px; }
         .limit .help svg { width: 20px; height: 20px; stroke: #9a9a9a; stroke-width: 1.5; }
         .brands { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-right: 30px; }
@@ -327,6 +331,7 @@
         .slide { flex: 0 0 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 30px 26px 0 26px; text-align: center; }
         .slide > div { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
         .slide .ill { max-height: 100%; width: auto; }
+        .ill.art { width: 230px; height: auto; object-fit: contain; }
         .slide p { font-size: 13px; line-height: 1.5; color: #4a4a4a; margin-top: 16px; flex-shrink: 0; }
         .sdots { display: flex; justify-content: center; gap: 6px; margin: 12px 0 6px 0; flex-shrink: 0; }
         .sdots i { width: 6px; height: 6px; border-radius: 50%; background: #D6D6D6; }
@@ -334,6 +339,20 @@
         .terms { padding: 0 22px; }
         .terms h5 { font-size: 12.5px; font-weight: 700; letter-spacing: 0.4px; color: #4a4a4a; text-transform: uppercase; margin-top: 18px; }
         .terms p { font-size: 13px; line-height: 1.5; color: #6a6a6a; margin-top: 8px; }
+        .facts { margin: 16px 0 0 0; border: 1px solid #E3E8E5; border-radius: 10px; overflow: hidden; }
+        .facts .fh { display: flex; align-items: center; gap: 8px; background: #F3FBF6; padding: 10px 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.6px; color: var(--green-dark); text-transform: uppercase; }
+        .facts .fh svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; }
+        .facts .fr { display: flex; justify-content: space-between; gap: 12px; padding: 9px 14px; border-top: 1px solid #EEF1EF; font-size: 12.5px; color: #6a6a6a; }
+        .facts .fr b { color: #2a2a2a; font-weight: 600; text-align: right; }
+        .facts .ex { padding: 10px 14px; border-top: 1px solid #EEF1EF; font-size: 12px; line-height: 1.5; color: #5a5a5a; background: #FAFAFA; }
+        .facts .ex b { color: #2a2a2a; }
+        .terms .consent { margin: 14px 0 0 0; }
+        .terms .consent a { color: var(--green-dark); font-weight: 700; text-decoration: none; }
+        .tnc { padding: 4px 20px 16px 20px; }
+        .tnc .draft { margin: 0 0 12px 0; padding: 10px 12px; border-radius: 8px; background: #FFF6E8; color: #8a6a44; font-size: 12px; line-height: 1.45; }
+        .tnc h5 { font-size: 13px; font-weight: 700; letter-spacing: 0.3px; color: #2a2a2a; margin-top: 16px; }
+        .tnc p { font-size: 12.5px; line-height: 1.55; color: #5a5a5a; margin-top: 6px; }
+        .tnc small { display: block; font-size: 11.5px; color: #9a9a9a; margin-top: 18px; }
         .agree { font-size: 13px; color: #6a6a6a; line-height: 1.45; padding: 0 22px; flex-shrink: 0; }
         .agree a { color: var(--green-dark); font-weight: 700; text-decoration: none; }
         .mini-prog { width: 76px; height: 4px; border-radius: 2px; background: #E6E6E6; overflow: hidden; margin-right: 6px; }
@@ -454,17 +473,19 @@
                 <span class="mini-prog"><i style="width:30%"></i></span>
             </div>
             <h1 class="ob-title" style="margin-top:10px">Eriff be M-PESA</h1>
-            <div class="scroll terms">
-                <h5 style="margin-top:22px">Choose the term loan offer that suits you better</h5>
-                <h5>How it works</h5>
-                <p>Eriff be M-PESA gives you a term loan from a partner bank, paid straight into your M-PESA wallet. Use it to send money, pay bills, buy airtime and bundles, or pay with M-PESA.</p>
-                <h5>Fees and repayment</h5>
-                <p>Each offer shows its access fee, daily maintenance fee and penalty fee before you borrow. Repay in one or more installments by the due date; late installments add a daily penalty fee.</p>
-                <h5>Your credit score</h5>
-                <p>Your limit is based on your credit score. We use your M-PESA history and, if you share it, your bank statement.</p>
+            <div class="scroll terms" id="termsBody"></div>
+            <button class="cta" id="activateGo" onclick="toPin('activate')" disabled>ACTIVATE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+        </section>
+
+        <!-- ============ Terms and Conditions (full document) ============ -->
+        <section class="step" id="stepTnc">
+            <div class="bar">
+                <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
+                <h2>Terms and conditions</h2>
+                <span class="icon-btn hide"><svg viewBox="0 0 24 24"></svg></span>
             </div>
-            <p class="agree">By tapping &ldquo;Activate&rdquo; you acknowledge that you have read and agree to the <a href="#" onclick="toast('TERMS AND CONDITIONS');return false;">Terms and Conditions</a></p>
-            <button class="cta" onclick="toPin('activate')">ACTIVATE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
+            <div class="scroll" id="tncBody"></div>
+            <button class="cta green" onclick="agreeTnc()">I AGREE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
         </section>
 
         <!-- ============ PIN (activation, borrow, repay) ============ -->
@@ -787,7 +808,8 @@
            ================================================================ */
         let stack = [];
         const NOTES = {
-            stepTerms: 'Activation is a one-time opt-in to Eriff be M-PESA. Terms must be accepted (ACTIVATE) and confirmed with the M-PESA PIN before any bank data is requested.',
+            stepTerms: 'Activation is a one-time opt-in. **ACTIVATE stays disabled until both consents are ticked:** the Terms and Conditions, and data sharing with the partner banks and the credit bureau. Key facts come from the live offer tariffs. Consents are stored with a timestamp and the T&C version.',
+            stepTnc: '**Placeholder text.** The final Terms and Conditions must be supplied by the partner banks and Legal/Compliance and shown in full here, with a version number and effective date. I AGREE ticks the T&C consent and returns to activation.',
             stepBank: 'Banks listed are the partner banks connected for transaction data. The selected bank is used to read the customer’s transactions and enhance the credit score; "Select other bank" opens the full list.',
             stepUpload: 'Bank statement: **PDF only, maximum 10 MB.** CONTINUE stays disabled until a file is attached and the customer agrees to share it for credit assessment.',
             stepScore: 'Credit score ranges: Poor 300–579, Fair 580–669, Good 670–739, Very Good 740–799, Excellent 800–900. UPDATE SCORE re-runs the assessment.',
@@ -829,6 +851,7 @@
             if (id === 'stepTx') renderTx();
             if (id === 'stepBank') renderBanks();
             if (id === 'stepUpload') renderUpload();
+            if (id === 'stepTerms') renderTerms();
         }
         function leaveApp() { window.location.href = 'Mini Apps.html'; }
 
@@ -855,36 +878,6 @@
         /* ================================================================
            Illustrations (placeholders for the supplied artwork)
            ================================================================ */
-        const NOTE = (x, y, r) => '<g transform="translate(' + x + ' ' + y + ') rotate(' + r + ')"><rect x="-17" y="-9" width="34" height="18" rx="2" fill="#3DBE5E"/><rect x="-13" y="-5" width="26" height="10" rx="2" fill="none" stroke="#C9F2D3" stroke-width="1.4"/><circle r="3" fill="#C9F2D3"/></g>';
-        function illStore() {
-            return '<svg class="ill" viewBox="0 0 220 190"><ellipse cx="112" cy="168" rx="92" ry="12" fill="#EEF5F0"/>'
-                + '<path d="M96 70h88v86H96Z" fill="#2FC56D"/><path d="M96 70l12-26h64l12 26Z" fill="#23A657"/><path d="M104 52h72v14h-72z" fill="#1E9E4F"/>'
-                + '<path d="M90 70h100v12H90Z" fill="#E5383B"/>' + [0, 1, 2, 3, 4].map(i => '<path d="M' + (90 + i * 20) + ' 70h10v12H' + (90 + i * 20) + 'Z" fill="#ffffff"/>').join('')
-                + '<path d="M110 100h28v56h-28z" fill="#ffffff" opacity=".85"/><path d="M146 100h28v24h-28z" fill="#BFF0D2"/>'
-                + '<g transform="translate(34 118)"><circle cx="12" cy="40" r="11" fill="#2a2a2a"/><circle cx="58" cy="40" r="11" fill="#2a2a2a"/><path d="M8 32h52l-6-18H28l-8 18" fill="#2FC56D"/><path d="M40 6h22v14H40z" fill="#E5383B"/></g>'
-                + NOTE(52, 28, -20) + NOTE(82, 48, 18) + NOTE(160, 28, 10)
-                + '<g transform="translate(176 140)"><rect width="30" height="18" rx="3" fill="#3B7BE8"/><rect y="12" width="30" height="14" rx="3" fill="#F2C94C"/></g></svg>';
-        }
-        function illPos() {
-            return '<svg class="ill" viewBox="0 0 220 190"><ellipse cx="110" cy="166" rx="92" ry="12" fill="#EEF5F0"/>'
-                + '<g transform="rotate(-14 80 110)"><rect x="34" y="82" width="96" height="62" rx="12" fill="#1F4FC4"/><rect x="46" y="92" width="38" height="20" rx="3" fill="#9FD3FF"/>'
-                + [0, 1, 2].map(r => [0, 1, 2].map(c => '<rect x="' + (92 + c * 11) + '" y="' + (92 + r * 13) + '" width="8" height="9" rx="2" fill="#ffffff"/>').join('')).join('')
-                + '<rect x="50" y="56" width="34" height="34" rx="3" fill="#ffffff"/><path d="M56 66h22M56 74h16" stroke="#9a9a9a" stroke-width="2"/></g>'
-                + '<g transform="rotate(10 160 120)"><rect x="128" y="86" width="64" height="60" rx="8" fill="#2a2a2a"/><rect x="134" y="92" width="52" height="48" rx="4" fill="#2FC56D"/><rect x="146" y="104" width="28" height="22" rx="3" fill="#1E9E4F"/></g>'
-                + [0, 1, 2, 3].map(i => '<ellipse cx="' + (150 + (i % 2) * 18) + '" cy="' + (156 - i * 6) + '" rx="13" ry="5" fill="#F2A916" stroke="#D68A00"/>').join('')
-                + NOTE(70, 34, -16) + NOTE(112, 22, 12) + NOTE(172, 50, -8) + '</svg>';
-        }
-        function illServices() {
-            const items = [[110, 30, '#2FC56D', '<path d="M-6 3 1-4M-2-5h4v4M6-3-1 4M2 5h-4V1" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>'],
-                [176, 70, '#16A3A3', '<rect x="-6" y="-8" width="12" height="16" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M-3-3h6M-3 1h6" stroke="#fff" stroke-width="2"/>'],
-                [168, 138, '#E5383B', '<rect x="-5" y="-8" width="10" height="16" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M-1 5h2" stroke="#fff" stroke-width="2"/>'],
-                [52, 138, '#1474F0', '<path d="M-7 4l6-10 4 6 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>'],
-                [44, 70, '#7A5AF8', '<path d="M0-8 7-4v8L0 8l-7-4v-8Z M-7-4 0 0l7-4M0 0v8" stroke="#fff" stroke-width="1.8" fill="none"/>']];
-            return '<svg class="ill" viewBox="0 0 220 190"><circle cx="110" cy="92" r="64" fill="none" stroke="#D8EFE0" stroke-width="1.5" stroke-dasharray="3 5"/>'
-                + '<circle cx="110" cy="92" r="24" fill="#E3F5EA"/><circle cx="110" cy="92" r="16" fill="#2FC56D"/><text x="110" y="97" text-anchor="middle" font-family="Barlow" font-weight="800" font-size="13" fill="#fff">Br</text>'
-                + items.map(i => '<g transform="translate(' + i[0] + ' ' + i[1] + ')"><circle r="19" fill="#ffffff" stroke="' + i[2] + '" stroke-width="2"/><circle r="14" fill="' + i[2] + '"/>' + i[3] + '</g>').join('')
-                + NOTE(30, 26, -22) + NOTE(196, 112, 14) + '<circle cx="80" cy="160" r="5" fill="#F2A916"/><circle cx="146" cy="24" r="5" fill="#F2A916"/></svg>';
-        }
         function illReview() {
             return '<svg class="ill" viewBox="0 0 220 190"><ellipse cx="110" cy="168" rx="90" ry="12" fill="#EEF5F0"/>'
                 + '<g transform="rotate(-12 100 120)"><rect x="40" y="90" width="120" height="70" rx="6" fill="#ffffff" stroke="#3B7BE8" stroke-width="3"/>'
@@ -897,10 +890,12 @@
         /* ================================================================
            Onboarding
            ================================================================ */
+        /* the supplied onboarding artwork (assets/eriff) */
+        const art = n => () => '<img class="ill art" src="assets/eriff/onboarding-' + n + '.png" alt="">';
         const SLIDES = [
-            [illStore, 'Eriff be M-PESA is a Term Loan facility that allows you to complete M-PESA transactions when you have insufficient funds.'],
-            [illPos, 'Associated fees: associated fees may vary according to the chosen Term Loan offer. Daily fee as per Tariff on T&amp;C.'],
-            [illServices, 'Term Loan is eligible in 5 transaction types: Send Money, Pay Bill, Buy Airtime &amp; Bundles, Pay with M-PESA.']
+            [art(1), 'Eriff be M-PESA is a Term Loan facility that allows you to complete M-PESA transactions when you have insufficient funds.'],
+            [art(2), 'Associated fees: associated fees may vary according to the chosen Term Loan offer. Daily fee as per Tariff on T&amp;C.'],
+            [art(3), 'Term Loan is eligible in 5 transaction types: Send Money, Pay Bill, Buy Airtime &amp; Bundles, Pay with M-PESA.']
         ];
         let slide = 0;
         function renderIntro() {
@@ -915,6 +910,59 @@
             if (slide < SLIDES.length - 1) { slide++; paintSlide(); return; }
             go('stepTerms');
         }
+
+        /* ---------- Activation: key facts + the two consents ---------- */
+        const consent = { tnc: false, data: false };
+        function range(key, unit) {
+            const v = PRODUCTS.map(p => p[key]);
+            const lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
+            return (lo === hi ? lo : lo + '&ndash;' + hi) + unit;
+        }
+        function renderTerms() {
+            /* worked example: 1,000 Birr on the cheapest 30-day offer */
+            const p = PRODUCTS.filter(x => x.days === 30).sort((x, y) => (x.access + x.maint * 30) - (y.access + y.maint * 30))[0];
+            const q = quote(p, 1000);
+            const tick = (key, html) => '<button class="consent' + (consent[key] ? ' on' : '') + '" onclick="consent.' + key + '=!consent.' + key + ';renderTerms()">'
+                + '<span class="box"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span>' + html + '</span></button>';
+            document.getElementById('termsBody').innerHTML =
+                '<h5 style="margin-top:18px">How it works</h5>'
+                + '<p>Eriff be M-PESA gives you a term loan from a partner bank, paid straight into your M-PESA wallet. Use it to send money, pay bills, buy airtime and bundles, or pay with M-PESA.</p>'
+                + '<div class="facts"><div class="fh"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.9v.1"/></svg>Key facts</div>'
+                + '<div class="fr"><span>Lenders</span><b>Partner banks</b></div>'
+                + '<div class="fr"><span>Loan amount</span><b>' + money(Math.min.apply(null, PRODUCTS.map(x => x.min))) + ' to ' + money(Math.max.apply(null, PRODUCTS.map(x => x.max))) + ' Birr per offer</b></div>'
+                + '<div class="fr"><span>Loan period</span><b>' + range('days', ' days') + '</b></div>'
+                + '<div class="fr"><span>Access fee (once)</span><b>' + range('access', '%') + ' of the loan</b></div>'
+                + '<div class="fr"><span>Maintenance fee</span><b>' + range('maint', '%') + ' per day</b></div>'
+                + '<div class="fr"><span>Late payment</span><b>' + range('penalty', '%') + ' of the overdue amount per day</b></div>'
+                + '<div class="fr"><span>Repayment</span><b>' + range('inst', '') + ' installments, from your M-PESA wallet</b></div>'
+                + '<div class="ex">Example: borrow <b>1,000.00 Birr</b> for ' + p.days + ' days and repay <b>' + money(q.total) + ' Birr</b> in total (fees ' + money(q.fee) + ' Birr) if you pay on time.</div></div>'
+                + '<h5>Your credit score</h5>'
+                + '<p>Your limit is based on your credit score. We use your M-PESA history and, if you share it, your bank statement. Missed payments are reported and can lower your score.</p>'
+                + '<h5>Help and complaints</h5>'
+                + '<p>Call M-PESA customer care or visit any partner bank branch. You can stop using Eriff be M-PESA at any time once your loans are repaid.</p>'
+                + tick('tnc', 'I have read and agree to the <a href="#" onclick="event.stopPropagation();openTnc();return false;">Terms and Conditions</a>.')
+                + tick('data', 'I agree that M-PESA and the partner banks may share my M-PESA and loan information with each other and with the credit bureau to assess my credit and report my repayments.')
+                + '<div style="height:10px"></div>';
+            document.getElementById('activateGo').disabled = !(consent.tnc && consent.data);
+        }
+        function openTnc() {
+            const sec = [
+                ['1. About these terms', 'These terms apply when you activate and use Eriff be M-PESA, a term loan service provided by the partner bank you borrow from and made available through M-PESA.'],
+                ['2. Eligibility', 'You must be a registered M-PESA customer, linked to Fayda, aged 18 or over, and meet the partner bank’s credit requirements.'],
+                ['3. Your loan', 'Each loan offer shows its amount range, period, number of installments and fees before you borrow. The loan is paid into your M-PESA wallet once you confirm with your M-PESA PIN.'],
+                ['4. Fees', 'An access fee is charged once per loan and a maintenance fee accrues daily on the loan amount, at the rates shown for the offer. All fees are shown on the confirmation screen.'],
+                ['5. Repayment', 'You repay in installments by the due dates shown. You can repay early, in part or in full, at any time from your M-PESA wallet without an extra charge.'],
+                ['6. Late payment', 'If an installment is not paid by its due date, a penalty fee accrues daily on the overdue amount, the account may be reported to the credit bureau, and new loans may be blocked until it is paid.'],
+                ['7. Your information', 'With your consent we share your M-PESA and loan information with the partner banks and the credit bureau to assess your credit and report your repayments. You can ask to see or correct this information.'],
+                ['8. Changes and ending the service', 'We will tell you before these terms or fees change. You may deactivate Eriff be M-PESA once all your loans are repaid.'],
+                ['9. Help and complaints', 'Contact M-PESA customer care or the partner bank. If a complaint is not resolved, you may refer it to the National Bank of Ethiopia.']
+            ];
+            document.getElementById('tncBody').innerHTML = '<div class="tnc"><div class="draft">Prototype placeholder: the final text will be provided by the partner banks and Legal.</div>'
+                + sec.map(x => '<h5>' + x[0] + '</h5><p>' + x[1] + '</p>').join('')
+                + '<small>Version 0.1 (draft) &middot; Effective ' + fmtLong(TODAY) + '</small></div>';
+            go('stepTnc');
+        }
+        function agreeTnc() { consent.tnc = true; back(); }
 
         function afterActivation() {
             if (S.scenario === 'submitted') { resetTo(['stepSubmitted']); return; }
@@ -1030,12 +1078,12 @@
             const h = S.hidden, u = used();
             const limitCard = '<div class="card limit">'
                 + (bank ? '<div class="brands"><img class="mp" src="assets/M-PESA-Logo-Green.svg" alt="M-PESA"><i></i><span class="bk">' + bmark(bank, 26) + BANKS[bank].name + '</span></div>' : '')
-                + '<button class="icon-btn help" onclick="openHelp(\'limit\')" aria-label="Help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.1"/></svg></button>'
+                + '<button class="icon-btn help" onclick="' + (bank ? 'openHelp(\'limit\')' : 'openScore()') + '" aria-label="' + (bank ? 'About your limit' : 'View your credit score') + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.1"/></svg></button>'
                 + '<div class="top"><div class="main"><p class="lbl">Available limit<button onclick="S.hidden=!S.hidden;save();renderHome(' + (bank ? '\'' + bank + '\'' : 'null') + ')" aria-label="Show or hide">' + EYE + (h ? '' : '<path d="M4 4l16 16"/>') + '</svg></button></p>'
                 + '<p class="amt' + (h ? ' masked' : '') + '">' + (h ? '*******' : money(available()) + ' BIRR') + '</p>'
                 + '<p class="sub">Unpaid loan: ' + (h ? '****' : money(owe)) + ' Birr</p>'
                 + '<p class="sub2">' + (dueIn === null ? 'No payment due' : dueIn < 0 ? '<span style="color:#E5383B">Overdue by ' + -dueIn + ' days</span>' : 'Due in ' + dueIn + ' days') + '</p></div>'
-                + (bank ? '' : '<button class="score-mini" onclick="openScore()">' + gauge(S.score, 86, 22) + '<small>Credit score</small></button>') + '</div>'
+                + (bank ? '' : '<button class="score-mini" onclick="openScore()" aria-label="View your credit score">' + gauge(S.score, 86, 22) + '<small>Credit score</small><em>VIEW SCORE<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></em></button>') + '</div>'
                 + '<div class="track"><i style="width:' + (u / TOTAL_LIMIT * 100).toFixed(1) + '%"></i></div>'
                 + '<div class="track-foot"><b>' + (h ? '****' : money(u)) + ' Birr</b><span>' + money(TOTAL_LIMIT) + ' Birr</span></div></div>';
             requestAnimationFrame(fitAmounts);
