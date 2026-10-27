@@ -380,6 +380,7 @@
         .file small { font-size: 11px; color: #9a9a9a; }
         .file button { background: none; border: none; display: flex; }
         .file button svg { width: 18px; height: 18px; stroke: #5a5a5a; stroke-width: 2; }
+        #uploadConsent .consent { margin: 8px 16px 4px 16px; }
         .consent { display: flex; align-items: flex-start; gap: 10px; margin: 18px 16px 0 16px; font-size: 12.5px; line-height: 1.45; color: #4a4a4a; text-align: left; background: none; border: none; }
         .consent .box { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid #BDBDBD; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
         .consent.on .box { background: var(--green); border-color: var(--green); }
@@ -422,7 +423,7 @@
         .box2 .kv.sum b { color: var(--green-dark); }
 
         /* ---------- Sheet, menu, toast ---------- */
-        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.42); display: none; z-index: 20; align-items: flex-end; }
+        .overlay { position: absolute; inset: 0; padding-bottom: 48px; background: rgba(0,0,0,0.42); display: none; z-index: 20; align-items: flex-end; }
         .overlay.show { display: flex; }
         .sheet { width: 100%; background: #ffffff; border-radius: 16px 16px 0 0; padding: 10px 18px 18px 18px; }
         .sheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #DADADA; margin: 0 auto 12px auto; }
@@ -431,7 +432,7 @@
         .opt { width: 100%; display: flex; align-items: center; gap: 12px; padding: 13px 4px; border: none; border-bottom: 1px solid var(--line); background: none; font-size: 14px; color: #2a2a2a; text-align: left; }
         .opt:last-of-type { border-bottom: 0; }
         .opt svg { width: 20px; height: 20px; stroke: var(--green-dark); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-        .sheet .cta { margin: 14px 0 0 0; }
+        .sheet .cta { margin: 14px 0 0 0; width: 100%; }   /* full width: a button doesn't stretch in a block on its own */
         .toast { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%) translateY(10px); background: rgba(9, 126, 70, 0.95); color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.4px; padding: 10px 16px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 30; white-space: nowrap; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -541,11 +542,12 @@
         <section class="step" id="stepUpload">
             <div class="bar">
                 <button class="icon-btn" onclick="back()" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg></button>
-                <span class="mini-prog"><i style="width:80%"></i></span>
+                <span class="mini-prog" id="uploadProg"><i style="width:80%"></i></span>
             </div>
             <h1 class="ob-title" style="margin-top:4px">Upload bank<br>statement</h1>
             <p class="ob-lead">Upload your latest bank statement to help us verify your transactions and calculate your credit score.</p>
             <div class="scroll" id="uploadBody"></div>
+            <div id="uploadConsent"></div>
             <button class="cta" id="uploadGo" onclick="uploadContinue()" disabled>CONTINUE<svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15"/><path d="m13.5 6.5 6 5.5-6 5.5"/></svg></button>
         </section>
 
@@ -657,7 +659,7 @@
             <div class="scroll" id="txDetailBody"></div>
         </section>
 
-        <div class="overlay" id="sheet" onclick="if (event.target === this) closeSheet()"><div class="sheet" id="sheetBody"></div></div>
+        <div class="overlay sheet-overlay" id="sheet" onclick="if (event.target === this) closeSheet()"><div class="sheet" id="sheetBody"></div></div>
         <div class="toast" id="toast"></div>
 
         <div class="system-nav">
@@ -812,7 +814,7 @@
             stepTnc: '**Placeholder text.** The final Terms and Conditions must be supplied by the partner banks and Legal/Compliance and shown in full here, with a version number and effective date. I AGREE ticks the T&C consent and returns to activation.',
             stepBank: 'Banks listed are the partner banks connected for transaction data. The selected bank is used to read the customer’s transactions and enhance the credit score; "Select other bank" opens the full list.',
             stepUpload: 'Bank statement: **PDF only, maximum 10 MB.** CONTINUE stays disabled until a file is attached and the customer agrees to share it for credit assessment.',
-            stepScore: 'Credit score ranges: Poor 300–579, Fair 580–669, Good 670–739, Very Good 740–799, Excellent 800–900. UPDATE SCORE re-runs the assessment.',
+            stepScore: 'Credit score ranges: Poor 300–579, Fair 580–669, Good 670–739, Very Good 740–799, Excellent 800–900. UPDATE SCORE asks for a new bank statement (same upload screen as onboarding), then re-runs the assessment.',
             stepAmount: 'Borrow: amount between the offer’s minimum and the customer’s credit limit for that offer (the lower of the offer limit and the available limit). Repay: up to the unpaid loan.',
             stepConfirm: 'All fees and the full repayment schedule are shown before BORROW. The penalty fee is only charged per day an installment is overdue, so it is not part of the total.',
             stepTx: 'Statements cover all of the customer’s Eriff loans, by month. Unpaid loan is the running balance after each movement. EXPORT STATEMENTS produces a PDF for the chosen period.'
@@ -997,12 +999,26 @@
                 + (upload.file
                     ? '<div class="file"><span class="pdf">PDF</span><span><b>Bank statement.pdf</b><small>1.0 MB &middot; ' + BANKS[upload.bank].name + '</small></span><button onclick="upload.file=false;renderUpload()" aria-label="Remove"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>'
                     : '<p class="sel" style="margin-top:22px"><small>Attach bank statement</small></p><button class="drop" onclick="attachPdf()"><svg viewBox="0 0 40 40" fill="none" stroke="#2FC56D" stroke-width="2"><rect x="4" y="4" width="32" height="32" rx="8" fill="#E3F5EA" stroke="none"/><path d="M14 10h9l5 5v15H14Z"/><path d="M18 20h7M18 24h7"/></svg><b>Attach PDF</b></button><p class="drop-note">PDF only &middot; maximum 10 MB</p>')
-                + '<button class="consent' + (upload.agree ? ' on' : '') + '" onclick="upload.agree=!upload.agree;renderUpload()"><span class="box"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>I agree to share my bank statement and transaction data for credit assessment.</button>';
+                + '<div style="height:12px"></div>';
+            /* the consent sits at the bottom, just above CONTINUE */
+            document.getElementById('uploadConsent').innerHTML = '<button class="consent' + (upload.agree ? ' on' : '') + '" onclick="upload.agree=!upload.agree;renderUpload()"><span class="box"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>I agree to share my bank statement and transaction data for credit assessment.</button>';
             document.getElementById('uploadGo').disabled = !(upload.file && upload.agree);
+            document.getElementById('uploadProg').style.visibility = upload.update ? 'hidden' : '';   // no onboarding progress when updating
         }
         function attachPdf() { upload.file = true; renderUpload(); toast('BANK STATEMENT ATTACHED'); }
         function uploadContinue() {
             S.bank = upload.bank; S.statement = true; save();
+            if (upload.update) {
+                /* back to the credit score page, recalculated today */
+                loading('Updating your credit score...', 1800, () => {
+                    S.scoreOn = TODAY.toISOString(); save();
+                    stack.pop();   // leave the upload screen
+                    const top = stack[stack.length - 1];
+                    render(top); show(top);
+                    toast('YOUR SCORE IS UP TO DATE');
+                });
+                return;
+            }
             loading('Calculating your credit score...', 1800, () => { scoreMode = 'onboarding'; resetTo(['stepScore']); });
         }
 
@@ -1051,10 +1067,10 @@
                 + '<span><b>Keep your score healthy</b><small>Pay your loans on time, keep your balances low, and avoid taking on more debt than you need.</small></span></div><div style="height:10px"></div>';
             document.getElementById('scoreGo').style.display = scoreMode === 'onboarding' ? '' : 'none';
         }
+        /* a new score needs a new bank statement: same upload screen as onboarding */
         function updateScore() {
-            const b = document.getElementById('updBtn');
-            b.classList.add('spin');
-            setTimeout(() => { S.scoreOn = TODAY.toISOString(); save(); renderScore(); toast('YOUR SCORE IS UP TO DATE'); }, 1300);
+            upload = { bank: S.bank || 'cbe', file: false, agree: false, update: true };
+            go('stepUpload');
         }
         function scoreContinue() {
             S.activated = true; S.scenario = 'active'; save();
@@ -1284,7 +1300,7 @@
             const p = flow && flow.product ? prod(flow.product) : null;
             document.getElementById('pinTop').innerHTML = kind === 'activate'
                 ? bmark('abyssinia') + '<h3>Eriff be M-PESA</h3><p>Activate term loans on your M-PESA</p>'
-                : prodHead(p) + '<p><b>' + (kind === 'borrow' ? 'Borrow' : 'Repay') + '</b>' + money(flow.amount) + ' Birr</p>';
+                : bmark(p.bank) + '<h3>' + p.name + '</h3>';   /* the PIN only names the loan; the details were on the confirm screen */
             document.getElementById('pinPad').innerHTML = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'f'].map(k => k === '' ? '<span class="key blank"></span>'
                 : k === 'f' ? '<button class="key" onclick="pinFill()" aria-label="Fingerprint">' + FINGER + '</button>'
                 : '<button class="key" onclick="pinPress(\'' + k + '\')">' + k + '</button>').join('');
