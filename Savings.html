@@ -4811,8 +4811,8 @@
         /* ---------- Reference data ---------- */
         const LOGOS = 'assets/banks logo/';
         const PARTNERS = {
-            awash:     { name: 'AWASH BANK',        logo: LOGOS + 'awass-bank.png' },
-            coop:      { name: 'COOPERATIVE BANK',  logo: LOGOS + 'coop-bank.png' }
+            coop:      { name: 'COOPERATIVE BANK',  logo: LOGOS + 'coop-bank.png' },
+            awash:     { name: 'COOPERATIVE BANK',  logo: LOGOS + 'coop-bank.png' }
         };
 
         /* Four lock periods. Each has its own minimum and fixed rate;
@@ -4824,9 +4824,9 @@
             { id: 'm12', months: 12, min: 50000, rate: 10 }
         ];
 
-        /* Partner banks for fixed deposits */
-        const PARTNER = 'awash';
-        const PARTNER_ORDER = ['awash', 'coop'];
+        /* Partner bank for savings: Cooperative Bank */
+        const PARTNER = 'coop';
+        const PARTNER_ORDER = ['coop'];
 
         /* group saving: me, and the people I can add (from the home screen's contacts) */
         const ME = { id: 'me', name: 'Mikias', phone: '', avatar: 'avatar-2.png', me: true };
@@ -4930,7 +4930,7 @@
                 ],
                 individual: seedPockets(),
                 accounts: [
-                    account('FD20417731', planName(planById('m12')), planById('m12'), 50000, openedActive, 'awash'),
+                    account('FD20417731', planName(planById('m12')), planById('m12'), 50000, openedActive, 'coop'),
                     account('FD20398165', planName(planById('m3')), planById('m3'), 10000, openedMatured, 'coop')
                 ]
             };

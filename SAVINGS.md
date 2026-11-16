@@ -101,7 +101,7 @@ S = {
 **`deposit`** — fixed deposit (`account()`)
 
 ```js
-{ id: 'FD20417731', name: '12 Months Lock', partner: 'awash',
+{ id: 'FD20417731', name: '12 Months Lock', partner: 'coop',
   months, rate, principal, opened,
   closed: { on, paid, how } | null,
   txns: [ { type: 'DEPOSIT'|'INTEREST POSTED'|'INTEREST ACCRUED'|'WITHDRAW'|'ROLLED OVER', amount, on } ] }
@@ -127,9 +127,9 @@ S = {
 
 | Constant | Value |
 |---|---|
-| `PARTNERS` | `awash → { name: 'AWASH BANK', logo: 'assets/banks logo/awass-bank.png' }`, `coop → { name: 'COOPERATIVE BANK', logo: 'assets/banks logo/coop-bank.png' }` |
+| `PARTNERS` | `coop → { name: 'COOPERATIVE BANK', logo: 'assets/banks logo/coop-bank.png' }` |
 | `PLANS` | 3 mo / 10,000 / 8% · 6 mo / 20,000 / 9% · 9 mo / 30,000 / 9.5% · 12 mo / 50,000 / 10% |
-| `PARTNER` / `PARTNER_ORDER` | `'awash'` / `['awash', 'coop']` |
+| `PARTNER` / `PARTNER_ORDER` | `'coop'` / `['coop']` |
 | `ME` | `Mikias`, avatar-2, `me: true` |
 | `CONTACTS` | Beth Obura (c1), Sara Tesfaye (c3), Daniel Bekele (c4), Hana Girma (c5), Yonas Alemu (c6) |
 | `LIST_KINDS` | the one product order used by the tiles, the filter, the list and the new-saving picker: individual, target, fixed, group |
@@ -593,7 +593,7 @@ Every message the customer receives is kept in one place.
 |---|---|
 | `assets/M-PESA-pattern.svg` | the pattern inside the green total cards |
 | `assets/M-PESA-money-icon.svg` | the M-PESA mark in the bank + M-PESA pair (`duoProgress`) |
-| `assets/banks logo/awass-bank.png` | the partner bank mark (AWASH BANK) |
+| `assets/banks logo/coop-bank.png` | the partner bank mark (COOPERATIVE BANK) |
 | `assets/avatars/avatar-1…6.png` | group members (initials are drawn when a member has no avatar, `avatar()`) |
 | `assets/savings-optin1…4.jpg` | the four activation slides |
 | `assets/savings-optin.jpg` | the M-PESA Saving feature card on `Mini Apps.html` |
@@ -608,7 +608,7 @@ Anyone reading or demoing the code should know these are deliberate:
 1. **PIN** — `0000` is the only rejected PIN; anything else passes, and the fingerprint button types `1234` (`checkPin`). There is no verification.
 2. **No backend** — every balance, interest figure and transaction is arithmetic over `sessionStorage`; nothing is sent anywhere, and a new prototype run resets the data.
 3. **Simulated participants** — other members' leave approvals arrive on a 3.6 s timer (`othersApprove`), and invitations and payouts to other people are state changes plus text only.
-4. **Partner banks** — `PARTNER_ORDER` includes `awash` and `coop` (Cooperative Bank), allowing savers to select their preferred partner bank when choosing a plan.
+4. **Partner bank** — `PARTNER_ORDER` is set to `['coop']` (Cooperative Bank), which is the partner bank across all savings products.
 5. **Pocket withdrawals always land in the M-PESA wallet**; fixed-deposit payouts may go to the wallet or to any active individual pocket.
 6. **Closing differs by product** — closing an individual or target pocket **deletes** it from `S.individual`, while a closed fixed deposit is **retained** and listed under CLOSED. Intentional, not an inconsistency to change casually.
 7. **Group withdrawal is all-or-nothing** — the admin takes the whole pot and the group closes; there is no partial payout.
