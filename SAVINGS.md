@@ -127,9 +127,9 @@ S = {
 
 | Constant | Value |
 |---|---|
-| `PARTNERS` | `awash → { name: 'AWASH BANK', logo: 'assets/banks logo/awass-bank.png' }` — the only partner |
+| `PARTNERS` | `awash → { name: 'AWASH BANK', logo: 'assets/banks logo/awass-bank.png' }`, `coop → { name: 'COOPERATIVE BANK', logo: 'assets/banks logo/coop-bank.png' }` |
 | `PLANS` | 3 mo / 10,000 / 8% · 6 mo / 20,000 / 9% · 9 mo / 30,000 / 9.5% · 12 mo / 50,000 / 10% |
-| `PARTNER` / `PARTNER_ORDER` | `'awash'` / `[PARTNER]` |
+| `PARTNER` / `PARTNER_ORDER` | `'awash'` / `['awash', 'coop']` |
 | `ME` | `Mikias`, avatar-2, `me: true` |
 | `CONTACTS` | Beth Obura (c1), Sara Tesfaye (c3), Daniel Bekele (c4), Hana Girma (c5), Yonas Alemu (c6) |
 | `LIST_KINDS` | the one product order used by the tiles, the filter, the list and the new-saving picker: individual, target, fixed, group |
@@ -608,7 +608,7 @@ Anyone reading or demoing the code should know these are deliberate:
 1. **PIN** — `0000` is the only rejected PIN; anything else passes, and the fingerprint button types `1234` (`checkPin`). There is no verification.
 2. **No backend** — every balance, interest figure and transaction is arithmetic over `sessionStorage`; nothing is sent anywhere, and a new prototype run resets the data.
 3. **Simulated participants** — other members' leave approvals arrive on a 3.6 s timer (`othersApprove`), and invitations and payouts to other people are state changes plus text only.
-4. **One partner bank** — `PARTNER_ORDER` has a single entry (`awash`), which is why a new deposit goes straight from the Fixed view to the plan list with no partner step.
+4. **Partner banks** — `PARTNER_ORDER` includes `awash` and `coop` (Cooperative Bank), allowing savers to select their preferred partner bank when choosing a plan.
 5. **Pocket withdrawals always land in the M-PESA wallet**; fixed-deposit payouts may go to the wallet or to any active individual pocket.
 6. **Closing differs by product** — closing an individual or target pocket **deletes** it from `S.individual`, while a closed fixed deposit is **retained** and listed under CLOSED. Intentional, not an inconsistency to change casually.
 7. **Group withdrawal is all-or-nothing** — the admin takes the whole pot and the group closes; there is no partial payout.

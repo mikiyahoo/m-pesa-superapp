@@ -693,7 +693,7 @@
         const BANKS = {
             abyssinia: { name: 'Bank of Abyssinia', chip: 'Abyssinia', svg: ABY },
             awash: { name: 'Awash Bank', chip: 'Awash', img: 'assets/banks logo/awash-bank.png', full: true },   // official logo (Wikimedia Commons)
-            coop: { name: 'Cooperative Bank of Oromia', chip: 'Cooperative Bank', img: 'assets/banks logo/coop-bank.png' },
+            coop: { name: 'Cooperative Bank of Oromia', chip: 'Coop', img: 'assets/banks logo/coop-bank.png' },
             cbe: { name: 'Commercial Bank of Ethiopia', chip: 'CBE', img: 'assets/banks logo/cbe-logo.png' },
             dashen: { name: 'Dashen Bank', chip: 'Dashen', img: 'assets/banks logo/dashen-bank.png' },
             zemen: { name: 'Zemen Bank', chip: 'Zemen', img: 'assets/banks logo/zemen-bank.png' }
@@ -710,7 +710,6 @@
             { id: 'aby30', bank: 'abyssinia', name: '30-Day Term Loan', type: 'cash', days: 30, inst: 2, access: 4, maint: 0.15, penalty: 0.5, min: 100, max: 30000 },
             { id: 'awa30', bank: 'awash', name: '30-Day Term Loan', type: 'cash', days: 30, inst: 2, access: 3.5, maint: 0.12, penalty: 0.5, min: 100, max: 25000 },
             { id: 'awaSal', bank: 'awash', name: 'Salary Advance', type: 'salary', days: 30, inst: 1, access: 2, maint: 0.1, penalty: 0.5, min: 500, max: 15000 },
-            { id: 'coop30', bank: 'coop', name: '30-Day Term Loan', type: 'cash', days: 30, inst: 2, access: 3.5, maint: 0.12, penalty: 0.5, min: 100, max: 30000 },
             { id: 'coopB', bank: 'coop', name: '60-Day BNPL', type: 'bnpl', days: 60, inst: 3, access: 3, maint: 0.08, penalty: 0.5, min: 200, max: 20000 },
             { id: 'cbe30', bank: 'cbe', name: '30-Day Term Loan', type: 'cash', days: 30, inst: 2, access: 3, maint: 0.1, penalty: 0.5, min: 100, max: 20000 },
             { id: 'dash14', bank: 'dashen', name: '14-Day Salary Advance', type: 'salary', days: 14, inst: 1, access: 2.5, maint: 0.1, penalty: 0.5, min: 300, max: 12000 }
@@ -759,8 +758,8 @@
                 scoreOn: addDays(TODAY, -6).toISOString(), hidden: false, loans: [], tx: [] };
             if (scenario !== 'active') return s;
             s.bank = 'abyssinia'; s.statement = true;
-            const a = makeLoan('aby30', 4800, 10), b = makeLoan('awa30', 6600, 20), c = makeLoan('aby10', 2000, 70), d = makeLoan('coop30', 4000, 15);
-            s.loans = [a, b, c, d];
+            const a = makeLoan('aby30', 4800, 10), b = makeLoan('awa30', 6600, 20), c = makeLoan('aby10', 2000, 70);
+            s.loans = [a, b, c];
             const tx = [];
             const add = (l, type, amount, on) => tx.push({ id: newRef(), loan: l.id, type: type, amount: Math.round(amount * 100) / 100, on: new Date(on).toISOString() });
             s.loans.forEach(l => { add(l, 'disbursement', l.amount, l.disbursed); add(l, 'maintenance', l.maint, addDays(l.disbursed, 1).setHours(0, 5)); });
@@ -772,8 +771,6 @@
             add(b, 'penalty', pen, addDays(b.inst[0].due, 1).setHours(0, 10));
             /* part of the Abyssinia loan already paid */
             a.inst[0].paid = 1500; add(a, 'repayment', 1500, addDays(TODAY, -3).setHours(18, 12));
-            /* part of the Cooperative Bank loan already paid */
-            d.inst[0].paid = 1000; add(d, 'repayment', 1000, addDays(TODAY, -1).setHours(10, 30));
             s.tx = tx;
             return s;
         }
@@ -974,7 +971,7 @@
             loading('Activating and calculating your credit score...', 2000, toScore);
         }
 
-        const BANK_CHOICES = ['abyssinia', 'awash', 'coop'];
+        const BANK_CHOICES = ['awash', 'coop', 'abyssinia'];
         let pickedBank = null;
         function renderBanks() {
             document.getElementById('bankList').innerHTML = BANK_CHOICES.map(k => '<button class="bank-opt" onclick="pickBank(\'' + k + '\')">' + bmark(k)
@@ -1110,12 +1107,9 @@
                 ? '<div class="loans">' + loans.map(loanCard).join('') + '</div>'
                 : '<div class="empty">No active loans' + (bank ? ' with ' + BANKS[bank].name : '') + '. Apply for an offer below.</div>';
             const offers = PRODUCTS.filter(p => (!bank || p.bank === bank) && (offerType === 'all' || p.type === offerType));
-            const currentBank = bank || 'all';
-            const primaryBanks = ['abyssinia', 'awash', 'coop'];
-            const chipKeys = (bank && primaryBanks.indexOf(bank) < 0) ? primaryBanks.concat([bank]) : primaryBanks;
-            const bankChips = '<div class="chips" style="margin-bottom:10px">'
-                + '<button class="chip' + (currentBank === 'all' ? ' on' : '') + '" onclick="openBank(null)">All bank</button>'
-                + chipKeys.map(k => '<button class="chip' + (currentBank === k ? ' on' : '') + '" onclick="openBank(\'' + k + '\')">' + BANKS[k].chip + '</button>').join('')
+            const bankChips = bank ? '' : '<div class="chips" style="margin-bottom:10px">'
+                + '<button class="chip on">All bank</button>'
+                + ['abyssinia', 'awash'].map(k => '<button class="chip" onclick="openBank(\'' + k + '\')">' + BANKS[k].chip + '</button>').join('')
                 + '<button class="chip" onclick="moreBanks()">More<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div>';
             document.getElementById('homeBody').innerHTML = limitCard
                 + '<div class="sec-head"><span>Loan taken</span><button class="link" onclick="go(\'stepLoans@' + (bank || 'all') + '\')">View all</button></div>' + loanCards
@@ -1152,22 +1146,7 @@
                     ['Daily maintenance fee', p.maint + '%'], ['Penalty fee', p.penalty + '% per day late'], ['Your limit', money(prodLimit(p)) + ' Birr']].map(r => '<div class="kv"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('')
                 + '</div></div>';
         }
-        function openBank(k) {
-            offerType = 'all';
-            if (!k) {
-                if ((stack[stack.length - 1] || '').indexOf('@') > 0) back();
-                else renderHome(null);
-                return;
-            }
-            if ((stack[stack.length - 1] || '').indexOf('@') > 0) {
-                closeSheet();
-                stack[stack.length - 1] = 'stepHome@' + k;
-                render('stepHome@' + k);
-                show('stepHome@' + k);
-            } else {
-                go('stepHome@' + k);
-            }
-        }
+        function openBank(k) { offerType = 'all'; go('stepHome@' + k); }
         function moreBanks() {
             openSheet('<h3>Choose a bank</h3><p class="sub">See the term loans each bank offers</p><div style="margin-top:8px">'
                 + Object.keys(BANKS).map(k => '<button class="opt" onclick="openBank(\'' + k + '\')">' + bmark(k, 28) + BANKS[k].name + '</button>').join('') + '</div>');

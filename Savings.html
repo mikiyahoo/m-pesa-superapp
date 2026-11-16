@@ -4811,7 +4811,8 @@
         /* ---------- Reference data ---------- */
         const LOGOS = 'assets/banks logo/';
         const PARTNERS = {
-            awash:     { name: 'AWASH BANK',     logo: LOGOS + 'awass-bank.png' }
+            awash:     { name: 'AWASH BANK',        logo: LOGOS + 'awass-bank.png' },
+            coop:      { name: 'COOPERATIVE BANK',  logo: LOGOS + 'coop-bank.png' }
         };
 
         /* Four lock periods. Each has its own minimum and fixed rate;
@@ -4823,9 +4824,9 @@
             { id: 'm12', months: 12, min: 50000, rate: 10 }
         ];
 
-        /* Awash Bank is the only saving partner for now. */
+        /* Partner banks for fixed deposits */
         const PARTNER = 'awash';
-        const PARTNER_ORDER = [PARTNER];
+        const PARTNER_ORDER = ['awash', 'coop'];
 
         /* group saving: me, and the people I can add (from the home screen's contacts) */
         const ME = { id: 'me', name: 'Mikias', phone: '', avatar: 'avatar-2.png', me: true };
@@ -4929,8 +4930,8 @@
                 ],
                 individual: seedPockets(),
                 accounts: [
-                    account('FD20417731', planName(planById('m12')), planById('m12'), 50000, openedActive, PARTNER),
-                    account('FD20398165', planName(planById('m3')), planById('m3'), 10000, openedMatured, PARTNER)
+                    account('FD20417731', planName(planById('m12')), planById('m12'), 50000, openedActive, 'awash'),
+                    account('FD20398165', planName(planById('m3')), planById('m3'), 10000, openedMatured, 'coop')
                 ]
             };
         }
@@ -5331,11 +5332,15 @@
         /* pct: wrap the icon in a ring filling to that much (compact cards) */
         /* title + chip: the saving's own name takes the kind's place */
         /* pair (savings home): the bank and M-PESA marks instead of the kind icon */
-        function cardHead(kind, right, pct, ringColor, title, chip, pair) {
+        function cardHead(kind, right, pct, ringColor, title, chip, pair, partnerKey) {
             const k = KIND[kind];
             let icon = '<span class="kind-ic ' + k[0] + '"><svg viewBox="0 0 24 24">' + k[2] + '</svg></span>';
             if (pct != null) icon = '<span class="kind-ring" style="--p:' + Math.max(Math.min(pct, 100), 3).toFixed(1) + '%;--c:' + ringColor + '">' + icon + '</span>';
-            if (pair) icon = duoProgress(PARTNERS[PARTNER].logo, 38, pct, ringColor);
+            if (pair) {
+                const pKey = partnerKey || PARTNER;
+                const pLogo = (PARTNERS[pKey] || PARTNERS[PARTNER]).logo;
+                icon = duoProgress(pLogo, 38, pct, ringColor);
+            }
             if (title) return '<div class="bank">' + icon + '<span class="ttl"><b>' + title + '</b><small>' + right + '</small></span>' + chip + '</div>';
             return '<div class="bank">' + icon + '<span class="kind">' + k[1] + '</span><span class="rate">' + right + '</span></div>';
         }
@@ -5366,7 +5371,7 @@
             }
             const earn = s === 'closed' ? '' : '<span class="earn">+' + money(accrued(a)) + '</span>';
             return '<div class="pocket' + (s === 'closed' ? ' closed' : '') + (compact ? ' compact' : '') + '" onclick="openAccount(\'' + a.id + '\')">'
-                + cardHead('fixed', a.rate + '% p.a.', compact ? (s === 'active' ? pct : 100) : null, '#1E9BA6', a.name, statusChip(a), compact)
+                + cardHead('fixed', a.rate + '% p.a.', compact ? (s === 'active' ? pct : 100) : null, '#1E9BA6', a.name, statusChip(a), compact, a.partner)
                 + '<div class="money"><span><small>' + (s === 'closed' ? 'WAS' : 'SAVED') + '</small><b>' + cv(whole(a.principal)) + ' ETB</b></span>' + (cardHide ? '' : earn) + '</div>'
                 + (compact ? '' : '<div class="bar ' + bar + '"><i style="width:' + (s === 'closed' ? 100 : pct).toFixed(1) + '%"></i></div>'
                     + '<div class="foot"><span>' + foot + '</span>' + right + '</div>')
@@ -5513,11 +5518,16 @@
 
         /* ---------- Plans ---------- */
 
-        /* One partner, so a new deposit starts at the plans */
+        /* Choose a saving partner and plan */
         function startNewDeposit() {
-            flow = { kind: 'open', partner: PARTNER };
+            flow = { kind: 'open', partner: flow.partner || PARTNER };
             renderPlans();
             go('stepPlans');
+        }
+
+        function pickPartner(k) {
+            flow.partner = k;
+            renderPlans();
         }
 
         /* a deposit is named after its period */
@@ -5530,14 +5540,26 @@
             lead.innerHTML = roll ? 'Pick a new term for <b>' + money(flow.base) + ' ETB</b>.' : '';
             lead.style.display = roll ? '' : 'none';
 
+            const curPartner = flow.partner || PARTNER;
+            const partnerHtml = '<div class="partners" style="margin-bottom:14px;margin-top:2px">'
+                + PARTNER_ORDER.map(k => {
+                    const p = PARTNERS[k];
+                    const on = curPartner === k;
+                    return '<button class="partner' + (on ? ' on' : '') + '" onclick="pickPartner(\'' + k + '\')" type="button">'
+                        + '<img src="' + p.logo + '" alt="' + p.name + '">'
+                        + '<span>' + p.name + '</span>'
+                        + '</button>';
+                }).join('')
+                + '</div>';
+
             /* every plan stays open on a rollover; one above the matured
                amount is checked when it's picked, not greyed out */
-            document.getElementById('planList').innerHTML = PLANS.map(p => {
+            document.getElementById('planList').innerHTML = partnerHtml + PLANS.map(p => {
                 const short = roll && flow.base < p.min;
                 return '<div class="pkg" onclick="choosePlan(\'' + p.id + '\')">'
                     + '<div class="pkg-top">'
                     + '<span class="pkg-ic"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/><path d="M12 14.5v2"/></svg></span>'
-                    + '<span class="pkg-head"><b>' + p.months + ' Months Lock + ' + p.rate + '% Interest</b></span>'
+                    + '<span class="pkg-head"><b>' + p.months + ' Months Lock + ' + p.rate + '% Interest</b><small>Partner: ' + PARTNERS[curPartner].name + '</small></span>'
                     + '</div>'
                     + '<div class="pkg-bot">'
                     + '<div class="earn-item"><small>MINIMUM DEPOSIT</small><b>' + whole(p.min) + ' ETB</b></div>'
@@ -5699,6 +5721,7 @@
                     ['FROM MATURED DEPOSIT', money(flow.base) + ' ETB'],
                     ['ADDED FROM WALLET', money(flow.topUp) + ' ETB']
                 ] : []).concat([
+                    ['PARTNER BANK', PARTNERS[flow.partner].name],
                     ['INTEREST RATE', p.rate + '% P.A.'],
                     ['MATURES ON', fmtDate(est.maturity).toUpperCase()],
                     ['AT MATURITY', money(flow.amount + est.interest) + ' ETB', 'good']
